@@ -64,57 +64,56 @@ st.markdown("""
 
 st.write("Welcome to the Student Application Tracker. The data is fetched from Google Sheets.")
 
-# Function to load data from Google Sheets
+def get_google_auth_flow():
+    return Flow.from_client_config(
+        {"installed": st.secrets["oauth_credentials"]},
+        scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"]
+    )
+
 @st.cache_resource
-def load_data_from_sheets():
-    creds = None
-    if "token" in st.session_state:
-        creds = Credentials.from_authorized_user_info(st.session_state["token"])
+def load_data_from_sheets(_creds):
+    service = build("sheets", "v4", credentials=_creds)
+    sheet_id = st.secrets["private_gsheets_url"].split("/")[5]
+    result = service.spreadsheets().values().get(spreadsheetId=sheet_id, range="A1:ZZ1000").execute()
+    data = result.get("values", [])
+
+    df = pd.DataFrame(data[1:], columns=data[0])
+    df['Student Name'] = df['First Name'] + " " + df['Last Name']
+    df.dropna(subset=['Student Name'], inplace=True)
+    df.dropna(how='all', inplace=True)
     
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = Flow.from_client_config(
-                {"installed": st.secrets["oauth_credentials"]},
-                scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"]
-            )
-            auth_url, _ = flow.authorization_url(prompt="consent")
-            
-            st.write("Please visit this URL to authorize the application:")
-            st.markdown(f"[Authorization URL]({auth_url})")
-            
-            code = st.text_input("Enter the authorization code:")
-            if code:
-                flow.fetch_token(code=code)
-                creds = flow.credentials
-                st.session_state["token"] = creds.to_json()
+    return df
 
-    if creds:
-        service = build("sheets", "v4", credentials=creds)
-        sheet_id = st.secrets["private_gsheets_url"].split("/")[5]
-        result = service.spreadsheets().values().get(spreadsheetId=sheet_id, range="A1:ZZ1000").execute()
-        data = result.get("values", [])
+# Authentication flow
+if "token" not in st.session_state:
+    flow = get_google_auth_flow()
+    auth_url, _ = flow.authorization_url(prompt="consent")
+    
+    st.write("Please visit this URL to authorize the application:")
+    st.markdown(f"[Authorization URL]({auth_url})")
+    
+    code = st.text_input("Enter the authorization code:")
+    if code:
+        flow.fetch_token(code=code)
+        st.session_state["token"] = flow.credentials.to_json()
+        st.experimental_rerun()
 
-        df = pd.DataFrame(data[1:], columns=data[0])
-        df['Student Name'] = df['First Name'] + " " + df['Last Name']
-        df.dropna(subset=['Student Name'], inplace=True)
-        df.dropna(how='all', inplace=True)
-        
-        return df
-    else:
-        return None
+if "token" in st.session_state:
+    creds = Credentials.from_authorized_user_info(st.session_state["token"])
+    
+    if creds.expired and creds.refresh_token:
+        creds.refresh(Request())
+        st.session_state["token"] = creds.to_json()
 
-# Load data
-try:
-    data = load_data_from_sheets()
-    if data is not None:
+    try:
+        data = load_data_from_sheets(creds)
         st.session_state['data'] = data
         st.success("Data loaded successfully from Google Sheets!")
-    else:
-        st.warning("Please authorize the application to access Google Sheets.")
-except Exception as e:
-    st.error(f"Error loading data: {str(e)}")
+    except Exception as e:
+        st.error(f"Error loading data: {str(e)}")
+else:
+    st.warning("Please authorize the application to access Google Sheets.")
+
 
 
 # Utility functions
