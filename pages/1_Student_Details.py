@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from Home import load_and_combine_data, get_visa_status, calculate_days_until_interview
+from main import load_and_combine_data, get_visa_status, calculate_days_until_interview
 
 st.set_page_config(page_title="Student Details", layout="wide")
 
