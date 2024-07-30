@@ -5,7 +5,7 @@ from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
-import os
+
 st.set_page_config(page_title="Student Application Tracker", layout="wide")
 
 # Custom CSS
@@ -64,11 +64,11 @@ st.markdown("""
 
 st.write("Welcome to the Student Application Tracker. The data is fetched from Google Sheets.")
 
-# Google OAuth flow setup
 def get_google_auth_flow():
     return Flow.from_client_config(
         {"installed": st.secrets["oauth_credentials"]},
-        scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"]
+        scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"],
+        redirect_uri=st.secrets["oauth_credentials"]["redirect_uri"]
     )
 
 @st.cache_resource
@@ -82,7 +82,7 @@ def load_data_from_sheets(_creds):
     df['Student Name'] = df['First Name'] + " " + df['Last Name']
     df.dropna(subset=['Student Name'], inplace=True)
     df.dropna(how='all', inplace=True)
-
+    
     return df
 
 # Authentication flow
@@ -114,8 +114,6 @@ if "token" in st.session_state:
         st.error(f"Error loading data: {str(e)}")
 else:
     st.warning("Please authorize the application to access Google Sheets.")
-
-
 
 # Utility functions
 def get_visa_status(result):
