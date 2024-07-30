@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from Home import load_and_combine_data
+from main import load_and_combine_data
 
 st.set_page_config(page_title="Dashboard", layout="wide")
 
