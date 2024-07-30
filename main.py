@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+import gspread
+from google.oauth2.service_account import Credentials
 
 st.set_page_config(page_title="Student Application Tracker", layout="wide")
 
@@ -58,36 +60,46 @@ st.markdown("""
     </div>
     """, unsafe_allow_html=True)
 
-st.write("Welcome to the Student Application Tracker. Use the sidebar to navigate between different pages.")
+st.write("Welcome to the Student Application Tracker. The data is now fetched from Google Sheets.")
 
-# File uploader in the sidebar
-st.sidebar.title("Data Upload")
-uploaded_file = st.sidebar.file_uploader("Choose an Excel file", type="xlsx")
+# Function to load data from Google Sheets
+@st.cache_resource
+def load_data_from_sheets():
+    # Use the secrets in a dictionary format
+    credentials = Credentials.from_service_account_info(
+        st.secrets["gcp_service_account"],
+        scopes=[
+            "https://www.googleapis.com/auth/spreadsheets",
+        ],
+    )
+    client = gspread.authorize(credentials)
 
-if uploaded_file:
-    st.session_state['uploaded_file'] = uploaded_file
-    st.success("File uploaded successfully! You can now navigate to other pages to view the data.")
-else:
-    st.info("Please upload an Excel file to proceed.")
+    # Open the Google Sheet
+    sheet = client.open_by_url(st.secrets["private_gsheets_url"]).sheet1
+    
+    # Get all values from the sheet
+    data = sheet.get_all_values()
+    
+    # Convert to DataFrame
+    df = pd.DataFrame(data[1:], columns=data[0])
+    
+    # Clean up the data
+    df['Student Name'] = df['First Name'] + " " + df['Last Name']
+    df.dropna(subset=['Student Name'], inplace=True)
+    df.dropna(how='all', inplace=True)
+    
+    return df
+
+# Load data
+try:
+    data = load_data_from_sheets()
+    st.session_state['data'] = data
+    st.success("Data loaded successfully from Google Sheets!")
+except Exception as e:
+    st.error(f"Error loading data: {str(e)}")
+    st.stop()
 
 # Utility functions
-@st.cache_data
-def load_and_combine_data(excel_file):
-    xls = pd.ExcelFile(excel_file)
-    combined_data = pd.DataFrame()
-    
-    for sheet_name in xls.sheet_names:
-        df = pd.read_excel(excel_file, sheet_name=sheet_name)
-        df['Student Name'] = df.iloc[:, 1].astype(str) + " " + df.iloc[:, 2].astype(str)
-        df.dropna(subset=['Student Name'], inplace=True)
-        df.dropna(how='all', inplace=True)
-        df['Current Step'] = sheet_name
-        combined_data = pd.concat([combined_data, df], ignore_index=True)
-    
-    combined_data.drop_duplicates(subset='Student Name', keep='last', inplace=True)
-    combined_data.reset_index(drop=True, inplace=True)
-    return combined_data
-
 def get_visa_status(result):
     result_mapping = {
         'Denied': 'Denied',
@@ -110,4 +122,3 @@ def calculate_days_until_interview(interview_date):
 # Footer
 st.markdown("---")
 st.markdown("© 2024 The Us House. All rights reserved.")
-
