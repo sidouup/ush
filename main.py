@@ -62,7 +62,7 @@ st.markdown("""
     </div>
     """, unsafe_allow_html=True)
 
-st.write("Welcome to the Student Application Tracker. The data is now fetched from Google Sheets.")
+st.write("Welcome to the Student Application Tracker. The data is fetched from Google Sheets.")
 
 # Function to load data from Google Sheets
 @st.cache_resource
@@ -76,40 +76,46 @@ def load_data_from_sheets():
             creds.refresh(Request())
         else:
             flow = Flow.from_client_config(
-                st.secrets["oauth_credentials"],
+                {"installed": st.secrets["oauth_credentials"]},
                 scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"]
             )
-            flow.redirect_uri = "urn:ietf:wg:oauth:2.0:oob"
             auth_url, _ = flow.authorization_url(prompt="consent")
             
             st.write("Please visit this URL to authorize the application:")
-            st.write(auth_url)
+            st.markdown(f"[Authorization URL]({auth_url})")
+            
             code = st.text_input("Enter the authorization code:")
             if code:
                 flow.fetch_token(code=code)
                 creds = flow.credentials
                 st.session_state["token"] = creds.to_json()
 
-    service = build("sheets", "v4", credentials=creds)
-    sheet_id = st.secrets["private_gsheets_url"].split("/")[5]
-    result = service.spreadsheets().values().get(spreadsheetId=sheet_id, range="A1:ZZ1000").execute()
-    data = result.get("values", [])
+    if creds:
+        service = build("sheets", "v4", credentials=creds)
+        sheet_id = st.secrets["private_gsheets_url"].split("/")[5]
+        result = service.spreadsheets().values().get(spreadsheetId=sheet_id, range="A1:ZZ1000").execute()
+        data = result.get("values", [])
 
-    df = pd.DataFrame(data[1:], columns=data[0])
-    df['Student Name'] = df['First Name'] + " " + df['Last Name']
-    df.dropna(subset=['Student Name'], inplace=True)
-    df.dropna(how='all', inplace=True)
-    
-    return df
+        df = pd.DataFrame(data[1:], columns=data[0])
+        df['Student Name'] = df['First Name'] + " " + df['Last Name']
+        df.dropna(subset=['Student Name'], inplace=True)
+        df.dropna(how='all', inplace=True)
+        
+        return df
+    else:
+        return None
 
 # Load data
 try:
     data = load_data_from_sheets()
-    st.session_state['data'] = data
-    st.success("Data loaded successfully from Google Sheets!")
+    if data is not None:
+        st.session_state['data'] = data
+        st.success("Data loaded successfully from Google Sheets!")
+    else:
+        st.warning("Please authorize the application to access Google Sheets.")
 except Exception as e:
     st.error(f"Error loading data: {str(e)}")
-    st.stop()
+
 
 # Utility functions
 def get_visa_status(result):
