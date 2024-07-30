@@ -64,6 +64,7 @@ st.markdown("""
 
 st.write("Welcome to the Student Application Tracker. The data is fetched from Google Sheets.")
 
+# Google OAuth flow setup
 def get_google_auth_flow():
     return Flow.from_client_config(
         {"installed": st.secrets["oauth_credentials"]},
@@ -81,7 +82,7 @@ def load_data_from_sheets(_creds):
     df['Student Name'] = df['First Name'] + " " + df['Last Name']
     df.dropna(subset=['Student Name'], inplace=True)
     df.dropna(how='all', inplace=True)
-    
+
     return df
 
 # Authentication flow
