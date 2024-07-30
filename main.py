@@ -65,25 +65,35 @@ st.write("Welcome to the Student Application Tracker. The data is now fetched fr
 # Function to load data from Google Sheets
 @st.cache_resource
 def load_data_from_sheets():
-    # Use the secrets in a dictionary format
-    credentials = Credentials.from_service_account_info(
-        st.secrets["gcp_service_account"],
-        scopes=[
-            "https://www.googleapis.com/auth/spreadsheets",
-        ],
-    )
-    client = gspread.authorize(credentials)
+    creds = None
+    if "token" in st.session_state:
+        creds = Credentials.from_authorized_user_info(st.session_state["token"])
+    
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            flow = Flow.from_client_config(
+                st.secrets["oauth_credentials"],
+                scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"]
+            )
+            flow.redirect_uri = "urn:ietf:wg:oauth:2.0:oob"
+            auth_url, _ = flow.authorization_url(prompt="consent")
+            
+            st.write("Please visit this URL to authorize the application:")
+            st.write(auth_url)
+            code = st.text_input("Enter the authorization code:")
+            if code:
+                flow.fetch_token(code=code)
+                creds = flow.credentials
+                st.session_state["token"] = creds.to_json()
 
-    # Open the Google Sheet
-    sheet = client.open_by_url(st.secrets["private_gsheets_url"]).sheet1
-    
-    # Get all values from the sheet
-    data = sheet.get_all_values()
-    
-    # Convert to DataFrame
+    service = build("sheets", "v4", credentials=creds)
+    sheet_id = st.secrets["private_gsheets_url"].split("/")[5]
+    result = service.spreadsheets().values().get(spreadsheetId=sheet_id, range="A1:ZZ1000").execute()
+    data = result.get("values", [])
+
     df = pd.DataFrame(data[1:], columns=data[0])
-    
-    # Clean up the data
     df['Student Name'] = df['First Name'] + " " + df['Last Name']
     df.dropna(subset=['Student Name'], inplace=True)
     df.dropna(how='all', inplace=True)
