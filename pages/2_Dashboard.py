@@ -28,12 +28,21 @@ st.plotly_chart(fig, use_container_width=True)
 st.subheader("Summary Statistics")
 total_students = len(data)
 unique_schools = data['Chosen School'].nunique()
-average_duration = data['Duration'].mean()
+
+# Handle potential errors in Duration calculation
+try:
+    # Try to convert Duration to numeric, coercing errors to NaN
+    data['Duration'] = pd.to_numeric(data['Duration'], errors='coerce')
+    average_duration = data['Duration'].mean()
+    average_duration_str = f"{average_duration:.2f}" if pd.notnull(average_duration) else "N/A"
+except Exception as e:
+    st.warning(f"Error calculating average duration: {str(e)}")
+    average_duration_str = "Error"
 
 col1, col2, col3 = st.columns(3)
 col1.metric("Total Students", total_students)
 col2.metric("Unique Schools", unique_schools)
-col3.metric("Average Duration (days)", f"{average_duration:.2f}")
+col3.metric("Average Duration (days)", average_duration_str)
 
 # Recent Applications
 st.subheader("Recent Applications")
@@ -50,3 +59,18 @@ st.subheader("Top Schools")
 school_counts = data['Chosen School'].value_counts().head(10)
 fig_schools = px.bar(x=school_counts.index, y=school_counts.values, labels={'x': 'School', 'y': 'Number of Students'}, title='Top 10 Schools')
 st.plotly_chart(fig_schools, use_container_width=True)
+
+# Data Quality Check
+st.subheader("Data Quality Check")
+missing_data = data.isnull().sum()
+st.write("Number of missing values in each column:")
+st.write(missing_data[missing_data > 0])
+
+# Display a sample of the data
+st.subheader("Sample Data")
+st.write(data.head())
+
+# Footer
+st.markdown("---")
+st.markdown("© 2024 The Us House. All rights reserved.")
+
