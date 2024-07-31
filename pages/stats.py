@@ -154,15 +154,28 @@ def statistics_page():
         # Time series chart of payments over time
         st.subheader("Payments Over Time")
         # Extracting and consolidating all DATE columns
-        date_columns = ['DATE']
-        date_data = pd.concat([data[col].dropna() for col in date_columns if col in data.columns], ignore_index=True)
-        date_data = pd.to_datetime(date_data, errors='coerce').dropna()
-        date_data = date_data.to_frame(name='DATE')
+        date_columns = ['DATE', 'School Entry Date', 'Entry Date in the US', 'EMBASSY ITW. DATE']
+        date_data = pd.concat([data[['Student Name', col]].dropna() for col in date_columns if col in data.columns], ignore_index=True)
+        date_data.columns = ['Student Name', 'DATE']
+        date_data['DATE'] = pd.to_datetime(date_data['DATE'], errors='coerce')
+        date_data = date_data.dropna(subset=['DATE'])
         date_data['Month_Year'] = date_data['DATE'].dt.to_period('M').astype(str)  # Convert Period to string
 
         payments_over_time = date_data.groupby('Month_Year').size().reset_index(name='Counts')
         payments_chart = px.line(payments_over_time, x='Month_Year', y='Counts', labels={'Month_Year': 'Date', 'Counts': 'Number of Payments'})
         st.plotly_chart(payments_chart)
+
+        # List of students by month
+        st.subheader("List of Students by Month")
+        selected_month = st.selectbox("Select Month-Year", payments_over_time['Month_Year'])
+        students_in_month = date_data[date_data['Month_Year'] == selected_month]['Student Name'].unique()
+
+        if len(students_in_month) > 0:
+            st.write(f"Students in {selected_month}:")
+            for student in students_in_month:
+                st.write(f"- {student}")
+        else:
+            st.write(f"No students found for {selected_month}.")
     else:
         st.error("No data available. Please check your Google Sheets connection and data.")
 
