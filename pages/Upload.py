@@ -341,11 +341,13 @@ def main():
                 with st.expander("📋 Personal Information", expanded=True):
                     first_name = st.text_input("First Name", selected_student['First Name'], key="first_name")
                     last_name = st.text_input("Last Name", selected_student['Last Name'], key="last_name")
+                    student_name = f"{first_name} {last_name}"
                     phone_number = st.text_input("Phone Number", selected_student['Phone N°'], key="phone_number")
                     email = st.text_input("Email", selected_student['E-mail'], key="email")
                     emergency_contact = st.text_input("Emergency Contact Number", selected_student['Emergency contact N°'], key="emergency_contact")
                     address = st.text_input("Address", selected_student['Address'], key="address")
                     attempts = st.text_input("Attempts", selected_student['Attempts'], key="attempts")
+
                 
                 with st.expander("🏫 School Information", expanded=True):
                     chosen_school = st.text_input("Chosen School", selected_student['Chosen School'], key="chosen_school")
