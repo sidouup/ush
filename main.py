@@ -80,8 +80,25 @@ def load_data_from_sheets():
         st.error("No data found in the Google Sheet.")
         return None
     
-    columns = data[0]
-    df = pd.DataFrame(data[1:], columns=columns)
+    # Get the header row
+    headers = data[0]
+    
+    # Create DataFrame with dynamic column names
+    df = pd.DataFrame(data[1:])
+    
+    # Assign column names and handle potential mismatch
+    if len(df.columns) != len(headers):
+        st.warning(f"Mismatch between number of columns in data ({len(df.columns)}) and headers ({len(headers)}). Using available columns.")
+        # Use the minimum length to avoid index errors
+        min_length = min(len(df.columns), len(headers))
+        df.columns = headers[:min_length]
+        # If there are more columns in data than headers, name them generically
+        if len(df.columns) > min_length:
+            for i in range(min_length, len(df.columns)):
+                df.columns.values[i] = f"Column_{i+1}"
+    else:
+        df.columns = headers
+    
     df.dropna(how='all', inplace=True)
     
     return df
@@ -95,9 +112,14 @@ try:
         # Display summary statistics
         st.subheader("Summary Statistics")
         total_students = len(data)
-        pending_applications = data[data['Visa Result'].isnull()].shape[0]
-        approved_visas = data[data['Visa Result'] == 'Approved'].shape[0]
-        denied_visas = data[data['Visa Result'] == 'Denied'].shape[0]
+        
+        # Check if 'Visa Result' column exists
+        if 'Visa Result' in data.columns:
+            pending_applications = data[data['Visa Result'].isnull()].shape[0]
+            approved_visas = data[data['Visa Result'].str.lower() == 'approved'].shape[0]
+            denied_visas = data[data['Visa Result'].str.lower() == 'denied'].shape[0]
+        else:
+            pending_applications = approved_visas = denied_visas = "N/A"
 
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("Total Students", total_students)
@@ -109,28 +131,30 @@ try:
         st.subheader("Student Application Data")
         
         # Filters
-        chosen_school = st.multiselect("Filter by School", options=sorted(data['Chosen School'].unique()))
-        visa_result = st.multiselect("Filter by Visa Result", options=sorted(data['Visa Result'].unique()))
+        if 'Chosen School' in data.columns:
+            chosen_school = st.multiselect("Filter by School", options=sorted(data['Chosen School'].dropna().unique()))
+        if 'Visa Result' in data.columns:
+            visa_result = st.multiselect("Filter by Visa Result", options=sorted(data['Visa Result'].dropna().unique()))
         
         filtered_data = data
-        if chosen_school:
+        if 'Chosen School' in data.columns and chosen_school:
             filtered_data = filtered_data[filtered_data['Chosen School'].isin(chosen_school)]
-        if visa_result:
+        if 'Visa Result' in data.columns and visa_result:
             filtered_data = filtered_data[filtered_data['Visa Result'].isin(visa_result)]
         
         st.dataframe(filtered_data)
 
         # Display individual student details
         st.subheader("Individual Student Details")
-        selected_student = st.selectbox("Select a student", options=data['First Name'] + " " + data['Last Name'])
-        if selected_student:
-            student_data = data[data['First Name'] + " " + data['Last Name'] == selected_student].iloc[0]
-            st.write(f"**Name:** {student_data['First Name']} {student_data['Last Name']}")
-            st.write(f"**Phone:** {student_data['Phone N°']}")
-            st.write(f"**Email:** {student_data['E-mail']}")
-            st.write(f"**Chosen School:** {student_data['Chosen School']}")
-            st.write(f"**Duration:** {student_data['Duration']}")
-            st.write(f"**Visa Result:** {student_data['Visa Result']}")
+        if 'First Name' in data.columns and 'Last Name' in data.columns:
+            selected_student = st.selectbox("Select a student", options=data['First Name'] + " " + data['Last Name'])
+            if selected_student:
+                student_data = data[(data['First Name'] + " " + data['Last Name']) == selected_student].iloc[0]
+                for column in student_data.index:
+                    if pd.notnull(student_data[column]):
+                        st.write(f"**{column}:** {student_data[column]}")
+        else:
+            st.write("Unable to display individual student details due to missing name columns.")
 
     else:
         st.error("Failed to load data from Google Sheets.")
@@ -143,3 +167,4 @@ except Exception as e:
 # Footer
 st.markdown("---")
 st.markdown("© 2024 The Us House. All rights reserved.")
+
