@@ -15,18 +15,13 @@ client = gspread.authorize(credentials)
 
 # Function to load and combine data from all sheets in the Google Sheet
 @st.cache_data(ttl=3600)
-def load_and_combine_data(gsheets_url):
+def load_and_combine_data(gsheets_url, expected_headers):
     sheet = client.open_by_url(gsheets_url)
     combined_data = pd.DataFrame()
     
     for worksheet in sheet.worksheets():
-        data = worksheet.get_all_records(head=1)  # Use the first row as headers
+        data = worksheet.get_all_records(expected_headers=expected_headers)  # Use expected headers to ensure uniqueness
         df = pd.DataFrame(data)
-        
-        # Ensure headers are unique
-        headers = list(df.columns)
-        if len(headers) != len(set(headers)):
-            raise ValueError(f"Duplicate headers found in worksheet '{worksheet.title}': {headers}")
         
         df['Student Name'] = df.iloc[:, 1].astype(str) + " " + df.iloc[:, 2].astype(str)
         df.dropna(subset=['Student Name'], inplace=True)
@@ -116,7 +111,15 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # Load and combine data from all sheets in the Google Sheet
-data = load_and_combine_data(private_gsheets_url)
+expected_headers = [
+    'First Name', 'Last Name', 'Phone N°', 'E-mail', 'Emergency contact N°',
+    'Attempts', 'Address', 'Chosen School', 'Duration', 'School Entry Date',
+    'Entry Date in the US', 'ADDRESS in the U.S', 'E-MAIL RDV', 'PASSWORD RDV',
+    'EMBASSY ITW. DATE', 'DS-160 maker', 'Password DS-160', 'Secret Q.',
+    'Visa Result', 'DATE', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?'
+]
+
+data = load_and_combine_data(private_gsheets_url, expected_headers)
 
 # Combined search and selection functionality
 st.header("👤 Student Search and Details")
