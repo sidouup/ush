@@ -21,39 +21,54 @@ def get_google_sheet_client():
 def load_data():
     sheet_headers = {
         'PAYMENT & MAIL': [
-            'First Name', 'Last Name', 'Phone N°', 'Address', 'Agent', 'School name', 'Type',
-            'Payed (yes/no)', 'Payment Method', 'Paid amount', 'Date of payment', 'Payment reference',
-            'E-mail (student)', 'E-mail (agent)', 'Comments'
+            'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N° ', 'Chosen School',
+            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
+            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
+            'EMBASSY ITW. DATE', 'Attempts', 'Preparation Date ', 'Time', 'Online / Presential', 'Documents sent ?',
+            'Visa Result', 'Agent', 'Note'
         ],
         'APPLICATION': [
-            'First Name', 'Last Name', 'Phone N°', 'Address', 'Agent', 'School name', 'Type',
-            'Application submitted (yes/no)', 'Date of submission', 'E-mail (student)', 'E-mail (agent)', 'Comments'
+            'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N° ', 'Chosen School',
+            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
+            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
+            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
         ],
         'SCAN & SEND': [
-            'First Name', 'Last Name', 'Phone N°', 'Address', 'Agent', 'School name', 'Type',
-            'Documents scanned (yes/no)', 'Date of scanning', 'E-mail (student)', 'E-mail (agent)', 'Comments'
+            'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N° ', 'Chosen School',
+            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
+            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
+            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
         ],
         'ARAMEX & RDV': [
-            'First Name', 'Last Name', 'Phone N°', 'Address', 'Agent', 'School name', 'Type',
-            'Package sent (yes/no)', 'Date of sending', 'E-mail (student)', 'E-mail (agent)', 'Comments'
+            'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N° ', 'Chosen School',
+            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
+            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
+            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
         ],
         'DS-160': [
-            'First Name', 'Last Name', 'Phone N°', 'Address', 'Agent', 'School name', 'Type',
-            'DS-160 filled (yes/no)', 'Date of filling', 'E-mail (student)', 'E-mail (agent)', 'Comments'
+            'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N° ', 'Chosen School',
+            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
+            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
+            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
         ],
         'ITW Prep.': [
-            'First Name', 'Last Name', 'Phone N°', 'Address', 'Agent', 'School name', 'Type',
-            'Interview prepared (yes/no)', 'Date of preparation', 'E-mail (student)', 'E-mail (agent)', 'Comments'
+            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N° ', 'Chosen School',
+            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
+            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
+            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
         ],
         'SEVIS': [
-            'First Name', 'Last Name', 'Phone N°', 'Address', 'Agent', 'School name', 'Type',
-            'SEVIS paid (yes/no)', 'Date of payment', 'E-mail (student)', 'E-mail (agent)', 'Comments'
+            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
+            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
+            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
+            'EMBASSY ITW. DATE', 'Attempts', 'Preparation Date ', 'Time', 'Online / Presential', 'Documents sent ?',
+            'Visa Result', 'Agent', 'Note'
         ],
         'CLIENTS ': [
-            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°',
-            'Chosen School', 'Duration', 'Payment Method', 'Sevis payment', 'Application payment',
-            'Attempts', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', 'E-MAIL RDV',
-            'PASSWORD RDV', 'EMBASSY ITW. DATE', 'DS-160 maker', 'Password DS-160', 'Secret Q.', 'Comments'
+            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
+            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
+            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
+            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
         ]
     }
     
@@ -87,7 +102,6 @@ def load_data():
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
         return pd.DataFrame()
-
 def get_visa_status(result):
     result_mapping = {
         'Denied': 'Denied',
