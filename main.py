@@ -18,7 +18,7 @@ def get_google_sheet_client():
     creds = Credentials.from_service_account_info(SERVICE_ACCOUNT_INFO, scopes=scope)
     return gspread.authorize(creds)
 
-def load_data():
+def load_data(expected_headers=None):
     try:
         client = get_google_sheet_client()
         sheet = client.open_by_key(SPREADSHEET_ID)
@@ -26,7 +26,10 @@ def load_data():
         combined_data = pd.DataFrame()
         
         for worksheet in sheet.worksheets():
-            data = worksheet.get_all_records()
+            if expected_headers:
+                data = worksheet.get_all_records(expected_headers=expected_headers)
+            else:
+                data = worksheet.get_all_records()
             df = pd.DataFrame(data)
             if not df.empty:
                 df['Student Name'] = df['First Name'] + " " + df['Last Name']
