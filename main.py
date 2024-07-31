@@ -5,7 +5,16 @@ import plotly.express as px
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
-# Function to load data from Google Sheets
+def adjust_data_to_headers(headers, data):
+    """Adjust the data to match the number of headers."""
+    if len(headers) > len(data[0]):
+        # Add empty values to data rows
+        return [row + [''] * (len(headers) - len(row)) for row in data]
+    elif len(headers) < len(data[0]):
+        # Truncate data rows
+        return [row[:len(headers)] for row in data]
+    return data
+
 def load_data_from_sheets():
     credentials = service_account.Credentials.from_service_account_info(
         st.secrets["gcp_service_account"],
@@ -17,21 +26,8 @@ def load_data_from_sheets():
     sheet_metadata = service.spreadsheets().get(spreadsheetId=sheet_id).execute()
     sheets = sheet_metadata.get('sheets', '')
     
-    all_columns = set()
-    data_frames = []
+    all_data = []
     
-    # First pass: collect all unique column names
-    for sheet in sheets:
-        sheet_name = sheet['properties']['title']
-        range_name = f"{sheet_name}!A1:ZZ1"
-        result = service.spreadsheets().values().get(
-            spreadsheetId=sheet_id, range=range_name).execute()
-        headers = result.get('values', [[]])[0]
-        all_columns.update(headers)
-    
-    all_columns = list(all_columns)
-    
-    # Second pass: load data using consistent column names
     for sheet in sheets:
         sheet_name = sheet['properties']['title']
         range_name = f"{sheet_name}!A1:ZZ"
@@ -43,24 +39,25 @@ def load_data_from_sheets():
             continue
         
         headers = values[0]
-        df = pd.DataFrame(values[1:], columns=headers)
+        data = values[1:]
         
-        # Reindex the dataframe with all_columns
-        df = df.reindex(columns=all_columns)
+        # Adjust data to match headers
+        adjusted_data = adjust_data_to_headers(headers, data)
         
-        # Add 'Current Step' column
+        df = pd.DataFrame(adjusted_data, columns=headers)
         df['Current Step'] = sheet_name
-        
-        data_frames.append(df)
+        all_data.append(df)
     
-    # Combine all dataframes
-    combined_data = pd.concat(data_frames, ignore_index=True)
+    if not all_data:
+        return None
     
-    # Create 'Student Name' column
+    combined_data = pd.concat(all_data, ignore_index=True)
+    
+    # Create 'Student Name' column if possible
     if 'First Name' in combined_data.columns and 'Last Name' in combined_data.columns:
         combined_data['Student Name'] = combined_data['First Name'].astype(str) + " " + combined_data['Last Name'].astype(str)
     
-    combined_data.dropna(subset=['Student Name'], inplace=True)
+    combined_data.dropna(subset=['Student Name'], inplace=True, errors='ignore')
     combined_data.dropna(how='all', inplace=True)
     combined_data.drop_duplicates(subset='Student Name', keep='last', inplace=True)
     combined_data.reset_index(drop=True, inplace=True)
@@ -86,7 +83,8 @@ def calculate_days_until_interview(interview_date):
         return days_remaining
     except Exception as e:
         return None
-        
+
+# Set page config
 st.set_page_config(page_title="Student Application Tracker", layout="wide")
 
 # Custom CSS (unchanged)
@@ -195,6 +193,4 @@ except Exception as e:
 # Footer
 st.markdown("---")
 st.markdown("© 2024 The Us House. All rights reserved.")
-
-
 
