@@ -359,7 +359,7 @@ def main():
         col1, col2 = st.columns([2, 3])
         
         with col1:
-            status_filter = st.selectbox("Filter by status", current_steps, key="status_filter")        # Apply filter based on status
+            status_filter = st.selectbox("📂 Filter by status", current_steps, key="status_filter")        # Apply filter based on status
         filtered_data = data if status_filter == "All" else data[data['Current Step'] == status_filter]
         
         # Extract list of student names from filtered data
