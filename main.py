@@ -5,7 +5,6 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
 
-
 st.set_page_config(page_title="Student Application Tracker", layout="wide")
 
 # Custom CSS
@@ -80,8 +79,8 @@ def load_data_from_sheets():
         st.error("No data found in the Google Sheet.")
         return None
     
-    # Use the first row as column names
-    columns = data[0]
+    # Use the first row as column names and match with actual data length
+    columns = data[0][:len(data[1])]
     
     # Create DataFrame with dynamic column names
     df = pd.DataFrame(data[1:], columns=columns)
