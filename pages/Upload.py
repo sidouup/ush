@@ -273,27 +273,177 @@ def main():
         # Custom CSS (keep your existing styles and add styles for the 3D progress bar)
     st.markdown("""
     <style>
-    .progress-container {
-        width: 100%;
-        background-color: #f0f0f0;
-        padding: 3px;
-        border-radius: 30px;
-        box-shadow: inset 0 1px 3px rgba(0, 0, 0, .2);
-    }
+        /* Main container and background */
+        .main .block-container {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+            padding-left: 5rem;
+            padding-right: 5rem;
+        }
     
-    .progress-bar {
-        width: 0%;
-        height: 25px;
-        background-image: linear-gradient(to right, #4CAF50, #45a049);
-        border-radius: 30px;
-        transition: width 0.5s ease-in-out;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: bold;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    }
+        .stApp {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+    
+        /* Headers */
+        h1, h2, h3 {
+            color: #2c3e50;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+    
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+    
+        h2 {
+            font-size: 2rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+    
+        h3 {
+            font-size: 1.5rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+    
+        /* Streamlit elements styling */
+        .stTextInput > div > div > input,
+        .stSelectbox > div > div > select {
+            background-color: white;
+            color: #2c3e50;
+            border-radius: 5px;
+            border: 1px solid #bdc3c7;
+            padding: 0.5rem;
+            font-size: 1rem;
+        }
+    
+        .stTextInput > div > div > input:focus,
+        .stSelectbox > div > div > select:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+    
+        .stButton > button {
+            background-color: #3498db;
+            color: white;
+            font-weight: 600;
+            border-radius: 5px;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+    
+        .stButton > button:hover {
+            background-color: #2980b9;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    
+        /* Progress bar styling */
+        .progress-container {
+            width: 100%;
+            background-color: #ecf0f1;
+            padding: 3px;
+            border-radius: 30px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, .2);
+            margin-bottom: 1rem;
+        }
+        
+        .progress-bar {
+            height: 25px;
+            background-image: linear-gradient(to right, #3498db, #2980b9);
+            border-radius: 30px;
+            transition: width 0.5s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+    
+        /* Tabs styling */
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 1rem;
+        }
+    
+        .stTabs [data-baseweb="tab"] {
+            background-color: #f8f9fa;
+            border-radius: 5px 5px 0 0;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+        }
+    
+        .stTabs [aria-selected="true"] {
+            background-color: white;
+            border-top: 3px solid #3498db;
+        }
+    
+        /* Document status styling */
+        .document-item {
+            background-color: white;
+            border-radius: 5px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+        }
+    
+        .status-icon {
+            font-size: 1.2rem;
+            margin-right: 0.75rem;
+        }
+    
+        .document-name {
+            flex-grow: 1;
+            font-weight: 500;
+        }
+    
+        .file-link {
+            color: #3498db;
+            text-decoration: none;
+            margin-left: 0.5rem;
+            font-weight: 500;
+        }
+    
+        .file-link:hover {
+            text-decoration: underline;
+        }
+    
+        .delete-button {
+            color: #e74c3c;
+            cursor: pointer;
+            margin-left: 0.5rem;
+            font-weight: bold;
+        }
+    
+        /* Metrics styling */
+        [data-testid="stMetricValue"] {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+    
+        [data-testid="stMetricLabel"] {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #7f8c8d;
+        }
+    
+        /* Footer */
+        footer {
+            margin-top: 3rem;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
     </style>
     """, unsafe_allow_html=True)
 
