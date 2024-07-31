@@ -268,7 +268,8 @@ def check_file_exists_in_folder(folder_id):
 
 # Main function
 def main():
-    
+    st.set_page_config(page_title="Student Application Tracker", layout="wide")
+
 
     st.markdown("""
     <style>
@@ -340,11 +341,12 @@ def main():
     """, unsafe_allow_html=True)
 
     st.markdown("""
-    <div class="stCard" style="display: flex; align-items: center; justify-content: space-between;">
+    <div class="stCard" style="text-align: center;">
         <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=297,h=404,fit=crop/YBgonz9JJqHRMK43/blue-red-minimalist-high-school-logo-9-AVLN0K6MPGFK2QbL.png" width="150" height="150">
-        <h1>Student Application Tracker</h1>
+        <h1>The Us House</h1>
     </div>
     """, unsafe_allow_html=True)
+
 
     spreadsheet_id = "1NPc-dQ7uts1c1JjNoABBou-uq2ixzUTiSBTB8qlTuOQ"
     data = load_data(spreadsheet_id)
