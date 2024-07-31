@@ -17,11 +17,12 @@ credentials_dict = {
     "client_x509_cert_url": st.secrets["gcp_service_account"]["client_x509_cert_url"]
 }
 
-credentials = Credentials.from_service_account_info(credentials_dict)
+scope = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
+credentials = Credentials.from_service_account_info(credentials_dict, scopes=scope)
 client = gspread.authorize(credentials)
 
 # URL to the Google Sheet
-sheet_url = st.secrets["private_gsheets_url"]
+sheet_url = st.secrets["private_gsheets_url"]["url"]
 spreadsheet = client.open_by_url(sheet_url)
 
 # Get all the worksheets in the spreadsheet
