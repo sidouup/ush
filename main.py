@@ -17,11 +17,7 @@ def load_and_combine_data(sheet_id, credentials):
         sheet_name = sheet['properties']['title']
         result = service.spreadsheets().values().get(spreadsheetId=sheet_id, range=sheet_name).execute()
         values = result.get('values', [])
-        if not values:
-            continue
-
-        # Ensure that the values contain at least two rows (one for headers and one for data)
-        if len(values) < 2:
+        if not values or len(values) < 2:
             continue
         
         headers = values[0]
@@ -29,11 +25,22 @@ def load_and_combine_data(sheet_id, credentials):
 
         # Ensure each row has the same number of columns as the headers
         data = [row for row in data if len(row) == len(headers)]
-        
+
+        # Create DataFrame and filter necessary columns
         df = pd.DataFrame(data, columns=headers)
-        df['Student Name'] = df.iloc[:, 1].astype(str) + " " + df.iloc[:, 2].astype(str)
+
+        # Add missing columns if necessary
+        required_columns = ['First Name', 'Last Name', 'Phone N°', 'E-mail', 'Emergency contact N°', 
+                            'Attempts', 'Address', 'Chosen School', 'Duration', 'School Entry Date', 
+                            'Entry Date in the US', 'ADDRESS in the U.S', 'E-MAIL RDV', 'PASSWORD RDV', 
+                            'EMBASSY ITW. DATE', 'DS-160 maker', 'Password DS-160', 'Secret Q.', 'Visa Result', 
+                            'DATE', 'Payment Method ', 'Sevis payment ?', 'Application payment ?']
+        for col in required_columns:
+            if col not in df.columns:
+                df[col] = None
+
+        df['Student Name'] = df['First Name'].astype(str) + " " + df['Last Name'].astype(str)
         df.dropna(subset=['Student Name'], inplace=True)
-        df.dropna(how='all', inplace=True)
         df['Current Step'] = sheet_name
         combined_data = pd.concat([combined_data, df], ignore_index=True)
     
@@ -97,15 +104,15 @@ st.markdown("""
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
     .stMetric .metric-label {
-        font-weight: bold;
+        font-weight: bold.
     }
     .stButton>button {
         background-color: #ff7f50;
-        color: white;
-        font-weight: bold;
+        color: white.
+        font-weight: bold.
     }
     .stButton>button:hover {
-        background-color: #ff6347;
+        background-color: #ff6347.
     }
 </style>
 """, unsafe_allow_html=True)
@@ -164,7 +171,7 @@ if not filtered_data.empty:
             st.write(selected_student[['Chosen School', 'Duration', 'School Entry Date', 'Entry Date in the US']])
         
         with st.expander("🏛️ Embassy Information", expanded=True):
-            st.write(selected_student[['ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV', 'EMBASSY ITW. DATE', 'DS-160 maker', 'Password DS-160', 'Secret Q.']])
+            st.write(selected_student[['ADDRESS in the U.S', 'E-MAIL RDV', 'PASSWORD RDV', 'EMBASSY ITW. DATE', 'DS-160 maker', 'Password DS-160', 'Secret Q.']])
     
     with col2:
         st.subheader("Application Status")
@@ -187,7 +194,7 @@ if not filtered_data.empty:
         
         # Payment Information
         with st.expander("💰 Payment Information", expanded=True):
-            st.write(selected_student[['DATE','Payment Method ', 'Sevis payment ? ', 'Application payment ?']])
+            st.write(selected_student[['DATE','Payment Method ', 'Sevis payment ?', 'Application payment ?']])
 else:
     st.info("No students found matching the search criteria.")
 
