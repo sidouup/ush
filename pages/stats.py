@@ -149,12 +149,15 @@ def statistics_page():
         # Time series chart of payments over time
         st.subheader("Payments Over Time")
         data['DATE'] = pd.to_datetime(data['DATE'], errors='coerce')
-        data['Month_Year'] = data['DATE'].dt.to_period('M')
+        data['Month_Year'] = data['DATE'].dt.to_period('M').astype(str)
         payments_over_time = data.groupby('Month_Year').size()
         payments_chart = px.line(payments_over_time, labels={'index': 'Date', 'value': 'Number of Payments'})
         st.plotly_chart(payments_chart)
     else:
         st.error("No data available. Please check your Google Sheets connection and data.")
+
+if __name__ == "__main__":
+    statistics_page()
 
 if __name__ == "__main__":
     statistics_page()
