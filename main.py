@@ -4,43 +4,47 @@ from datetime import datetime
 import plotly.express as px
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
+import io
 
-# Function to load and combine data from all sheets in Google Sheets
-def load_and_combine_data(sheet_id, credentials):
+# Function to load data from Google Sheets and return it as an Excel file in-memory
+def load_google_sheets_to_excel(sheet_id, credentials):
     service = build("sheets", "v4", credentials=credentials)
     sheet_metadata = service.spreadsheets().get(spreadsheetId=sheet_id).execute()
     sheets = sheet_metadata.get('sheets', '')
     
+    output = io.BytesIO()
+    
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        for sheet in sheets:
+            sheet_name = sheet['properties']['title']
+            result = service.spreadsheets().values().get(spreadsheetId=sheet_id, range=sheet_name).execute()
+            values = result.get('values', [])
+            if not values or len(values) < 2:
+                continue
+            
+            headers = values[0]
+            data = values[1:]
+
+            # Ensure each row has the same number of columns as the headers
+            data = [row for row in data if len(row) == len(headers)]
+
+            # Create DataFrame and write to Excel
+            df = pd.DataFrame(data, columns=headers)
+            df.to_excel(writer, sheet_name=sheet_name, index=False)
+    
+    output.seek(0)
+    return output
+
+# Function to load and combine data from all sheets in the provided Excel file
+def load_and_combine_data(excel_file):
+    xls = pd.ExcelFile(excel_file)
     combined_data = pd.DataFrame()
     
-    for sheet in sheets:
-        sheet_name = sheet['properties']['title']
-        result = service.spreadsheets().values().get(spreadsheetId=sheet_id, range=sheet_name).execute()
-        values = result.get('values', [])
-        if not values or len(values) < 2:
-            continue
-        
-        headers = values[0]
-        data = values[1:]
-
-        # Ensure each row has the same number of columns as the headers
-        data = [row for row in data if len(row) == len(headers)]
-
-        # Create DataFrame and filter necessary columns
-        df = pd.DataFrame(data, columns=headers)
-
-        # Add missing columns if necessary
-        required_columns = ['First Name', 'Last Name', 'Phone N°', 'E-mail', 'Emergency contact N°', 
-                            'Attempts', 'Address', 'Chosen School', 'Duration', 'School Entry Date', 
-                            'Entry Date in the US', 'ADDRESS in the U.S', 'E-MAIL RDV', 'PASSWORD RDV', 
-                            'EMBASSY ITW. DATE', 'DS-160 maker', 'Password DS-160', 'Secret Q.', 'Visa Result', 
-                            'DATE', 'Payment Method ', 'Sevis payment ?', 'Application payment ?']
-        for col in required_columns:
-            if col not in df.columns:
-                df[col] = None
-
-        df['Student Name'] = df['First Name'].astype(str) + " " + df['Last Name'].astype(str)
+    for sheet_name in xls.sheet_names:
+        df = pd.read_excel(excel_file, sheet_name=sheet_name)
+        df['Student Name'] = df.iloc[:, 1].astype(str) + " " + df.iloc[:, 2].astype(str)
         df.dropna(subset=['Student Name'], inplace=True)
+        df.dropna(how='all', inplace=True)
         df['Current Step'] = sheet_name
         combined_data = pd.concat([combined_data, df], ignore_index=True)
     
@@ -104,15 +108,15 @@ st.markdown("""
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
     .stMetric .metric-label {
-        font-weight: bold.
+        font-weight: bold;
     }
     .stButton>button {
         background-color: #ff7f50;
-        color: white.
-        font-weight: bold.
+        color: white;
+        font-weight: bold;
     }
     .stButton>button:hover {
-        background-color: #ff6347.
+        background-color: #ff6347;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -132,8 +136,11 @@ credentials = service_account.Credentials.from_service_account_info(
 )
 sheet_id = st.secrets["private_gsheets_url"].split("/")[5]
 
-# Load and combine data from all sheets
-data = load_and_combine_data(sheet_id, credentials)
+# Load and transform data from Google Sheets into an Excel file in-memory
+excel_file = load_google_sheets_to_excel(sheet_id, credentials)
+
+# Load and combine data from the in-memory Excel file
+data = load_and_combine_data(excel_file)
 
 # Combined search and selection functionality
 st.header("👤 Student Search and Details")
