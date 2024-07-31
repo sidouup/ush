@@ -335,11 +335,6 @@ def main():
             )
             
             selected_student = filtered_data.iloc[selected_index]
-            document_status = check_document_status(student_name)
-            st.subheader("Document Status")
-            for doc_type, status in document_status.items():
-                color = "green" if status else "red"
-                st.write(f"{doc_type}: <span style='color:{color};'>{'✔️' if status else '❌'}</span>", unsafe_allow_html=True)
 
             col1, col2 = st.columns([2, 1])
             with col1:
@@ -352,6 +347,11 @@ def main():
                     emergency_contact = st.text_input("Emergency Contact Number", selected_student['Emergency contact N°'], key="emergency_contact")
                     address = st.text_input("Address", selected_student['Address'], key="address")
                     attempts = st.text_input("Attempts", selected_student['Attempts'], key="attempts")
+                document_status = check_document_status(student_name)
+                st.subheader("Document Status")
+                for doc_type, status in document_status.items():
+                    color = "green" if status else "red"
+                    st.write(f"{doc_type}: <span style='color:{color};'>{'✔️' if status else '❌'}</span>", unsafe_allow_html=True)
 
                 
                 with st.expander("🏫 School Information", expanded=True):
