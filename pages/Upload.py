@@ -385,10 +385,39 @@ def main():
                     'PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 
                     'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'SEVIS', 'CLIENTS '
                 ]
-                current_step=selected_student['Current Step']
+                
+                # Calculate the current step and progress
+                current_step = selected_student['Current Step']
                 step_index = steps.index(current_step) if current_step in steps else 0
                 progress = (step_index + 1) / len(steps)
-                st.progress(progress)
+                
+                # HTML and CSS for a custom progress bar
+                progress_html = f"""
+                <style>
+                .progress-container {{
+                  width: 100%;
+                  background-color: #f3f3f3;
+                  border-radius: 25px;
+                  overflow: hidden;
+                }}
+                
+                .progress-bar {{
+                  width: {progress * 100}%;
+                  height: 30px; /* Adjust height to make it bigger */
+                  background-color: green; /* Custom green color */
+                  text-align: center;
+                  line-height: 30px; /* Center text vertically */
+                  color: white;
+                  border-radius: 25px; /* Rounded edges */
+                }}
+                </style>
+                <div class="progress-container">
+                  <div class="progress-bar">{int(progress * 100)}%</div>
+                </div>
+                """
+                
+                # Display the custom progress bar
+                st.components.v1.html(progress_html, height=50)  # Adjust height to fit the larger progress bar
 
                 
                 visa_status = st.selectbox(
