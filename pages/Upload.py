@@ -388,38 +388,61 @@ def main():
                     st.write(f"**Entry Date in the US:** {selected_student['Entry Date in the US']}")
         
         with col2:
-            with st.expander("🏛️ Embassy Information", expanded=True):
-                if edit_mode:
-                    address_us = st.text_input("Address in the U.S", selected_student['ADDRESS in the U.S'], key="address_us")
-                    email_rdv = st.text_input("E-mail RDV", selected_student[' E-MAIL RDV'], key="email_rdv")
-                    password_rdv = st.text_input("Password RDV", selected_student['PASSWORD RDV'], key="password_rdv")
-                    embassy_itw_date = st.text_input("Embassy Interview Date", selected_student['EMBASSY ITW. DATE'], key="embassy_itw_date")
-                    ds160_maker = st.text_input("DS-160 Maker", selected_student['DS-160 maker'], key="ds160_maker")
-                    password_ds160 = st.text_input("Password DS-160", selected_student['Password DS-160'], key="password_ds160")
-                    secret_q = st.text_input("Secret Question", selected_student['Secret Q.'], key="secret_q")
-                else:
-                    st.write(f"**Address in the U.S:** {selected_student['ADDRESS in the U.S']}")
-                    st.write(f"**E-mail RDV:** {selected_student[' E-MAIL RDV']}")
-                    st.write(f"**Password RDV:** {selected_student['PASSWORD RDV']}")
-                    st.write(f"**Embassy Interview Date:** {selected_student['EMBASSY ITW. DATE']}")
-                    st.write(f"**DS-160 Maker:** {selected_student['DS-160 maker']}")
-                    st.write(f"**Password DS-160:** {selected_student['Password DS-160']}")
-                    st.write(f"**Secret Question:** {selected_student['Secret Q.']}")
+            # Application Status
+            st.subheader("Application Status")
+            steps = [
+                'PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 
+                'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'SEVIS', 'CLIENTS '
+            ]
             
-            with st.expander("💰 Payment Information", expanded=True):
-                if edit_mode:
-                    payment_date = st.text_input("Payment Date", selected_student['DATE'], key="payment_date")
-                    payment_method = st.text_input("Payment Method", selected_student['Payment Method '], key="payment_method")
-                    sevis_payment = st.text_input("Sevis Payment", selected_student['Sevis payment ? '], key="sevis_payment")
-                    application_payment = st.text_input("Application Payment", selected_student['Application payment ?'], key="application_payment")
-                else:
-                    st.write(f"**Payment Date:** {selected_student['DATE']}")
-                    st.write(f"**Payment Method:** {selected_student['Payment Method ']}")
-                    st.write(f"**Sevis Payment:** {selected_student['Sevis payment ? ']}")
-                    st.write(f"**Application Payment:** {selected_student['Application payment ?']}")
-
-            # Application Status (remains unchanged)
-            # ... (code for application status)
+            current_step = selected_student['Current Step']
+            step_index = steps.index(current_step) if current_step in steps else 0
+            progress = (step_index + 1) / len(steps)
+            
+            progress_html = f"""
+            <style>
+            .progress-container {{
+              width: 100%;
+              background-color: #f3f3f3;
+              border-radius: 25px;
+              overflow: hidden;
+            }}
+            
+            .progress-bar {{
+              width: {progress * 100}%;
+              height: 30px;
+              background-color: green;
+              text-align: center;
+              line-height: 30px;
+              color: white;
+              border-radius: 25px;
+            }}
+            </style>
+            <div class="progress-container">
+              <div class="progress-bar">{int(progress * 100)}%</div>
+            </div>
+            """
+            
+            st.components.v1.html(progress_html, height=50)
+            
+            if edit_mode:
+                visa_status = st.selectbox(
+                    "Visa Status",
+                    ['Denied', 'Approved', 'Not our school partner', 'Unknown'],
+                    index=['Denied', 'Approved', 'Not our school partner', 'Unknown'].index(get_visa_status(selected_student.get('Visa Result', 'Unknown'))),
+                    key="visa_status"
+                )
+                current_step = st.selectbox("Current Step", steps, index=step_index, key="current_step")
+            else:
+                st.write(f"**Visa Status:** {get_visa_status(selected_student.get('Visa Result', 'Unknown'))}")
+                st.write(f"**Current Step:** {selected_student['Current Step']}")
+            
+            interview_date = selected_student['EMBASSY ITW. DATE']
+            days_remaining = calculate_days_until_interview(interview_date)
+            if days_remaining is not None:
+                st.metric("Days until interview", days_remaining)
+            else:
+                st.metric("Days until interview", "N/A")
 
         with col3:
             st.subheader("📂 Document Upload")
@@ -470,6 +493,11 @@ def main():
             .file-link:hover {
                 text-decoration: underline;
             }
+            .delete-button {
+                color: red;
+                cursor: pointer;
+                margin-left: 5px;
+            }
             </style>
             """, unsafe_allow_html=True)
     
@@ -481,20 +509,51 @@ def main():
                 <div class='document-item'>
                     <span class='status-icon'>{icon}</span>
                     <span class='document-name'>{doc_type}</span>
-                    {"".join([f"<a href='{file['webViewLink']}' target='_blank' class='file-link'>{file['name']}</a>" for file in status_info['files']])}
+                    {"".join([f"<a href='{file['webViewLink']}' target='_blank' class='file-link'>{file['name']}</a><span class='delete-button' onclick='deleteFile(\"{file['id']}\")'>🗑️</span>" for file in status_info['files']])}
                 </div>
                 """, unsafe_allow_html=True)
-                
-                # Add delete buttons for each file
-                for file in status_info['files']:
-                    if st.button(f"Delete {file['name']}", key=f"delete_{file['id']}"):
-                        if delete_file_from_drive(file['id']):
-                            st.success(f"{file['name']} deleted successfully!")
-                            st.experimental_rerun()
-                        else:
-                            st.error(f"Failed to delete {file['name']}")
-                
             st.markdown("</div>", unsafe_allow_html=True)
+
+            # JavaScript for delete functionality
+            st.markdown("""
+            <script>
+            function deleteFile(fileId) {
+                if (confirm('Are you sure you want to delete this file?')) {
+                    fetch('/delete_file', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({file_id: fileId}),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('File deleted successfully');
+                            location.reload();
+                        } else {
+                            alert('Failed to delete file');
+                        }
+                    });
+                }
+            }
+            </script>
+            """, unsafe_allow_html=True)
+
+        if edit_mode and st.button("Save Changes"):
+            updated_student = {
+                # ... (include all fields from the form)
+                'Visa Result': visa_status,
+                'Current Step': current_step,
+                # ... (other fields remain the same)
+            }
+            
+            for key, value in updated_student.items():
+                data.at[selected_index, key] = value
+
+            save_data(data, spreadsheet_id, selected_student['Current Step'])
+            st.success("Changes saved successfully!")
+
 
         if edit_mode and st.button("Save Changes"):
             updated_student = {
