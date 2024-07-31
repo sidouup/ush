@@ -270,203 +270,110 @@ def check_file_exists_in_folder(folder_id):
 def main():
     st.set_page_config(page_title="Student Application Tracker", layout="wide")
 
-        # Custom CSS (keep your existing styles and add styles for the 3D progress bar)
     st.markdown("""
     <style>
-        /* Main container and background */
-        .main .block-container {
-            padding-top: 2rem;
-            padding-bottom: 2rem;
-            padding-left: 5rem;
-            padding-right: 5rem;
-        }
+    /* Main container and background */
+    .main .block-container {
+        padding: 2rem;
+        max-width: 90%;
+    }
+
+    .stApp {
+        background-color: #f0f2f5;
+    }
+
+    /* Card styling */
+    .stCard {
+        background-color: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+    }
+
+    /* Headers */
+    h1, h2, h3 {
+        color: #1a237e;
+        font-family: 'Helvetica Neue', Arial, sans-serif;
+        font-weight: 700;
+    }
+
+    /* Progress bar styling */
+    .progress-container {
+        width: 100%;
+        background-color: #e0e0e0;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+    }
     
-        .stApp {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        }
-    
-        /* Headers */
-        h1, h2, h3 {
-            color: #2c3e50;
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
-    
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 1.5rem;
-        }
-    
-        h2 {
-            font-size: 2rem;
-            margin-top: 2rem;
-            margin-bottom: 1rem;
-        }
-    
-        h3 {
-            font-size: 1.5rem;
-            margin-top: 1.5rem;
-            margin-bottom: 0.75rem;
-        }
-    
-        /* Streamlit elements styling */
-        .stTextInput > div > div > input,
-        .stSelectbox > div > div > select {
-            background-color: white;
-            color: #2c3e50;
-            border-radius: 5px;
-            border: 1px solid #bdc3c7;
-            padding: 0.5rem;
-            font-size: 1rem;
-        }
-    
-        .stTextInput > div > div > input:focus,
-        .stSelectbox > div > div > select:focus {
-            border-color: #3498db;
-            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
-        }
-    
-        .stButton > button {
-            background-color: #3498db;
-            color: white;
-            font-weight: 600;
-            border-radius: 5px;
-            border: none;
-            padding: 0.5rem 1rem;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-    
-        .stButton > button:hover {
-            background-color: #2980b9;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-    
-        /* Progress bar styling */
-        .progress-container {
-            width: 100%;
-            background-color: #ecf0f1;
-            padding: 3px;
-            border-radius: 30px;
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, .2);
-            margin-bottom: 1rem;
-        }
-        
-        .progress-bar {
-            height: 25px;
-            background-image: linear-gradient(to right, #3498db, #2980b9);
-            border-radius: 30px;
-            transition: width 0.5s ease-in-out;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 0.9rem;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-    
-        /* Tabs styling */
-        .stTabs [data-baseweb="tab-list"] {
-            gap: 1rem;
-        }
-    
-        .stTabs [data-baseweb="tab"] {
-            background-color: #f8f9fa;
-            border-radius: 5px 5px 0 0;
-            padding: 0.5rem 1rem;
-            font-weight: 600;
-        }
-    
-        .stTabs [aria-selected="true"] {
-            background-color: white;
-            border-top: 3px solid #3498db;
-        }
-    
-        /* Document status styling */
-        .document-item {
-            background-color: white;
-            border-radius: 5px;
-            padding: 0.75rem;
-            margin-bottom: 0.5rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            display: flex;
-            align-items: center;
-        }
-    
-        .status-icon {
-            font-size: 1.2rem;
-            margin-right: 0.75rem;
-        }
-    
-        .document-name {
-            flex-grow: 1;
-            font-weight: 500;
-        }
-    
-        .file-link {
-            color: #3498db;
-            text-decoration: none;
-            margin-left: 0.5rem;
-            font-weight: 500;
-        }
-    
-        .file-link:hover {
-            text-decoration: underline;
-        }
-    
-        .delete-button {
-            color: #e74c3c;
-            cursor: pointer;
-            margin-left: 0.5rem;
-            font-weight: bold;
-        }
-    
-        /* Metrics styling */
-        [data-testid="stMetricValue"] {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #2c3e50;
-        }
-    
-        [data-testid="stMetricLabel"] {
-            font-size: 1rem;
-            font-weight: 500;
-            color: #7f8c8d;
-        }
-    
-        /* Footer */
-        footer {
-            margin-top: 3rem;
-            text-align: center;
-            color: #7f8c8d;
-            font-size: 0.9rem;
-        }
+    .progress-bar {
+        height: 20px;
+        background-color: #4caf50;
+        border-radius: 10px;
+        transition: width 0.5s ease-in-out;
+        text-align: center;
+        line-height: 20px;
+        color: white;
+        font-weight: bold;
+    }
+
+    /* Input fields and buttons */
+    .stTextInput > div > div > input,
+    .stSelectbox > div > div > select {
+        background-color: #f5f5f5;
+        border: 1px solid #e0e0e0;
+        border-radius: 5px;
+        padding: 0.5rem;
+    }
+
+    .stButton > button {
+        background-color: #1a237e;
+        color: white;
+        border-radius: 5px;
+        border: none;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+    }
+
+    /* Tabs styling */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 10px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        height: 50px;
+        background-color: #f5f5f5;
+        border-radius: 5px 5px 0 0;
+        color: #1a237e;
+        font-weight: 600;
+    }
+
+    .stTabs [aria-selected="true"] {
+        background-color: white;
+        border-top: 3px solid #1a237e;
+    }
     </style>
     """, unsafe_allow_html=True)
 
-    st.markdown("""
-        <div style="display: flex; align-items: center;">
-            <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=297,h=404,fit=crop/YBgonz9JJqHRMK43/blue-red-minimalist-high-school-logo-9-AVLN0K6MPGFK2QbL.png" style="margin-right: 10px; width: 50px; height: auto;">
-            <h1 style="color: #1E3A8A;">Student Application Tracker</h1>
-        </div>
-        """, unsafe_allow_html=True)
+    # App header
+    st.markdown('<div class="stCard"><h1>Student Application Tracker</h1></div>', unsafe_allow_html=True)
 
     spreadsheet_id = "1NPc-dQ7uts1c1JjNoABBou-uq2ixzUTiSBTB8qlTuOQ"
     data = load_data(spreadsheet_id)
 
     if not data.empty:
-        st.header("👤 Student Search and Details")
+        # Search and filter section
+        st.markdown('<div class="stCard">', unsafe_allow_html=True)
         col1, col2, col3 = st.columns([2,1,1])
         with col1:
             search_query = st.text_input("🔍 Search for a student (First or Last Name)", key="search_query")
         with col2:
             status_filter = st.selectbox("Filter by status", ["All"] + list(data['Current Step'].unique()), key="status_filter")
         with col3:
-            search_button = st.button("Search", key="search_button", help="Click to search")
-        
+            search_button = st.button("Search", key="search_button")
+        st.markdown('</div>', unsafe_allow_html=True)
+
         filtered_data = data
         if search_query and search_button:
             filtered_data = filtered_data[filtered_data['Student Name'].str.contains(search_query, case=False, na=False)]
@@ -474,6 +381,7 @@ def main():
             filtered_data = filtered_data[filtered_data['Current Step'] == status_filter]
 
         if not filtered_data.empty:
+            st.markdown('<div class="stCard">', unsafe_allow_html=True)
             selected_index = st.selectbox(
                 "Select a student to view details",
                 range(len(filtered_data)),
@@ -486,6 +394,7 @@ def main():
 
             edit_mode = st.toggle("Edit Mode", value=False)
         
+            # Application Status
             st.subheader("Application Status")
             steps = ['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'SEVIS', 'CLIENTS ']
             current_step = selected_student['Current Step']
@@ -499,7 +408,7 @@ def main():
                 </div>
             </div>
             """
-            st.components.v1.html(progress_bar, height=40)
+            st.markdown(progress_bar, unsafe_allow_html=True)
             st.write(f"Current Step: {current_step}")
 
             if edit_mode:
@@ -519,11 +428,13 @@ def main():
                 st.metric("Days until interview", days_remaining)
             else:
                 st.metric("Days until interview", "N/A")
+            st.markdown('</div>', unsafe_allow_html=True)
 
-            # Create tabs for different information categories
+            # Tabs for student information
             tab1, tab2, tab3, tab4 = st.tabs(["Personal", "School", "Embassy", "Payment"])
             
             with tab1:
+                st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("📋 Personal Information")
                 if edit_mode:
                     first_name = st.text_input("First Name", selected_student['First Name'], key="first_name")
@@ -541,8 +452,10 @@ def main():
                     st.write(f"**Emergency Contact Number:** {selected_student['Emergency contact N°']}")
                     st.write(f"**Address:** {selected_student['Address']}")
                     st.write(f"**Attempts:** {selected_student['Attempts']}")
+                st.markdown('</div>', unsafe_allow_html=True)
             
             with tab2:
+                st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("🏫 School Information")
                 if edit_mode:
                     chosen_school = st.text_input("Chosen School", selected_student['Chosen School'], key="chosen_school")
@@ -554,8 +467,10 @@ def main():
                     st.write(f"**Duration:** {selected_student['Duration']}")
                     st.write(f"**School Entry Date:** {selected_student['School Entry Date']}")
                     st.write(f"**Entry Date in the US:** {selected_student['Entry Date in the US']}")
+                st.markdown('</div>', unsafe_allow_html=True)
             
             with tab3:
+                st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("🏛️ Embassy Information")
                 if edit_mode:
                     address_us = st.text_input("Address in the U.S", selected_student['ADDRESS in the U.S'], key="address_us")
@@ -573,8 +488,10 @@ def main():
                     st.write(f"**DS-160 Maker:** {selected_student['DS-160 maker']}")
                     st.write(f"**Password DS-160:** {selected_student['Password DS-160']}")
                     st.write(f"**Secret Question:** {selected_student['Secret Q.']}")
+                st.markdown('</div>', unsafe_allow_html=True)
             
             with tab4:
+                st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("💰 Payment Information")
                 if edit_mode:
                     payment_date = st.text_input("Payment Date", selected_student['DATE'], key="payment_date")
@@ -586,8 +503,9 @@ def main():
                     st.write(f"**Payment Method:** {selected_student['Payment Method ']}")
                     st.write(f"**Sevis Payment:** {selected_student['Sevis payment ? ']}")
                     st.write(f"**Application Payment:** {selected_student['Application payment ?']}")
+                st.markdown('</div>', unsafe_allow_html=True)
 
-
+            st.markdown('<div class="stCard">', unsafe_allow_html=True)
             st.subheader("📂 Document Upload and Status")
             col1, col2 = st.columns(2)
             with col1:
@@ -610,41 +528,13 @@ def main():
                 for doc_type, status_info in document_status.items():
                     icon = "✅" if status_info['status'] else "❌"
                     st.markdown(f"""
-                    <div class='document-item'>
-                        <span class='status-icon'>{icon}</span>
-                        <span class='document-name'>{doc_type}</span>
-                        {"".join([f"<a href='{file['webViewLink']}' target='_blank' class='file-link'>{file['name']}</a><span class='delete-button' onclick='deleteFile(&quot;{file['id']}&quot;)'>🗑️</span>" for file in status_info['files']])}
+                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                        <span style="font-size: 20px; margin-right: 10px;">{icon}</span>
+                        <span style="flex-grow: 1;">{doc_type}</span>
+                        {"".join([f'<a href="{file["webViewLink"]}" target="_blank" style="margin-left: 10px;">View</a><button onclick="deleteFile(\'{file["id"]}\')">🗑️</button>' for file in status_info['files']])}
                     </div>
                     """, unsafe_allow_html=True)
-            # Add JavaScript for file deletion
-            st.markdown("""
-            <script>
-            function deleteFile(fileId) {
-                if (confirm('Are you sure you want to delete this file?')) {
-                    fetch('/delete_file', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({file_id: fileId}),
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert('File deleted successfully');
-                            location.reload();
-                        } else {
-                            alert('Failed to delete file: ' + data.error);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('An error occurred while deleting the file');
-                    });
-                }
-            }
-            </script>
-            """, unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
             if edit_mode and st.button("Save Changes"):
                 updated_student = {
