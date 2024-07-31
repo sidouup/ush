@@ -7,53 +7,14 @@ from google.oauth2.service_account import Credentials
 
 st.set_page_config(page_title="Student Application Tracker", layout="wide")
 
-# Custom CSS
+# Custom CSS (unchanged)
 st.markdown("""
 <style>
-    .reportview-container {
-        background: #f0f2f6;
-    }
-    .main .block-container {
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-    }
-    h1, h2, h3 {
-        color: #1E3A8A;
-    }
-    .stSelectbox, .stTextInput {
-        background-color: white;
-        color: #2c3e50;
-        border-radius: 5px;
-    }
-    .stExpander {
-        background-color: white;
-        border-radius: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    .css-1544g2n {
-        padding: 2rem;
-    }
-    .stMetric {
-        background-color: #f8f9fa;
-        border-radius: 10px;
-        padding: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-    .stMetric .metric-label {
-        font-weight: bold;
-    }
-    .stButton>button {
-        background-color: #ff7f50;
-        color: white;
-        font-weight: bold;
-    }
-    .stButton>button:hover {
-        background-color: #ff6347;
-    }
+    /* ... (keep the existing CSS) ... */
 </style>
 """, unsafe_allow_html=True)
 
-# Main title with logo
+# Main title with logo (unchanged)
 st.markdown("""
     <div style="display: flex; align-items: center;">
         <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=297,h=404,fit=crop/YBgonz9JJqHRMK43/blue-red-minimalist-high-school-logo-9-AVLN0K6MPGFK2QbL.png" style="margin-right: 10px; width: 50px; height: auto;">
@@ -79,23 +40,8 @@ def load_data_from_sheets():
         st.error("No data found in the Google Sheet.")
         return None
     
-    # Use the first row as column names and match with actual data length
-    columns = data[0][:len(data[1])]
-    
-    # Create DataFrame with dynamic column names
+    columns = data[0]
     df = pd.DataFrame(data[1:], columns=columns)
-    
-    # Display information about the DataFrame
-    st.write(f"Columns in the sheet: {', '.join(columns)}")
-    st.write(f"Number of columns: {len(columns)}")
-    st.write(f"Number of rows: {len(df)}")
-    
-    # Check if 'First Name' and 'Last Name' columns exist
-    if 'First Name' in df.columns and 'Last Name' in df.columns:
-        df['Student Name'] = df['First Name'] + " " + df['Last Name']
-    else:
-        st.warning("'First Name' or 'Last Name' column not found. 'Student Name' column not created.")
-    
     df.dropna(how='all', inplace=True)
     
     return df
@@ -106,9 +52,46 @@ try:
         st.session_state['data'] = data
         st.success("Data loaded successfully from Google Sheets!")
         
-        # Display the first few rows of the data
-        st.write("First few rows of the data:")
-        st.write(data.head())
+        # Display summary statistics
+        st.subheader("Summary Statistics")
+        total_students = len(data)
+        pending_applications = data[data['Visa Result'].isnull()].shape[0]
+        approved_visas = data[data['Visa Result'] == 'Approved'].shape[0]
+        denied_visas = data[data['Visa Result'] == 'Denied'].shape[0]
+
+        col1, col2, col3, col4 = st.columns(4)
+        col1.metric("Total Students", total_students)
+        col2.metric("Pending Applications", pending_applications)
+        col3.metric("Approved Visas", approved_visas)
+        col4.metric("Denied Visas", denied_visas)
+
+        # Display data table with filters
+        st.subheader("Student Application Data")
+        
+        # Filters
+        chosen_school = st.multiselect("Filter by School", options=sorted(data['Chosen School'].unique()))
+        visa_result = st.multiselect("Filter by Visa Result", options=sorted(data['Visa Result'].unique()))
+        
+        filtered_data = data
+        if chosen_school:
+            filtered_data = filtered_data[filtered_data['Chosen School'].isin(chosen_school)]
+        if visa_result:
+            filtered_data = filtered_data[filtered_data['Visa Result'].isin(visa_result)]
+        
+        st.dataframe(filtered_data)
+
+        # Display individual student details
+        st.subheader("Individual Student Details")
+        selected_student = st.selectbox("Select a student", options=data['First Name'] + " " + data['Last Name'])
+        if selected_student:
+            student_data = data[data['First Name'] + " " + data['Last Name'] == selected_student].iloc[0]
+            st.write(f"**Name:** {student_data['First Name']} {student_data['Last Name']}")
+            st.write(f"**Phone:** {student_data['Phone N°']}")
+            st.write(f"**Email:** {student_data['E-mail']}")
+            st.write(f"**Chosen School:** {student_data['Chosen School']}")
+            st.write(f"**Duration:** {student_data['Duration']}")
+            st.write(f"**Visa Result:** {student_data['Visa Result']}")
+
     else:
         st.error("Failed to load data from Google Sheets.")
 except Exception as e:
@@ -116,26 +99,6 @@ except Exception as e:
     import traceback
     st.error(traceback.format_exc())
     st.stop()
-
-# Utility functions
-def get_visa_status(result):
-    result_mapping = {
-        'Denied': 'Denied',
-        'Approved': 'Approved',
-        'Not our school partner': 'Not our school partner',
-    }
-    return result_mapping.get(result, 'Unknown')
-
-def calculate_days_until_interview(interview_date):
-    try:
-        interview_date = pd.to_datetime(interview_date, format='%d/%m/%Y', errors='coerce')
-        if pd.isnull(interview_date):
-            return None
-        today = pd.to_datetime(datetime.today().strftime('%Y-%m-%d'))
-        days_remaining = (interview_date - today).days
-        return days_remaining
-    except Exception as e:
-        return None
 
 # Footer
 st.markdown("---")
