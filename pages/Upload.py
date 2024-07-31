@@ -354,43 +354,47 @@ def main():
         # Search and filter section with application status on the same line
         st.markdown('<div class="stCard" style="display: flex; justify-content: space-between;">', unsafe_allow_html=True)
         col1, col2 = st.columns([3, 2])
-        with col1:
-            st.subheader("Application Status")
-            steps = ['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'SEVIS', 'CLIENTS ']
-            current_step = filtered_data.iloc[0]['Current Step'] if not filtered_data.empty else "Unknown"
-            step_index = steps.index(current_step) if current_step in steps else 0
-            progress = ((step_index + 1) / len(steps)) * 100
-
-            progress_bar = f"""
-            <div class="progress-container">
-                <div class="progress-bar" style="width: {progress}%;">
-                    {int(progress)}%
-                </div>
-            </div>
-            """
-            st.markdown(progress_bar, unsafe_allow_html=True)
-            st.write(f"Current Step: {current_step}")
-
-            visa_status = filtered_data.iloc[0]['Visa Result'] if not filtered_data.empty else "Unknown"
-            st.write(f"**Visa Status:** {visa_status}")
-
-            interview_date = filtered_data.iloc[0]['EMBASSY ITW. DATE'] if not filtered_data.empty else None
-            days_remaining = calculate_days_until_interview(interview_date)
-            if days_remaining is not None:
-                st.metric("Days until interview", days_remaining)
-            else:
-                st.metric("Days until interview", "N/A")
         with col2:
             search_query = st.text_input("🔍 Search for a student (First or Last Name)", key="search_query")
             status_filter = st.selectbox("Filter by status", ["All"] + list(data['Current Step'].unique()), key="status_filter")
             search_button = st.button("Search", key="search_button")
-        st.markdown('</div>', unsafe_allow_html=True)
 
         filtered_data = data
         if search_query and search_button:
             filtered_data = filtered_data[filtered_data['Student Name'].str.contains(search_query, case=False, na=False)]
         if status_filter != "All":
             filtered_data = filtered_data[filtered_data['Current Step'] == status_filter]
+
+        with col1:
+            st.subheader("Application Status")
+            if not filtered_data.empty:
+                steps = ['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'SEVIS', 'CLIENTS ']
+                current_step = filtered_data.iloc[0]['Current Step'] if not filtered_data.empty else "Unknown"
+                step_index = steps.index(current_step) if current_step in steps else 0
+                progress = ((step_index + 1) / len(steps)) * 100
+
+                progress_bar = f"""
+                <div class="progress-container">
+                    <div class="progress-bar" style="width: {progress}%;">
+                        {int(progress)}%
+                    </div>
+                </div>
+                """
+                st.markdown(progress_bar, unsafe_allow_html=True)
+                st.write(f"Current Step: {current_step}")
+
+                visa_status = filtered_data.iloc[0]['Visa Result'] if not filtered_data.empty else "Unknown"
+                st.write(f"**Visa Status:** {visa_status}")
+
+                interview_date = filtered_data.iloc[0]['EMBASSY ITW. DATE'] if not filtered_data.empty else None
+                days_remaining = calculate_days_until_interview(interview_date)
+                if days_remaining is not None:
+                    st.metric("Days until interview", days_remaining)
+                else:
+                    st.metric("Days until interview", "N/A")
+            else:
+                st.write("No data available for the current filters.")
+        st.markdown('</div>', unsafe_allow_html=True)
 
         if not filtered_data.empty:
             st.markdown('<div class="stCard">', unsafe_allow_html=True)
@@ -405,7 +409,7 @@ def main():
             student_name = selected_student['Student Name']
 
             edit_mode = st.toggle("Edit Mode", value=False)
-
+        
             # Tabs for student information
             tab1, tab2, tab3, tab4 = st.tabs(["Personal", "School", "Embassy", "Payment"])
             
