@@ -246,6 +246,11 @@ def check_document_status(student_name):
             document_status[document_type]['files'] = files
     
     return document_status
+def list_files_in_folder(folder_id):
+    service = get_google_drive_service()
+    query = f"'{folder_id}' in parents and trashed=false"
+    results = service.files().list(q=query, spaces='drive', fields='files(id, name, webViewLink)').execute()
+    return results.get('files', [])
 
 def check_file_exists_in_folder(folder_id):
     service = get_google_drive_service()
