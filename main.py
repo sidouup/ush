@@ -1,42 +1,33 @@
+import os
+import json
+import gspread
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-import plotly.express as px
-import gspread
 from google.oauth2.service_account import Credentials
+from googleapiclient.discovery import build
+import plotly.express as px
 
 # Use Streamlit secrets for service account info
 SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
 
-# The ID of your spreadsheet
-SPREADSHEET_ID = "1NPc-dQ7uts1c1JjNoABBou-uq2ixzUTiSBTB8qlTuOQ"
+# Define the scopes
+SCOPES = ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/spreadsheets']
 
+# Authenticate and build the Google Drive service
+@st.cache_resource
+def get_google_drive_service():
+    creds = Credentials.from_service_account_info(SERVICE_ACCOUNT_INFO, scopes=SCOPES)
+    return build('drive', 'v3', credentials=creds)
+
+# Authenticate and build the Google Sheets service
 @st.cache_resource
 def get_google_sheet_client():
-    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = Credentials.from_service_account_info(SERVICE_ACCOUNT_INFO, scopes=scope)
+    creds = Credentials.from_service_account_info(SERVICE_ACCOUNT_INFO, scopes=SCOPES)
     return gspread.authorize(creds)
-def get_visa_status(result):
-    result_mapping = {
-        'Denied': 'Denied',
-        'Approved': 'Approved',
-        'Not our school partner': 'Not our school partner',
-    }
-    return result_mapping.get(result, 'Unknown')
 
-def calculate_days_until_interview(interview_date):
-    try:
-        interview_date = pd.to_datetime(interview_date, format='%d/%m/%Y', errors='coerce')
-        if pd.isnull(interview_date):
-            return None
-        today = pd.to_datetime(datetime.today().strftime('%Y-%m-%d'))
-        days_remaining = (interview_date - today).days
-        return days_remaining
-    except Exception as e:
-        return None
-
-    
-def load_data():
+# Function to load data from Google Sheets
+def load_data(spreadsheet_id):
     sheet_headers = {
         'PAYMENT & MAIL': [
             'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
@@ -90,7 +81,7 @@ def load_data():
     
     try:
         client = get_google_sheet_client()
-        sheet = client.open_by_key(SPREADSHEET_ID)
+        sheet = client.open_by_key(spreadsheet_id)
         
         combined_data = pd.DataFrame()
         
@@ -121,20 +112,69 @@ def load_data():
         st.error(f"An error occurred: {str(e)}")
         return pd.DataFrame()
 
-def save_data(df, sheet_name):
-    # Replace NaN and inf values with empty strings
-    df = df.replace([pd.NA, pd.NaT, float('inf'), float('-inf')], '')
+# Function to calculate days until interview
+def calculate_days_until_interview(interview_date):
+    try:
+        interview_date = pd.to_datetime(interview_date, format='%d/%m/%Y', errors='coerce')
+        if pd.isnull(interview_date):
+            return None
+        today = pd.to_datetime(datetime.today().strftime('%Y-%m-%d'))
+        days_remaining = (interview_date - today).days
+        return days_remaining
+    except Exception as e:
+        return None
 
-    client = get_google_sheet_client()
-    sheet = client.open_by_key(SPREADSHEET_ID)
-    worksheet = sheet.worksheet(sheet_name)
-    worksheet.update([df.columns.values.tolist()] + df.values.tolist())
+# Function to get visa status
+def get_visa_status(result):
+    result_mapping = {
+        'Denied': 'Denied',
+        'Approved': 'Approved',
+        'Not our school partner': 'Not our school partner',
+    }
+    return result_mapping.get(result, 'Unknown')
 
+# Function to check if a folder exists in Google Drive
+def check_folder_exists(folder_name, parent_id=None):
+    service = get_google_drive_service()
+    query = f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder'"
+    if parent_id:
+        query += f" and '{parent_id}' in parents"
+    
+    results = service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
+    folders = results.get('files', [])
+    return folders[0].get('id') if folders else None
+
+# Function to list files in a folder
+def list_files_in_folder(folder_id):
+    service = get_google_drive_service()
+    query = f"'{folder_id}' in parents and trashed=false"
+    results = service.files().list(q=query, spaces='drive', fields='files(id, name, webViewLink)').execute()
+    return results.get('files', [])
+
+# Function to check document status and get file links
+def check_document_status(student_name):
+    parent_folder_id = '1It91HqQDsYeSo1MuYgACtmkmcO82vzXp'
+    student_folder_id = check_folder_exists(student_name, parent_folder_id)
+    
+    document_types = ["Passport", "Bank Statement", "Financial Letter", "Transcripts", "Diplomas", "English Test"]
+    document_status = {doc_type: {'status': False, 'files': []} for doc_type in document_types}
+
+    if not student_folder_id:
+        return document_status
+
+    for document_type in document_types:
+        document_folder_id = check_folder_exists(document_type, student_folder_id)
+        if document_folder_id:
+            files = list_files_in_folder(document_folder_id)
+            document_status[document_type]['status'] = bool(files)
+            document_status[document_type]['files'] = files
+    
+    return document_status
+
+# Main function
 def main():
-    # Set page config
-    st.set_page_config(page_title="Student Application Tracker", layout="wide")
+    st.set_page_config(page_title="Student Application Viewer", layout="wide")
 
-    # Custom CSS
     st.markdown("""
     <style>
         .reportview-container {
@@ -169,30 +209,20 @@ def main():
         .stMetric .metric-label {
             font-weight: bold;
         }
-        .stButton>button {
-            background-color: #ff7f50;
-            color: white;
-            font-weight: bold.
-        }
-        .stButton>button:hover {
-            background-color: #ff6347.
-        }
     </style>
     """, unsafe_allow_html=True)
 
-    # Main title with logo
     st.markdown("""
         <div style="display: flex; align-items: center;">
             <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=297,h=404,fit=crop/YBgonz9JJqHRMK43/blue-red-minimalist-high-school-logo-9-AVLN0K6MPGFK2QbL.png" style="margin-right: 10px; width: 50px; height: auto;">
-            <h1 style="color: #1E3A8A;">Student Application Tracker</h1>
+            <h1 style="color: #1E3A8A;">Student Application Viewer</h1>
         </div>
         """, unsafe_allow_html=True)
 
-    # Load data
-    data = load_data()
+    spreadsheet_id = "1NPc-dQ7uts1c1JjNoABBou-uq2ixzUTiSBTB8qlTuOQ"
+    data = load_data(spreadsheet_id)
 
     if not data.empty:
-        # Student Search and Details
         st.header("👤 Student Search and Details")
         col1, col2 = st.columns([3, 1])
         with col1:
@@ -201,13 +231,11 @@ def main():
             st.markdown("<br>", unsafe_allow_html=True)
             search_button = st.button("Search", key="search_button", help="Click to search")
         
-        # Filter data based on search query
         if search_query and search_button:
             filtered_data = data[data['Student Name'].str.contains(search_query, case=False, na=False)]
         else:
             filtered_data = data
 
-        # Display filtered data with selection capability
         if not filtered_data.empty:
             selected_index = st.selectbox(
                 "Select a student to view details",
@@ -215,128 +243,134 @@ def main():
                 format_func=lambda i: f"{filtered_data.iloc[i]['Student Name']} - {filtered_data.iloc[i]['Current Step']}",
                 key="selected_index"
             )
-            
+        
             selected_student = filtered_data.iloc[selected_index]
-            
-            # Display and edit student details
+            student_name = selected_student['Student Name']
+        
             col1, col2 = st.columns([2, 1])
-            
             with col1:
                 with st.expander("📋 Personal Information", expanded=True):
-                    first_name = st.text_input("First Name", selected_student['First Name'], key="first_name")
-                    last_name = st.text_input("Last Name", selected_student['Last Name'], key="last_name")
-                    phone_number = st.text_input("Phone Number", selected_student['Phone N°'], key="phone_number")
-                    email = st.text_input("Email", selected_student['E-mail'], key="email")
-                    emergency_contact = st.text_input("Emergency Contact Number", selected_student['Emergency contact N°'], key="emergency_contact")
-                    address = st.text_input("Address", selected_student['Address'], key="address")
-                    attempts = st.text_input("Attempts", selected_student['Attempts'], key="attempts")
+                    st.write(f"**First Name:** {selected_student['First Name']}")
+                    st.write(f"**Last Name:** {selected_student['Last Name']}")
+                    st.write(f"**Phone Number:** {selected_student['Phone N°']}")
+                    st.write(f"**Email:** {selected_student['E-mail']}")
+                    st.write(f"**Emergency Contact Number:** {selected_student['Emergency contact N°']}")
+                    st.write(f"**Address:** {selected_student['Address']}")
+                    st.write(f"**Attempts:** {selected_student['Attempts']}")
                 
                 with st.expander("🏫 School Information", expanded=True):
-                    chosen_school = st.text_input("Chosen School", selected_student['Chosen School'], key="chosen_school")
-                    duration = st.text_input("Duration", selected_student['Duration'], key="duration")
-                    school_entry_date = st.text_input("School Entry Date", selected_student['School Entry Date'], key="school_entry_date")
-                    entry_date_in_us = st.text_input("Entry Date in the US", selected_student['Entry Date in the US'], key="entry_date_in_us")
+                    st.write(f"**Chosen School:** {selected_student['Chosen School']}")
+                    st.write(f"**Duration:** {selected_student['Duration']}")
+                    st.write(f"**School Entry Date:** {selected_student['School Entry Date']}")
+st.write(f"**Entry Date in the US:** {selected_student['Entry Date in the US']}")
                 
                 with st.expander("🏛️ Embassy Information", expanded=True):
-                    address_us = st.text_input("Address in the U.S", selected_student['ADDRESS in the U.S'], key="address_us")
-                    email_rdv = st.text_input("E-mail RDV", selected_student[' E-MAIL RDV'], key="email_rdv")
-                    password_rdv = st.text_input("Password RDV", selected_student['PASSWORD RDV'], key="password_rdv")
-                    embassy_itw_date = st.text_input("Embassy Interview Date", selected_student['EMBASSY ITW. DATE'], key="embassy_itw_date")
-                    ds160_maker = st.text_input("DS-160 Maker", selected_student['DS-160 maker'], key="ds160_maker")
-                    password_ds160 = st.text_input("Password DS-160", selected_student['Password DS-160'], key="password_ds160")
-                    secret_q = st.text_input("Secret Question", selected_student['Secret Q.'], key="secret_q")
-            
+                    st.write(f"**Address in the U.S:** {selected_student['ADDRESS in the U.S']}")
+                    st.write(f"**E-mail RDV:** {selected_student[' E-MAIL RDV']}")
+                    st.write(f"**Password RDV:** {selected_student['PASSWORD RDV']}")
+                    st.write(f"**Embassy Interview Date:** {selected_student['EMBASSY ITW. DATE']}")
+                    st.write(f"**DS-160 Maker:** {selected_student['DS-160 maker']}")
+                    st.write(f"**Password DS-160:** {selected_student['Password DS-160']}")
+                    st.write(f"**Secret Question:** {selected_student['Secret Q.']}")
+                
             with col2:
                 st.subheader("Application Status")
+                steps = [
+                    'PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 
+                    'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'SEVIS', 'CLIENTS '
+                ]
                 
-                # Visa Status
-                visa_status = st.selectbox(
-                    "Visa Status",
-                    ['Denied', 'Approved', 'Not our school partner', 'Unknown'],
-                    index=['Denied', 'Approved', 'Not our school partner', 'Unknown'].index(get_visa_status(selected_student.get('Visa Result', 'Unknown'))),
-                    key="visa_status"
-                )
+                # Calculate the current step and progress
+                current_step = selected_student['Current Step']
+                step_index = steps.index(current_step) if current_step in steps else 0
+                progress = (step_index + 1) / len(steps)
                 
-                # Current Step
-                current_step = st.text_input("Current Step", selected_student['Current Step'], key="current_step")
+                # HTML and CSS for a custom progress bar
+                progress_html = f"""
+                <style>
+                .progress-container {{
+                  width: 100%;
+                  background-color: #f3f3f3;
+                  border-radius: 25px;
+                  overflow: hidden;
+                }}
                 
-                # Days until interview
-                interview_date = st.text_input("Embassy Interview Date", selected_student['EMBASSY ITW. DATE'], key="interview_date")
+                .progress-bar {{
+                  width: {progress * 100}%;
+                  height: 30px;
+                  background-color: green;
+                  text-align: center;
+                  line-height: 30px;
+                  color: white;
+                  border-radius: 25px;
+                }}
+                </style>
+                <div class="progress-container">
+                  <div class="progress-bar">{int(progress * 100)}%</div>
+                </div>
+                """
+                
+                # Display the custom progress bar
+                st.components.v1.html(progress_html, height=50)
+                
+                st.write(f"**Visa Status:** {get_visa_status(selected_student.get('Visa Result', 'Unknown'))}")
+                st.write(f"**Current Step:** {selected_student['Current Step']}")
+                
+                interview_date = selected_student['EMBASSY ITW. DATE']
                 days_remaining = calculate_days_until_interview(interview_date)
                 if days_remaining is not None:
                     st.metric("Days until interview", days_remaining)
                 else:
                     st.metric("Days until interview", "N/A")
                 
-                # Payment Information
                 with st.expander("💰 Payment Information", expanded=True):
-                    payment_date = st.text_input("Payment Date", selected_student['DATE'], key="payment_date")
-                    payment_method = st.text_input("Payment Method", selected_student['Payment Method '], key="payment_method")
-                    sevis_payment = st.text_input("Sevis Payment", selected_student['Sevis payment ? '], key="sevis_payment")
-                    application_payment = st.text_input("Application Payment", selected_student['Application payment ?'], key="application_payment")
+                    st.write(f"**Payment Date:** {selected_student['DATE']}")
+                    st.write(f"**Payment Method:** {selected_student['Payment Method ']}")
+                    st.write(f"**Sevis Payment:** {selected_student['Sevis payment ? ']}")
+                    st.write(f"**Application Payment:** {selected_student['Application payment ?']}")
 
-            # Save changes button
-            if st.button("Save Changes"):
-                # Update the selected student record with new values
-                updated_student = {
-                    'First Name': first_name,
-                    'Last Name': last_name,
-                    'Phone N°': phone_number,
-                    'E-mail': email,
-                    'Emergency contact N°': emergency_contact,
-                    'Address': address,
-                    'Attempts': attempts,
-                    'Chosen School': chosen_school,
-                    'Duration': duration,
-                    'School Entry Date': school_entry_date,
-                    'Entry Date in the US': entry_date_in_us,
-                    'ADDRESS in the U.S': address_us,
-                    ' E-MAIL RDV': email_rdv,
-                    'PASSWORD RDV': password_rdv,
-                    'EMBASSY ITW. DATE': embassy_itw_date,
-                    'DS-160 maker': ds160_maker,
-                    'Password DS-160': password_ds160,
-                    'Secret Q.': secret_q,
-                    'Visa Result': visa_status,
-                    'Current Step': current_step,
-                    'DATE': payment_date,
-                    'Payment Method ': payment_method,
-                    'Sevis payment ? ': sevis_payment,
-                    'Application payment ?': application_payment,
-                }
-                
-                # Update the DataFrame
-                for key, value in updated_student.items():
-                    data.at[selected_index, key] = value
-
-                # Save updated data back to Google Sheets
-                save_data(data, selected_student['Current Step'])
-                st.success("Changes saved successfully!")
+                # Display document status here
+                document_status = check_document_status(student_name)
+                st.subheader("Document Status")
+                for doc_type, status_info in document_status.items():
+                    color = "green" if status_info['status'] else "red"
+                    st.write(f"{doc_type}: <span style='color:{color};'>{'✔️' if status_info['status'] else '❌'}</span>", unsafe_allow_html=True)
+                    if status_info['status']:
+                        for file in status_info['files']:
+                            st.write(f"- [{file['name']}]({file['webViewLink']})")
 
         else:
             st.info("No students found matching the search criteria.")
 
-        # Dashboard with all clients
         st.header("📊 Dashboard - All Clients")
-        
-        # Create a bar chart of students per step
-        step_counts = data['Current Step'].value_counts()
-        fig = px.bar(step_counts, x=step_counts.index, y=step_counts.values, 
-                     labels={'x': 'Application Step', 'y': 'Number of Students'},
-                     title='Students per Application Step')
-        fig.update_layout(
-            plot_bgcolor='rgba(0,0,0,0.05)',
-            paper_bgcolor='rgba(0,0,0,0)',
-        )
-        st.plotly_chart(fig, use_container_width=True)
+
+        # Ensure the data frame is not empty before creating the chart
+        if not data.empty and 'Current Step' in data.columns:
+            step_counts = data['Current Step'].value_counts()
+
+            try:
+                fig = px.bar(
+                    step_counts,
+                    x=step_counts.index,
+                    y=step_counts.values,
+                    labels={'x': 'Application Step', 'y': 'Number of Students'},
+                    title='Students per Application Step'
+                )
+                fig.update_layout(
+                    plot_bgcolor='rgba(0,0,0,0.05)',
+                    paper_bgcolor='rgba(0,0,0,0)',
+                )
+                st.plotly_chart(fig, use_container_width=True)
+            except Exception as e:
+                st.error(f"An error occurred while creating the chart: {str(e)}")
+        else:
+            st.error("No data available for creating the chart. Please check your Google Sheets connection and data.")
 
     else:
         st.error("No data available. Please check your Google Sheets connection and data.")
 
-    # Footer
     st.markdown("---")
     st.markdown("© 2024 The Us House. All rights reserved.")
 
 if __name__ == "__main__":
     main()
-
