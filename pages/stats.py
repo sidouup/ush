@@ -162,7 +162,7 @@ def plot_insights(data):
 # Main function to run the Streamlit app
 def main():
     st.title("Google Sheets Data Insights")
-    spreadsheet_id = st.text_input("Enter your Google Sheets ID:")
+    spreadsheet_id = "1NPc-dQ7uts1c1JjNoABBou-uq2ixzUTiSBTB8qlTuOQ"
     
     if spreadsheet_id:
         data = load_data(spreadsheet_id)
