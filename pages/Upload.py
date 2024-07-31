@@ -543,13 +543,7 @@ def main():
                     </div>
                     """, unsafe_allow_html=True)
 
-
-
-
-
-
-# JavaScript for delete functionality
-# JavaScript for delete functionality
+                # JavaScript for delete functionality
                 st.markdown(r"""
                 <script>
                 function deleteFile(fileId) {
@@ -578,13 +572,6 @@ def main():
                 }
                 </script>
                 """, unsafe_allow_html=True)
-
-
-
-
-
-
-
 
             if edit_mode and st.button("Save Changes"):
                 updated_student = {
@@ -654,5 +641,9 @@ def main():
 
     st.markdown("---")
     st.markdown("© 2024 The Us House. All rights reserved.")
+
+
+
+
 
 
