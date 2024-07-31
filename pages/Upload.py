@@ -232,15 +232,18 @@ def check_document_status(student_name):
     parent_folder_id = '1It91HqQDsYeSo1MuYgACtmkmcO82vzXp'
     student_folder_id = check_folder_exists(student_name, parent_folder_id)
     
-    document_types = ["Passport", "Bank Statement", "Financial Letter", "Transcripts", "Diplomas", "English Test"]
-    document_status = {doc_type: False for doc_type in document_types}
+    document_types = ["Passport", "Bank Statement", "Financial Letter", "Transcripts", "Diplomas", "English Test", "Payment Receipts"]
+    document_status = {doc_type: {'status': False, 'files': []} for doc_type in document_types}
 
     if not student_folder_id:
         return document_status
 
     for document_type in document_types:
         document_folder_id = check_folder_exists(document_type, student_folder_id)
-        document_status[document_type] = bool(document_folder_id and check_file_exists_in_folder(document_folder_id))
+        if document_folder_id:
+            files = list_files_in_folder(document_folder_id)
+            document_status[document_type]['status'] = bool(files)
+            document_status[document_type]['files'] = files
     
     return document_status
 
@@ -449,12 +452,55 @@ def main():
                         else:
                             st.error("An error occurred while uploading the payment receipt.")
 
-                # Display document status here
-                document_status = check_document_status(student_name)
-                st.subheader("Document Status")
-                for doc_type, status in document_status.items():
-                    color = "green" if status else "red"
-                    st.write(f"{doc_type}: <span style='color:{color};'>{'✔️' if status else '❌'}</span>", unsafe_allow_html=True)
+            # Display document status here
+            document_status = check_document_status(student_name)
+            st.markdown("""
+            <style>
+            .document-status {
+                background-color: white;
+                border-radius: 10px;
+                padding: 20px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            .document-item {
+                display: flex;
+                align-items: center;
+                margin-bottom: 10px;
+                padding: 10px;
+                background-color: #f8f9fa;
+                border-radius: 5px;
+            }
+            .status-icon {
+                font-size: 20px;
+                margin-right: 10px;
+            }
+            .document-name {
+                flex-grow: 1;
+                font-weight: 500;
+            }
+            .file-link {
+                color: #4a90e2;
+                text-decoration: none;
+                margin-left: 10px;
+            }
+            .file-link:hover {
+                text-decoration: underline;
+            }
+            </style>
+            """, unsafe_allow_html=True)
+    
+            st.markdown("<div class='document-status'>", unsafe_allow_html=True)
+            st.subheader("Document Status")
+            for doc_type, status_info in document_status.items():
+                icon = "✅" if status_info['status'] else "❌"
+                st.markdown(f"""
+                <div class='document-item'>
+                    <span class='status-icon'>{icon}</span>
+                    <span class='document-name'>{doc_type}</span>
+                    {"".join([f"<a href='{file['webViewLink']}' target='_blank' class='file-link'>{file['name']}</a>" for file in status_info['files']])}
+                </div>
+                """, unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
 
             if st.button("Save Changes"):
                 updated_student = {
