@@ -64,16 +64,14 @@ st.markdown("""
 
 st.write("Welcome to the Student Application Tracker. The data is fetched from Google Sheets.")
 
-def get_google_auth_flow():
-    return Flow.from_client_config(
-        {"installed": st.secrets["oauth_credentials"]},
-        scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"],
-        redirect_uri=st.secrets["oauth_credentials"]["redirect_uri"]
-    )
-
 @st.cache_resource
-def load_data_from_sheets(_creds):
-    service = build("sheets", "v4", credentials=_creds)
+def load_data_from_sheets():
+    credentials = Credentials.from_service_account_info(
+        st.secrets["gcp_service_account"],
+        scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"]
+    )
+    
+    service = build("sheets", "v4", credentials=credentials)
     sheet_id = st.secrets["private_gsheets_url"].split("/")[5]
     result = service.spreadsheets().values().get(spreadsheetId=sheet_id, range="A1:ZZ1000").execute()
     data = result.get("values", [])
@@ -85,35 +83,13 @@ def load_data_from_sheets(_creds):
     
     return df
 
-# Authentication flow
-if "token" not in st.session_state:
-    flow = get_google_auth_flow()
-    auth_url, _ = flow.authorization_url(prompt="consent")
-    
-    st.write("Please visit this URL to authorize the application:")
-    st.markdown(f"[Authorization URL]({auth_url})")
-    
-    code = st.text_input("Enter the authorization code:")
-    if code:
-        flow.fetch_token(code=code)
-        st.session_state["token"] = flow.credentials.to_json()
-        st.experimental_rerun()
-
-if "token" in st.session_state:
-    creds = Credentials.from_authorized_user_info(st.session_state["token"])
-    
-    if creds.expired and creds.refresh_token:
-        creds.refresh(Request())
-        st.session_state["token"] = creds.to_json()
-
-    try:
-        data = load_data_from_sheets(creds)
-        st.session_state['data'] = data
-        st.success("Data loaded successfully from Google Sheets!")
-    except Exception as e:
-        st.error(f"Error loading data: {str(e)}")
-else:
-    st.warning("Please authorize the application to access Google Sheets.")
+try:
+    data = load_data_from_sheets()
+    st.session_state['data'] = data
+    st.success("Data loaded successfully from Google Sheets!")
+except Exception as e:
+    st.error(f"Error loading data: {str(e)}")
+    st.stop()
 
 # Utility functions
 def get_visa_status(result):
