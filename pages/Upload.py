@@ -355,65 +355,65 @@ def main():
         current_steps.insert(0, "All")
 
         # Search and filter section with application status on the same line
-# Search and filter section with application status and document status on the same line
-st.markdown('<div class="stCard" style="display: flex; justify-content: space-between;">', unsafe_allow_html=True)
-col2, col1, col3 = st.columns([3, 2, 3])
-with col2:
-    # Use selectbox for search bar with suggestions
-    search_query = st.selectbox("🔍 Search for a student (First or Last Name)", options=student_names, key="search_query")
+    # Search and filter section with application status and document status on the same line
+    st.markdown('<div class="stCard" style="display: flex; justify-content: space-between;">', unsafe_allow_html=True)
+    col2, col1, col3 = st.columns([3, 2, 3])
+    with col2:
+        # Use selectbox for search bar with suggestions
+        search_query = st.selectbox("🔍 Search for a student (First or Last Name)", options=student_names, key="search_query")
+        
+        # HTML for bold title and selectbox without extra space
+        st.markdown("""
+        <div style="margin-bottom: -20px;">
+            <p style="font-weight: bold; margin-bottom: 5px;">Filter by status</p>
+        </div>
+        """, unsafe_allow_html=True)
+        status_filter = st.selectbox("", ["All"] + list(data['Current Step'].unique()), key="status_filter")
+        
+        search_button = st.button("Search", key="search_button")
     
-    # HTML for bold title and selectbox without extra space
-    st.markdown("""
-    <div style="margin-bottom: -20px;">
-        <p style="font-weight: bold; margin-bottom: 5px;">Filter by status</p>
-    </div>
-    """, unsafe_allow_html=True)
-    status_filter = st.selectbox("", ["All"] + list(data['Current Step'].unique()), key="status_filter")
-    
-    search_button = st.button("Search", key="search_button")
-
-    with col1:
-        st.subheader("Application Status")
-        if not filtered_data.empty:
-            steps = ['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'SEVIS', 'CLIENTS ']
-            current_step = filtered_data.iloc[0]['Current Step'] if not filtered_data.empty else "Unknown"
-            step_index = steps.index(current_step) if current_step in steps else 0
-            progress = ((step_index + 1) / len(steps)) * 100
-    
-            progress_bar = f"""
-            <div class="progress-container">
-                <div class="progress-bar" style="width: {progress}%;">
-                    {int(progress)}%
+        with col1:
+            st.subheader("Application Status")
+            if not filtered_data.empty:
+                steps = ['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'SEVIS', 'CLIENTS ']
+                current_step = filtered_data.iloc[0]['Current Step'] if not filtered_data.empty else "Unknown"
+                step_index = steps.index(current_step) if current_step in steps else 0
+                progress = ((step_index + 1) / len(steps)) * 100
+        
+                progress_bar = f"""
+                <div class="progress-container">
+                    <div class="progress-bar" style="width: {progress}%;">
+                        {int(progress)}%
+                    </div>
                 </div>
-            </div>
-            """
-            st.markdown(progress_bar, unsafe_allow_html=True)
-            st.write(f"Current Step: {current_step}")
-    
-            visa_status = filtered_data.iloc[0]['Visa Result'] if not filtered_data.empty else "Unknown"
-            st.write(f"**Visa Status:** {visa_status}")
-    
-            interview_date = filtered_data.iloc[0]['EMBASSY ITW. DATE'] if not filtered_data.empty else None
-            days_remaining = calculate_days_until_interview(interview_date)
-            if days_remaining is not None:
-                st.metric("Days until interview", days_remaining)
-            else:
-                st.metric("Days until interview", "N/A")
-    
-    with col3:
-        document_status = check_document_status(student_name)
-        st.subheader("Document Status")
-        for doc_type, status_info in document_status.items():
-            icon = "✅" if status_info['status'] else "❌"
-            st.markdown(f"""
-            <div class='document-item'>
-                <span class='status-icon'>{icon}</span>
-                <span class='document-name'>{doc_type}</span>
-                {"".join([f"<a href='{file['webViewLink']}' target='_blank' class='file-link'>{file['name']}</a><span class='delete-button' onclick='deleteFile(&quot;{file['id']}&quot;)'>🗑️</span>" for file in status_info['files']])}
-            </div>
-            """, unsafe_allow_html=True)
-    else:
-        st.write("No data available for the current filters.")
+                """
+                st.markdown(progress_bar, unsafe_allow_html=True)
+                st.write(f"Current Step: {current_step}")
+        
+                visa_status = filtered_data.iloc[0]['Visa Result'] if not filtered_data.empty else "Unknown"
+                st.write(f"**Visa Status:** {visa_status}")
+        
+                interview_date = filtered_data.iloc[0]['EMBASSY ITW. DATE'] if not filtered_data.empty else None
+                days_remaining = calculate_days_until_interview(interview_date)
+                if days_remaining is not None:
+                    st.metric("Days until interview", days_remaining)
+                else:
+                    st.metric("Days until interview", "N/A")
+        
+        with col3:
+            document_status = check_document_status(student_name)
+            st.subheader("Document Status")
+            for doc_type, status_info in document_status.items():
+                icon = "✅" if status_info['status'] else "❌"
+                st.markdown(f"""
+                <div class='document-item'>
+                    <span class='status-icon'>{icon}</span>
+                    <span class='document-name'>{doc_type}</span>
+                    {"".join([f"<a href='{file['webViewLink']}' target='_blank' class='file-link'>{file['name']}</a><span class='delete-button' onclick='deleteFile(&quot;{file['id']}&quot;)'>🗑️</span>" for file in status_info['files']])}
+                </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.write("No data available for the current filters.")
         with col1:
             st.subheader("Application Status")
             if not filtered_data.empty:
