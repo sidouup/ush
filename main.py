@@ -14,6 +14,7 @@ credentials = Credentials.from_service_account_info(st.secrets["gcp_service_acco
 client = gspread.authorize(credentials)
 
 # Function to load and combine data from all sheets in the Google Sheet
+@st.cache_data(ttl=3600)
 def load_and_combine_data(gsheets_url):
     sheet = client.open_by_url(gsheets_url)
     combined_data = pd.DataFrame()
