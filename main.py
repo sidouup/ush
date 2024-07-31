@@ -19,18 +19,6 @@ def get_google_sheet_client():
     return gspread.authorize(creds)
 
 def load_data():
-    expected_headers = [
-        'First Name', 'Last Name', 'Phone N°', 'Address', 'Agent', 'School name', 'Type',
-        'Payed (yes/no)', 'Payment Method', 'Paid amount', 'Date of payment', 'Payment reference',
-        'E-mail (student)', 'E-mail (agent)', 'Comments', 'Application submitted (yes/no)',
-        'Date of submission', 'Documents scanned (yes/no)', 'Date of scanning', 'Package sent (yes/no)',
-        'Date of sending', 'DS-160 filled (yes/no)', 'Date of filling', 'Interview prepared (yes/no)',
-        'Date of preparation', 'SEVIS paid (yes/no)', 'Date of payment', 'DATE', 'Emergency contact N°',
-        'Chosen School', 'Duration', 'Sevis payment', 'Application payment', 'Attempts', 'School Entry Date',
-        'Entry Date in the US', 'ADDRESS in the U.S', 'E-MAIL RDV', 'PASSWORD RDV', 'EMBASSY ITW. DATE',
-        'DS-160 maker', 'Password DS-160', 'Secret Q.'
-    ]
-    
     try:
         client = get_google_sheet_client()
         sheet = client.open_by_key(SPREADSHEET_ID)
@@ -38,10 +26,11 @@ def load_data():
         combined_data = pd.DataFrame()
         
         for worksheet in sheet.worksheets():
-            data = worksheet.get_all_records(expected_headers=expected_headers)
+            data = worksheet.get_all_records()
             df = pd.DataFrame(data)
             if not df.empty:
-                df['Student Name'] = df['First Name'] + " " + df['Last Name']
+                if 'First Name' in df.columns and 'Last Name' in df.columns:
+                    df['Student Name'] = df['First Name'] + " " + df['Last Name']
                 df.dropna(subset=['Student Name'], inplace=True)
                 df.dropna(how='all', inplace=True)
                 df['Current Step'] = worksheet.title
@@ -53,7 +42,6 @@ def load_data():
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
         return pd.DataFrame()
-
 def get_visa_status(result):
     result_mapping = {
         'Denied': 'Denied',
