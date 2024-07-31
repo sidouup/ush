@@ -2,8 +2,10 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 import plotly.express as px
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
 
-# Function to load and combine data from all sheets in the Excel file
+# Function to load and combine data from all sheets in Google Sheets
 def load_and_combine_data(sheet_id, credentials):
     service = build("sheets", "v4", credentials=credentials)
     sheet_metadata = service.spreadsheets().get(spreadsheetId=sheet_id).execute()
@@ -123,92 +125,92 @@ st.markdown("""
     </div>
     """, unsafe_allow_html=True)
 
-# Load data from the uploaded Excel file
-uploaded_file = file_path
+# Load data from Google Sheets
+credentials = service_account.Credentials.from_service_account_info(
+    st.secrets["gcp_service_account"],
+    scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"],
+)
+sheet_id = st.secrets["private_gsheets_url"].split("/")[5]
 
-if uploaded_file is not None:
-    # Load and combine data from all sheets
-    data = load_and_combine_data(uploaded_file)
+# Load and combine data from all sheets
+data = load_and_combine_data(sheet_id, credentials)
 
-    # Combined search and selection functionality
-    st.header("👤 Student Search and Details")
-    col1, col2 = st.columns([3, 1])
-    with col1:
-        search_query = st.text_input("🔍 Search for a student (First or Last Name)")
-    with col2:
-        st.markdown("<br>", unsafe_allow_html=True)  # Add some vertical space
-        search_button = st.button("Search", key="search_button", help="Click to search")
-    
-    # Filter data based on search query
-    if search_query and search_button:
-        filtered_data = data[data['Student Name'].str.contains(search_query, case=False, na=False)]
-    else:
-        filtered_data = data
+# Combined search and selection functionality
+st.header("👤 Student Search and Details")
+col1, col2 = st.columns([3, 1])
+with col1:
+    search_query = st.text_input("🔍 Search for a student (First or Last Name)")
+with col2:
+    st.markdown("<br>", unsafe_allow_html=True)  # Add some vertical space
+    search_button = st.button("Search", key="search_button", help="Click to search")
 
-    # Display filtered data with selection capability
-    if not filtered_data.empty:
-        selected_index = st.selectbox(
-            "Select a student to view details",
-            range(len(filtered_data)),
-            format_func=lambda i: f"{filtered_data.iloc[i]['Student Name']} - {filtered_data.iloc[i]['Current Step']}"
-        )
-        
-        selected_student = filtered_data.iloc[selected_index]
-        
-        # Display student details
-        col1, col2 = st.columns([2, 1])
-        
-        with col1:
-            with st.expander("📋 Personal Information", expanded=True):
-                st.write(selected_student[['First Name', 'Last Name', 'Phone N°', 'E-mail', 'Emergency contact N°', 'Attempts', 'Address']])
-            
-            with st.expander("🏫 School Information", expanded=True):
-                st.write(selected_student[['Chosen School', 'Duration', 'School Entry Date', 'Entry Date in the US']])
-            
-            with st.expander("🏛️ Embassy Information", expanded=True):
-                st.write(selected_student[['ADDRESS in the U.S', 'E-MAIL RDV', 'PASSWORD RDV', 'EMBASSY ITW. DATE', 'DS-160 maker', 'Password DS-160', 'Secret Q.']])
-        
-        with col2:
-            st.subheader("Application Status")
-            
-            # Visa Status
-            visa_status = get_visa_status(selected_student['Visa Result'])
-            st.metric("Visa Status", visa_status)
-            
-            # Current Step
-            current_step = selected_student['Current Step']
-            st.metric("Current Step", current_step)
-            
-            # Days until interview
-            interview_date = selected_student['EMBASSY ITW. DATE']
-            days_remaining = calculate_days_until_interview(interview_date)
-            if days_remaining is not None:
-                st.metric("Days until interview", days_remaining)
-            else:
-                st.metric("Days until interview", "N/A")
-            
-            # Payment Information
-            with st.expander("💰 Payment Information", expanded=True):
-                st.write(selected_student[['DATE','Payment Method ', 'Sevis payment ?', 'Application payment ?']])
-    else:
-        st.info("No students found matching the search criteria.")
-
-    # Dashboard with all clients (moved to the end)
-    st.header("📊 Dashboard - All Clients")
-    
-    # Create a bar chart of students per step
-    step_counts = data['Current Step'].value_counts()
-    fig = px.bar(step_counts, x=step_counts.index, y=step_counts.values, 
-                 labels={'x': 'Application Step', 'y': 'Number of Students'},
-                 title='Students per Application Step')
-    fig.update_layout(
-        plot_bgcolor='rgba(0,0,0,0.05)',
-        paper_bgcolor='rgba(0,0,0,0)',
-    )
-    st.plotly_chart(fig, use_container_width=True)
-
+# Filter data based on search query
+if search_query and search_button:
+    filtered_data = data[data['Student Name'].str.contains(search_query, case=False, na=False)]
 else:
-    st.info("👆 Please upload an Excel file to proceed.")
+    filtered_data = data
+
+# Display filtered data with selection capability
+if not filtered_data.empty:
+    selected_index = st.selectbox(
+        "Select a student to view details",
+        range(len(filtered_data)),
+        format_func=lambda i: f"{filtered_data.iloc[i]['Student Name']} - {filtered_data.iloc[i]['Current Step']}"
+    )
+    
+    selected_student = filtered_data.iloc[selected_index]
+    
+    # Display student details
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        with st.expander("📋 Personal Information", expanded=True):
+            st.write(selected_student[['First Name', 'Last Name', 'Phone N°', 'E-mail', 'Emergency contact N°', 'Attempts', 'Address']])
+        
+        with st.expander("🏫 School Information", expanded=True):
+            st.write(selected_student[['Chosen School', 'Duration', 'School Entry Date', 'Entry Date in the US']])
+        
+        with st.expander("🏛️ Embassy Information", expanded=True):
+            st.write(selected_student[['ADDRESS in the U.S', 'E-MAIL RDV', 'PASSWORD RDV', 'EMBASSY ITW. DATE', 'DS-160 maker', 'Password DS-160', 'Secret Q.']])
+    
+    with col2:
+        st.subheader("Application Status")
+        
+        # Visa Status
+        visa_status = get_visa_status(selected_student['Visa Result'])
+        st.metric("Visa Status", visa_status)
+        
+        # Current Step
+        current_step = selected_student['Current Step']
+        st.metric("Current Step", current_step)
+        
+        # Days until interview
+        interview_date = selected_student['EMBASSY ITW. DATE']
+        days_remaining = calculate_days_until_interview(interview_date)
+        if days_remaining is not None:
+            st.metric("Days until interview", days_remaining)
+        else:
+            st.metric("Days until interview", "N/A")
+        
+        # Payment Information
+        with st.expander("💰 Payment Information", expanded=True):
+            st.write(selected_student[['DATE','Payment Method ', 'Sevis payment ?', 'Application payment ?']])
+else:
+    st.info("No students found matching the search criteria.")
+
+# Dashboard with all clients (moved to the end)
+st.header("📊 Dashboard - All Clients")
+
+# Create a bar chart of students per step
+step_counts = data['Current Step'].value_counts()
+fig = px.bar(step_counts, x=step_counts.index, y=step_counts.values, 
+             labels={'x': 'Application Step', 'y': 'Number of Students'},
+             title='Students per Application Step')
+fig.update_layout(
+    plot_bgcolor='rgba(0,0,0,0.05)',
+    paper_bgcolor='rgba(0,0,0,0)',
+)
+st.plotly_chart(fig, use_container_width=True)
 
 # Footer
 st.markdown("---")
