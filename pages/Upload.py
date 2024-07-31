@@ -196,43 +196,38 @@ def check_file_exists(file_name, folder_id):
     return bool(files)
 
 # Function to handle file upload and folder creation
-def handle_file_upload(student_name, document_type, uploaded_files):
+def handle_file_upload(student_name, document_type, uploaded_file):
     parent_folder_id = '1It91HqQDsYeSo1MuYgACtmkmcO82vzXp'  # Use the provided parent folder ID
     
     student_folder_id = check_folder_exists(student_name, parent_folder_id)
     if not student_folder_id:
         student_folder_id = create_folder_in_drive(student_name, parent_folder_id)
-    st.write(f"Student folder ID for {student_name}: {student_folder_id}")
-
+    
     document_folder_id = check_folder_exists(document_type, student_folder_id)
     if not document_folder_id:
         document_folder_id = create_folder_in_drive(document_type, student_folder_id)
-    st.write(f"Document folder ID for {document_type}: {document_folder_id}")
-
-    uploaded_file_ids = []
-    for uploaded_file in uploaded_files:
-        file_name = uploaded_file.name
-        
-        # Ensure no double extensions
-        if file_name.lower().endswith('.pdf.pdf'):
-            file_name = file_name[:-4]
-        st.write(f"File name to be uploaded: {file_name}")
-
-        if not check_file_exists(file_name, document_folder_id):
-            with st.spinner(f"Uploading {file_name}..."):
-                temp_file_path = f"/tmp/{file_name}"
-                with open(temp_file_path, "wb") as f:
-                    f.write(uploaded_file.getbuffer())
-                mime_type = uploaded_file.type
-                file_id = upload_file_to_drive(temp_file_path, mime_type, document_folder_id)
-                if file_id:
-                    uploaded_file_ids.append(file_id)
-                os.remove(temp_file_path)
-            st.success(f"{file_name} uploaded successfully!")
-        else:
-            st.warning(f"{file_name} already exists for this student.")
     
-    return uploaded_file_ids
+    file_name = uploaded_file.name
+    
+    # Ensure no double extensions
+    if file_name.lower().endswith('.pdf.pdf'):
+        file_name = file_name[:-4]
+    
+    if not check_file_exists(file_name, document_folder_id):
+        with st.spinner(f"Uploading {file_name}..."):
+            temp_file_path = f"/tmp/{file_name}"
+            with open(temp_file_path, "wb") as f:
+                f.write(uploaded_file.getbuffer())
+            mime_type = uploaded_file.type
+            file_id = upload_file_to_drive(temp_file_path, mime_type, document_folder_id)
+            os.remove(temp_file_path)
+        if file_id:
+            st.success(f"{file_name} uploaded successfully!")
+            return file_id
+    else:
+        st.warning(f"{file_name} already exists for this student.")
+    
+    return None
 def check_document_status(student_name):
     parent_folder_id = '1It91HqQDsYeSo1MuYgACtmkmcO82vzXp'
     student_folder_id = check_folder_exists(student_name, parent_folder_id)
@@ -437,11 +432,22 @@ def main():
                 else:
                     st.metric("Days until interview", "N/A")
                 
-                with st.expander("💰 Payment Information", expanded=True):
-                    payment_date = st.text_input("Payment Date", selected_student['DATE'], key="payment_date")
-                    payment_method = st.text_input("Payment Method", selected_student['Payment Method '], key="payment_method")
-                    sevis_payment = st.text_input("Sevis Payment", selected_student['Sevis payment ? '], key="sevis_payment")
-                    application_payment = st.text_input("Application Payment", selected_student['Application payment ?'], key="application_payment")
+            with st.expander("💰 Payment Information", expanded=True):
+                payment_date = st.text_input("Payment Date", selected_student['DATE'], key="payment_date")
+                payment_method = st.text_input("Payment Method", selected_student['Payment Method '], key="payment_method")
+                sevis_payment = st.text_input("Sevis Payment", selected_student['Sevis payment ? '], key="sevis_payment")
+                application_payment = st.text_input("Application Payment", selected_student['Application payment ?'], key="application_payment")
+
+                # Add payment receipt upload functionality
+                st.write("Upload Payment Receipt")
+                payment_receipt = st.file_uploader("Upload Payment Receipt", type=["pdf", "jpg", "jpeg", "png"], key="payment_receipt")
+                if payment_receipt:
+                    if st.button("Upload Payment Receipt"):
+                        file_id = handle_file_upload(student_name, "Payment Receipts", payment_receipt)
+                        if file_id:
+                            st.success(f"Payment receipt uploaded successfully! File ID: {file_id}")
+                        else:
+                            st.error("An error occurred while uploading the payment receipt.")
 
                 # Display document status here
                 document_status = check_document_status(student_name)
