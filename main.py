@@ -157,10 +157,10 @@ def main():
         .stButton>button {
             background-color: #ff7f50;
             color: white;
-            font-weight: bold;
+            font-weight: bold.
         }
         .stButton>button:hover {
-            background-color: #ff6347;
+            background-color: #ff6347.
         }
     </style>
     """, unsafe_allow_html=True)
@@ -181,7 +181,7 @@ def main():
         st.header("👤 Student Search and Details")
         col1, col2 = st.columns([3, 1])
         with col1:
-            search_query = st.text_input("🔍 Search for a student (First or Last Name)")
+            search_query = st.text_input("🔍 Search for a student (First or Last Name)", key="search_query")
         with col2:
             st.markdown("<br>", unsafe_allow_html=True)
             search_button = st.button("Search", key="search_button", help="Click to search")
@@ -197,7 +197,8 @@ def main():
             selected_index = st.selectbox(
                 "Select a student to view details",
                 range(len(filtered_data)),
-                format_func=lambda i: f"{filtered_data.iloc[i]['Student Name']} - {filtered_data.iloc[i]['Current Step']}"
+                format_func=lambda i: f"{filtered_data.iloc[i]['Student Name']} - {filtered_data.iloc[i]['Current Step']}",
+                key="selected_index"
             )
             
             selected_student = filtered_data.iloc[selected_index]
@@ -207,28 +208,28 @@ def main():
             
             with col1:
                 with st.expander("📋 Personal Information", expanded=True):
-                    first_name = st.text_input("First Name", selected_student['First Name'])
-                    last_name = st.text_input("Last Name", selected_student['Last Name'])
-                    phone_number = st.text_input("Phone Number", selected_student['Phone N°'])
-                    email = st.text_input("Email", selected_student['E-mail'])
-                    emergency_contact = st.text_input("Emergency Contact Number", selected_student['Emergency contact N°'])
-                    address = st.text_input("Address", selected_student['Address'])
-                    attempts = st.text_input("Attempts", selected_student['Attempts'])
+                    first_name = st.text_input("First Name", selected_student['First Name'], key="first_name")
+                    last_name = st.text_input("Last Name", selected_student['Last Name'], key="last_name")
+                    phone_number = st.text_input("Phone Number", selected_student['Phone N°'], key="phone_number")
+                    email = st.text_input("Email", selected_student['E-mail'], key="email")
+                    emergency_contact = st.text_input("Emergency Contact Number", selected_student['Emergency contact N°'], key="emergency_contact")
+                    address = st.text_input("Address", selected_student['Address'], key="address")
+                    attempts = st.text_input("Attempts", selected_student['Attempts'], key="attempts")
                 
                 with st.expander("🏫 School Information", expanded=True):
-                    chosen_school = st.text_input("Chosen School", selected_student['Chosen School'])
-                    duration = st.text_input("Duration", selected_student['Duration'])
-                    school_entry_date = st.text_input("School Entry Date", selected_student['School Entry Date'])
-                    entry_date_in_us = st.text_input("Entry Date in the US", selected_student['Entry Date in the US'])
+                    chosen_school = st.text_input("Chosen School", selected_student['Chosen School'], key="chosen_school")
+                    duration = st.text_input("Duration", selected_student['Duration'], key="duration")
+                    school_entry_date = st.text_input("School Entry Date", selected_student['School Entry Date'], key="school_entry_date")
+                    entry_date_in_us = st.text_input("Entry Date in the US", selected_student['Entry Date in the US'], key="entry_date_in_us")
                 
                 with st.expander("🏛️ Embassy Information", expanded=True):
-                    address_us = st.text_input("Address in the U.S", selected_student['ADDRESS in the U.S'])
-                    email_rdv = st.text_input("E-mail RDV", selected_student[' E-MAIL RDV'])
-                    password_rdv = st.text_input("Password RDV", selected_student['PASSWORD RDV'])
-                    embassy_itw_date = st.text_input("Embassy Interview Date", selected_student['EMBASSY ITW. DATE'])
-                    ds160_maker = st.text_input("DS-160 Maker", selected_student['DS-160 maker'])
-                    password_ds160 = st.text_input("Password DS-160", selected_student['Password DS-160'])
-                    secret_q = st.text_input("Secret Question", selected_student['Secret Q.'])
+                    address_us = st.text_input("Address in the U.S", selected_student['ADDRESS in the U.S'], key="address_us")
+                    email_rdv = st.text_input("E-mail RDV", selected_student[' E-MAIL RDV'], key="email_rdv")
+                    password_rdv = st.text_input("Password RDV", selected_student['PASSWORD RDV'], key="password_rdv")
+                    embassy_itw_date = st.text_input("Embassy Interview Date", selected_student['EMBASSY ITW. DATE'], key="embassy_itw_date")
+                    ds160_maker = st.text_input("DS-160 Maker", selected_student['DS-160 maker'], key="ds160_maker")
+                    password_ds160 = st.text_input("Password DS-160", selected_student['Password DS-160'], key="password_ds160")
+                    secret_q = st.text_input("Secret Question", selected_student['Secret Q.'], key="secret_q")
             
             with col2:
                 st.subheader("Application Status")
@@ -237,12 +238,15 @@ def main():
                 visa_status = st.selectbox(
                     "Visa Status",
                     ['Denied', 'Approved', 'Not our school partner', 'Unknown'],
-                    index=['Denied', 'Approved', 'Not our school partner', 'Unknown'].index(get_visa_status(selected_student.get('Visa Result', 'Unknown')))
+                    index=['Denied', 'Approved', 'Not our school partner', 'Unknown'].index(get_visa_status(selected_student.get('Visa Result', 'Unknown'))),
+                    key="visa_status"
                 )
                 
                 # Current Step
-                current_step = st.text_input("Current Step", selected_student['Current Step'])
-                interview_date = st.text_input("Embassy Interview Date", selected_student['EMBASSY ITW. DATE'])
+                current_step = st.text_input("Current Step", selected_student['Current Step'], key="current_step")
+                
+                # Days until interview
+                interview_date = st.text_input("Embassy Interview Date", selected_student['EMBASSY ITW. DATE'], key="interview_date")
                 days_remaining = calculate_days_until_interview(interview_date)
                 if days_remaining is not None:
                     st.metric("Days until interview", days_remaining)
@@ -251,10 +255,10 @@ def main():
                 
                 # Payment Information
                 with st.expander("💰 Payment Information", expanded=True):
-                    payment_date = st.text_input("Payment Date", selected_student['DATE'])
-                    payment_method = st.text_input("Payment Method", selected_student['Payment Method '])
-                    sevis_payment = st.text_input("Sevis Payment", selected_student['Sevis payment ? '])
-                    application_payment = st.text_input("Application Payment", selected_student['Application payment ?'])
+                    payment_date = st.text_input("Payment Date", selected_student['DATE'], key="payment_date")
+                    payment_method = st.text_input("Payment Method", selected_student['Payment Method '], key="payment_method")
+                    sevis_payment = st.text_input("Sevis Payment", selected_student['Sevis payment ? '], key="sevis_payment")
+                    application_payment = st.text_input("Application Payment", selected_student['Application payment ?'], key="application_payment")
 
             # Save changes button
             if st.button("Save Changes"):
