@@ -368,7 +368,7 @@ def main():
                 st.metric("Days until interview", "N/A")
 
             # Create tabs for different information categories
-            tab1, tab2, tab3, tab4, tab5 = st.tabs(["Personal", "School", "Embassy", "Payment", "Documents"])
+            tab1, tab2, tab3, tab4 = st.tabs(["Personal", "School", "Embassy", "Payment"])
             
             with tab1:
                 st.subheader("📋 Personal Information")
@@ -434,64 +434,64 @@ def main():
                     st.write(f"**Sevis Payment:** {selected_student['Sevis payment ? ']}")
                     st.write(f"**Application Payment:** {selected_student['Application payment ?']}")
 
-            with tab5:
-                st.subheader("📂 Document Upload and Status")
-                col1, col2 = st.columns(2)
-                with col1:
-                    document_type = st.selectbox("Select Document Type", 
-                                                 ["Passport", "Bank Statement", "Financial Letter", 
-                                                  "Transcripts", "Diplomas", "English Test", "Payment Receipt"], 
-                                                 key="document_type")
-                    uploaded_file = st.file_uploader("Upload Document", type=["jpg", "jpeg", "png", "pdf"], key="uploaded_file")
-                    
-                    if uploaded_file and st.button("Upload Document"):
-                        file_id = handle_file_upload(student_name, document_type, uploaded_file)
-                        if file_id:
-                            st.success(f"{document_type} uploaded successfully!")
-                        else:
-                            st.error("An error occurred while uploading the document.")
 
-                with col2:
-                    document_status = check_document_status(student_name)
-                    st.subheader("Document Status")
-                    for doc_type, status_info in document_status.items():
-                        icon = "✅" if status_info['status'] else "❌"
-                        st.markdown(f"""
-                        <div class='document-item'>
-                            <span class='status-icon'>{icon}</span>
-                            <span class='document-name'>{doc_type}</span>
-                            {"".join([f"<a href='{file['webViewLink']}' target='_blank' class='file-link'>{file['name']}</a><span class='delete-button' onclick='deleteFile(&quot;{file['id']}&quot;)'>🗑️</span>" for file in status_info['files']])}
-                        </div>
-                        """, unsafe_allow_html=True)
-                # Add JavaScript for file deletion
-                st.markdown("""
-                <script>
-                function deleteFile(fileId) {
-                    if (confirm('Are you sure you want to delete this file?')) {
-                        fetch('/delete_file', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({file_id: fileId}),
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                alert('File deleted successfully');
-                                location.reload();
-                            } else {
-                                alert('Failed to delete file: ' + data.error);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('An error occurred while deleting the file');
-                        });
-                    }
+            st.subheader("📂 Document Upload and Status")
+            col1, col2 = st.columns(2)
+            with col1:
+                document_type = st.selectbox("Select Document Type", 
+                                             ["Passport", "Bank Statement", "Financial Letter", 
+                                              "Transcripts", "Diplomas", "English Test", "Payment Receipt"], 
+                                             key="document_type")
+                uploaded_file = st.file_uploader("Upload Document", type=["jpg", "jpeg", "png", "pdf"], key="uploaded_file")
+                
+                if uploaded_file and st.button("Upload Document"):
+                    file_id = handle_file_upload(student_name, document_type, uploaded_file)
+                    if file_id:
+                        st.success(f"{document_type} uploaded successfully!")
+                    else:
+                        st.error("An error occurred while uploading the document.")
+
+            with col2:
+                document_status = check_document_status(student_name)
+                st.subheader("Document Status")
+                for doc_type, status_info in document_status.items():
+                    icon = "✅" if status_info['status'] else "❌"
+                    st.markdown(f"""
+                    <div class='document-item'>
+                        <span class='status-icon'>{icon}</span>
+                        <span class='document-name'>{doc_type}</span>
+                        {"".join([f"<a href='{file['webViewLink']}' target='_blank' class='file-link'>{file['name']}</a><span class='delete-button' onclick='deleteFile(&quot;{file['id']}&quot;)'>🗑️</span>" for file in status_info['files']])}
+                    </div>
+                    """, unsafe_allow_html=True)
+            # Add JavaScript for file deletion
+            st.markdown("""
+            <script>
+            function deleteFile(fileId) {
+                if (confirm('Are you sure you want to delete this file?')) {
+                    fetch('/delete_file', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({file_id: fileId}),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('File deleted successfully');
+                            location.reload();
+                        } else {
+                            alert('Failed to delete file: ' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while deleting the file');
+                    });
                 }
-                </script>
-                """, unsafe_allow_html=True)
+            }
+            </script>
+            """, unsafe_allow_html=True)
 
             if edit_mode and st.button("Save Changes"):
                 updated_student = {
