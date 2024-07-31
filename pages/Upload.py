@@ -268,7 +268,7 @@ def check_file_exists_in_folder(folder_id):
 
 # Main function
 def main():
-    st.set_page_config(page_title="Student Application Tracker", layout="wide")
+    
 
     st.markdown("""
     <style>
