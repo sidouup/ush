@@ -386,10 +386,36 @@ def main():
                 progress = ((step_index + 1) / len(steps)) * 100
         
                 progress_bar = f"""
+                <style>
+                    .progress-container {{
+                        width: 100%;
+                        background-color: #e0e0e0;
+                        border-radius: 10px;
+                        overflow: hidden;
+                        box-shadow: 0 3px 3px -2px rgba(0, 0, 0, 0.2), 0 3px 4px 0 rgba(0, 0, 0, 0.14), 0 1px 8px 0 rgba(0, 0, 0, 0.12);
+                        margin-bottom: 1rem;
+                        transition: background-color 0.3s ease;
+                    }}
+                    .progress-bar {{
+                        height: 20px;
+                        width: {progress}%;
+                        background: linear-gradient(90deg, #4caf50, #81c784);
+                        transition: width 0.5s ease-in-out;
+                        text-align: center;
+                        line-height: 20px;
+                        color: white;
+                        font-weight: bold;
+                        border-radius: 10px;
+                    }}
+                    .progress-bar::after {{
+                        content: "{int(progress)}%";
+                        position: relative;
+                        display: inline-block;
+                        padding-left: 10px;
+                    }}
+                </style>
                 <div class="progress-container">
-                    <div class="progress-bar" style="width: {progress}%; background-color: #4caf50;">
-                        {int(progress)}%
-                    </div>
+                    <div class="progress-bar"></div>
                 </div>
                 """
                 st.markdown(progress_bar, unsafe_allow_html=True)
@@ -404,6 +430,8 @@ def main():
                     st.metric("Days until interview", days_remaining)
                 else:
                     st.metric("Days until interview", "N/A")
+            else:
+                st.write("No data available for the current filters.")
 
             else:
                 st.write("No data available for the current filters.")
