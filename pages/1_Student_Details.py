@@ -1,6 +1,77 @@
 import streamlit as st
 import pandas as pd
-from main import load_and_combine_data, get_visa_status, calculate_days_until_interview
+def load_data_from_sheets():
+    credentials = Credentials.from_service_account_info(
+        st.secrets["gcp_service_account"],
+        scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"]
+    )
+    
+    service = build("sheets", "v4", credentials=credentials)
+    sheet_id = st.secrets["private_gsheets_url"].split("/")[5]
+    result = service.spreadsheets().values().get(spreadsheetId=sheet_id, range="A1:ZZ1000").execute()
+    data = result.get("values", [])
+    
+    if not data:
+        st.error("No data found in the Google Sheet.")
+        return None
+    
+    # Use the first row as column names and match with actual data length
+    columns = data[0][:len(data[1])]
+    
+    # Create DataFrame with dynamic column names
+    df = pd.DataFrame(data[1:], columns=columns)
+    
+    # Display information about the DataFrame
+    st.write(f"Columns in the sheet: {', '.join(columns)}")
+    st.write(f"Number of columns: {len(columns)}")
+    st.write(f"Number of rows: {len(df)}")
+    
+    # Check if 'First Name' and 'Last Name' columns exist
+    if 'First Name' in df.columns and 'Last Name' in df.columns:
+        df['Student Name'] = df['First Name'] + " " + df['Last Name']
+    else:
+        st.warning("'First Name' or 'Last Name' column not found. 'Student Name' column not created.")
+    
+    df.dropna(how='all', inplace=True)
+    
+    return df
+
+try:
+    data = load_data_from_sheets()
+    if data is not None:
+        st.session_state['data'] = data
+        st.success("Data loaded successfully from Google Sheets!")
+        
+        # Display the first few rows of the data
+        st.write("First few rows of the data:")
+        st.write(data.head())
+    else:
+        st.error("Failed to load data from Google Sheets.")
+except Exception as e:
+    st.error(f"Error loading data: {str(e)}")
+    import traceback
+    st.error(traceback.format_exc())
+    st.stop()
+
+# Utility functions
+def get_visa_status(result):
+    result_mapping = {
+        'Denied': 'Denied',
+        'Approved': 'Approved',
+        'Not our school partner': 'Not our school partner',
+    }
+    return result_mapping.get(result, 'Unknown')
+
+def calculate_days_until_interview(interview_date):
+    try:
+        interview_date = pd.to_datetime(interview_date, format='%d/%m/%Y', errors='coerce')
+        if pd.isnull(interview_date):
+            return None
+        today = pd.to_datetime(datetime.today().strftime('%Y-%m-%d'))
+        days_remaining = (interview_date - today).days
+        return days_remaining
+    except Exception as e:
+        return None
 
 st.set_page_config(page_title="Student Details", layout="wide")
 
