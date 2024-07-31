@@ -18,14 +18,19 @@ def load_and_combine_data(gsheets_url):
     sheet = client.open_by_url(gsheets_url)
     combined_data = pd.DataFrame()
     
-    for sheet_name in sheet.worksheets():
-        worksheet = sheet.worksheet(sheet_name.title)
-        data = worksheet.get_all_records()
+    for worksheet in sheet.worksheets():
+        data = worksheet.get_all_records(head=1)  # Use the first row as headers
         df = pd.DataFrame(data)
+        
+        # Ensure headers are unique
+        headers = list(df.columns)
+        if len(headers) != len(set(headers)):
+            raise ValueError(f"Duplicate headers found in worksheet '{worksheet.title}': {headers}")
+        
         df['Student Name'] = df.iloc[:, 1].astype(str) + " " + df.iloc[:, 2].astype(str)
         df.dropna(subset=['Student Name'], inplace=True)
         df.dropna(how='all', inplace=True)
-        df['Current Step'] = sheet_name.title
+        df['Current Step'] = worksheet.title
         combined_data = pd.concat([combined_data, df], ignore_index=True)
     
     combined_data.drop_duplicates(subset='Student Name', keep='last', inplace=True)
