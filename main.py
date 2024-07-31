@@ -21,49 +21,49 @@ def get_google_sheet_client():
 def load_data():
     sheet_headers = {
         'PAYMENT & MAIL': [
-            'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N° ', 'Chosen School',
+            'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
             'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
             'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
             'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
         ],
         'APPLICATION': [
-            'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N° ', 'Chosen School',
+            'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
             'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
             'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
             'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
         ],
         'SCAN & SEND': [
-            'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N° ', 'Chosen School',
+            'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
             'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
             'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
             'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
         ],
         'ARAMEX & RDV': [
-            'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N° ', 'Chosen School',
+            'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
             'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
             'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
             'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
         ],
         'DS-160': [
-            'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N° ', 'Chosen School',
+            'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
             'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
             'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
             'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
         ],
         'ITW Prep.': [
-            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N° ', 'Chosen School',
+            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
             'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
             'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
             'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
         ],
         'SEVIS': [
-            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N° ', 'Chosen School',
+            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
             'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
             'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
             'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
         ],
         'CLIENTS ': [
-            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N° ', 'Chosen School',
+            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
             'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
             'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
             'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
@@ -212,7 +212,7 @@ def main():
             
             with col1:
                 with st.expander("📋 Personal Information", expanded=True):
-                    st.write(selected_student[['First Name', 'Last Name', 'Phone N°', 'E-mail', 'Emergency contact N° ', 'Attempts', 'Address']])
+                    st.write(selected_student[['First Name', 'Last Name', 'Phone N°', 'E-mail', 'Emergency contact N°', 'Attempts', 'Address']])
                 
                 with st.expander("🏫 School Information", expanded=True):
                     st.write(selected_student[['Chosen School', 'Duration', 'School Entry Date', 'Entry Date in the US']])
