@@ -7,6 +7,9 @@ from datetime import datetime
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 import plotly.express as px
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
+
 
 # Use Streamlit secrets for service account info
 SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
