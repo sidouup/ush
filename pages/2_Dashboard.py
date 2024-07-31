@@ -1,76 +1,110 @@
 import streamlit as st
+import gspread
+from google.oauth2.service_account import Credentials
 import pandas as pd
-import plotly.express as px
-from main import load_and_combine_data
 
-st.set_page_config(page_title="Dashboard", layout="wide")
+# Use Streamlit secrets for service account info
+SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
 
-st.title("📊 Dashboard - All Clients")
+# The ID of your spreadsheet
+SPREADSHEET_ID = "1NPc-dQ7uts1c1JjNoABBou-uq2ixzUTiSBTB8qlTuOQ"
 
-if 'uploaded_file' not in st.session_state:
-    st.error("Please upload an Excel file on the Home page first.")
-    st.stop()
+@st.cache_resource
+def get_google_sheet_client():
+    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+    creds = Credentials.from_service_account_info(SERVICE_ACCOUNT_INFO, scopes=scope)
+    return gspread.authorize(creds)
 
-data = load_and_combine_data(st.session_state['uploaded_file'])
+def load_sheet(sheet_name):
+    client = get_google_sheet_client()
+    sheet = client.open_by_key(SPREADSHEET_ID)
+    worksheet = sheet.worksheet(sheet_name)
+    data = worksheet.get_all_records()
+    return pd.DataFrame(data)
 
-# Create a bar chart of students per step
-step_counts = data['Current Step'].value_counts()
-fig = px.bar(step_counts, x=step_counts.index, y=step_counts.values, 
-             labels={'x': 'Application Step', 'y': 'Number of Students'},
-             title='Students per Application Step')
-fig.update_layout(
-    plot_bgcolor='rgba(0,0,0,0.05)',
-    paper_bgcolor='rgba(0,0,0,0)',
-)
-st.plotly_chart(fig, use_container_width=True)
+def main():
+    # Set page config
+    st.set_page_config(page_title="View Google Sheets", layout="wide")
 
-# Summary Statistics
-st.subheader("Summary Statistics")
-total_students = len(data)
-unique_schools = data['Chosen School'].nunique()
+    # Custom CSS
+    st.markdown("""
+    <style>
+        .reportview-container {
+            background: #f0f2f6;
+        }
+        .main .block-container {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+        h1, h2, h3 {
+            color: #1E3A8A;
+        }
+        .stSelectbox, .stTextInput {
+            background-color: white;
+            color: #2c3e50;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .stExpander {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 10px;
+        }
+        .css-1544g2n {
+            padding: 2rem;
+        }
+        .stMetric {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .stMetric .metric-label {
+            font-weight: bold;
+        }
+        .stButton>button {
+            background-color: #ff7f50;
+            color: white;
+            font-weight: bold;
+        }
+        .stButton>button:hover {
+            background-color: #ff6347;
+        }
+        .stTextInput input {
+            font-size: 1rem;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
+    """, unsafe_allow_html=True)
 
-# Handle potential errors in Duration calculation
-try:
-    # Try to convert Duration to numeric, coercing errors to NaN
-    data['Duration'] = pd.to_numeric(data['Duration'], errors='coerce')
-    average_duration = data['Duration'].mean()
-    average_duration_str = f"{average_duration:.2f}" if pd.notnull(average_duration) else "N/A"
-except Exception as e:
-    st.warning(f"Error calculating average duration: {str(e)}")
-    average_duration_str = "Error"
+    # Main title with logo
+    st.markdown("""
+        <div style="display: flex; align-items: center;">
+            <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=297,h=404,fit=crop/YBgonz9JJqHRMK43/blue-red-minimalist-high-school-logo-9-AVLN0K6MPGFK2QbL.png" style="margin-right: 10px; width: 50px; height: auto;">
+            <h1 style="color: #1E3A8A;">View Google Sheets</h1>
+        </div>
+        """, unsafe_allow_html=True)
 
-col1, col2, col3 = st.columns(3)
-col1.metric("Total Students", total_students)
-col2.metric("Unique Schools", unique_schools)
-col3.metric("Average Duration (days)", average_duration_str)
+    st.header("📄 Select a Sheet to View")
 
-# Recent Applications
-st.subheader("Recent Applications")
-st.dataframe(data[['Student Name', 'Chosen School', 'Current Step']].head(10))
+    client = get_google_sheet_client()
+    sheet = client.open_by_key(SPREADSHEET_ID)
 
-# Visa Status Distribution
-st.subheader("Visa Status Distribution")
-visa_status_counts = data['Visa Result'].value_counts()
-fig_visa = px.pie(values=visa_status_counts.values, names=visa_status_counts.index, title='Visa Status Distribution')
-st.plotly_chart(fig_visa, use_container_width=True)
+    sheet_names = [ws.title for ws in sheet.worksheets()]
+    selected_sheet = st.selectbox("Choose a sheet to view", sheet_names)
 
-# School Distribution
-st.subheader("Top Schools")
-school_counts = data['Chosen School'].value_counts().head(10)
-fig_schools = px.bar(x=school_counts.index, y=school_counts.values, labels={'x': 'School', 'y': 'Number of Students'}, title='Top 10 Schools')
-st.plotly_chart(fig_schools, use_container_width=True)
+    if selected_sheet:
+        data = load_sheet(selected_sheet)
+        if not data.empty:
+            st.dataframe(data)
+        else:
+            st.info("No data available in this sheet.")
 
-# Data Quality Check
-st.subheader("Data Quality Check")
-missing_data = data.isnull().sum()
-st.write("Number of missing values in each column:")
-st.write(missing_data[missing_data > 0])
+    # Footer
+    st.markdown("---")
+    st.markdown("© 2024 The Us House. All rights reserved.")
 
-# Display a sample of the data
-st.subheader("Sample Data")
-st.write(data.head())
-
-# Footer
-st.markdown("---")
-st.markdown("© 2024 The Us House. All rights reserved.")
-
+if __name__ == "__main__":
+    main()
