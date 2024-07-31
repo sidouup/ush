@@ -528,10 +528,10 @@ def main():
                 for doc_type, status_info in document_status.items():
                     icon = "✅" if status_info['status'] else "❌"
                     st.markdown(f"""
-                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                        <span style="font-size: 20px; margin-right: 10px;">{icon}</span>
-                        <span style="flex-grow: 1;">{doc_type}</span>
-                        {"".join([f'<a href="{file["webViewLink"]}" target="_blank" style="margin-left: 10px;">View</a><button onclick="deleteFile(\'{file["id"]}\')">🗑️</button>' for file in status_info['files']])}
+                    <div class='document-item'>
+                        <span class='status-icon'>{icon}</span>
+                        <span class='document-name'>{doc_type}</span>
+                        {"".join([f"<a href='{file['webViewLink']}' target='_blank' class='file-link'>{file['name']}</a><span class='delete-button' onclick='deleteFile(&quot;{file['id']}&quot;)'>🗑️</span>" for file in status_info['files']])}
                     </div>
                     """, unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
