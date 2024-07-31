@@ -158,6 +158,22 @@ def plot_insights(data):
     entry_dates_us = data.dropna(subset=['Entry Date in the US'])
     fig7 = px.histogram(entry_dates_us, x='Entry Date in the US', title='Entry Dates in the US')
     st.plotly_chart(fig7)
+    
+        # Payment trends by date
+    st.header("Payment Trends by Date")
+    if 'DATE' in data.columns and 'Payment Method ' in data.columns:
+        payment_trends = data.dropna(subset=['DATE', 'Payment Method '])
+        fig8 = px.line(payment_trends, x='DATE', y='Payment Method ', title='Payment Trends by Date')
+        st.plotly_chart(fig8)
+
+    # Payment trends by month
+    st.header("Payment Trends by Month")
+    if 'DATE' in data.columns and 'Payment Method ' in data.columns:
+        payment_trends['Month'] = payment_trends['DATE'].dt.to_period('M')
+        monthly_payment_trends = payment_trends.groupby('Month').size().reset_index(name='Payments')
+        fig9 = px.bar(monthly_payment_trends, x='Month', y='Payments', title='Payment Trends by Month')
+        st.plotly_chart(fig9)
+
 
 # Main function to run the Streamlit app
 def main():
