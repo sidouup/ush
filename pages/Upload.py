@@ -8,7 +8,7 @@ from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 import plotly.express as px
-import logging
+
 
 
 # Use Streamlit secrets for service account info
