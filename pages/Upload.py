@@ -271,91 +271,96 @@ def main():
     st.set_page_config(page_title="Student Application Tracker", layout="wide")
 
     st.markdown("""
-<style>
-    .reportview-container {
-        background: #f0f2f6;
-    }
-    .main .block-container {
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-    }
-    h1, h2, h3 {
-        color: #1E3A8A;
-    }
-    .stSelectbox, .stTextInput {
-        background-color: white;
-        color: #2c3e50;
-        border-radius: 5px;
-        padding: 10px;
-    }
-    .stExpander {
-        background-color: white;
-        border-radius: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        padding: 10px;
-    }
-    .css-1544g2n {
-        padding: 2rem;
-    }
-    .stMetric {
-        background-color: #f8f9fa;
-        border-radius: 10px;
-        padding: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-    .stMetric .metric-label {
-        font-weight: bold;
-    }
-    .stButton>button {
-        background-color: #ff7f50;
-        color: white;
-        font-weight: bold;
-    }
-    .stButton>button:hover {
-        background-color: #ff6347;
-    }
-    .stTextInput input {
-        font-size: 1rem;
-        padding: 10px;
-        margin-bottom: 10px;
-    }
-    /* Progress bar styling */
-    .progress-container {
-        width: 100%;
-        background-color: #e0e0e0;
-        border-radius: 10px;
-        margin-bottom: 1rem;
-    }
-    .progress-bar {
-        height: 20px;
-        background-color: #4caf50;
-        border-radius: 10px;
-        transition: width 0.5s ease-in-out;
-        text-align: center;
-        line-height: 20px;
-        color: white;
-        font-weight: bold;
-    }
-</style>
-
+    <style>
+        .reportview-container {
+            background: #f0f2f6;
+        }
+        .main .block-container {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+        h1, h2, h3 {
+            color: #1E3A8A;
+        }
+        .stSelectbox, .stTextInput {
+            background-color: white;
+            color: #2c3e50;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .stExpander {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 10px;
+        }
+        .css-1544g2n {
+            padding: 2rem;
+        }
+        .stMetric {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .stMetric .metric-label {
+            font-weight: bold;
+        }
+        .stButton>button {
+            background-color: #ff7f50;
+            color: white;
+            font-weight: bold;
+        }
+        .stButton>button:hover {
+            background-color: #ff6347;
+        }
+        .stTextInput input {
+            font-size: 1rem;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        /* Progress bar styling */
+        .progress-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+        .progress-bar {
+            height: 20px;
+            background-color: #4caf50;
+            border-radius: 10px;
+            transition: width 0.5s ease-in-out;
+            text-align: center;
+            line-height: 20px;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
     """, unsafe_allow_html=True)
 
-    # App header
-    st.markdown('<div class="stCard"><h1>Student Application Tracker</h1></div>', unsafe_allow_html=True)
+    # App header with logo
+    st.markdown("""
+    <div class="stCard">
+        <img src="file-kSwxoyGTpRap4G7NJ2kfl1jj" width="100">
+        <h1>Student Application Tracker</h1>
+    </div>
+    """, unsafe_allow_html=True)
 
     spreadsheet_id = "1NPc-dQ7uts1c1JjNoABBou-uq2ixzUTiSBTB8qlTuOQ"
     data = load_data(spreadsheet_id)
 
     if not data.empty:
         # Search and filter section
-        st.markdown('<div class="stCard">', unsafe_allow_html=True)
-        col1, col2, col3 = st.columns([2,1,1])
+        st.markdown('<div class="stCard" style="display: flex; justify-content: space-between;">', unsafe_allow_html=True)
+        col1, col2 = st.columns([2, 1])
         with col1:
             search_query = st.text_input("🔍 Search for a student (First or Last Name)", key="search_query")
-        with col2:
             status_filter = st.selectbox("Filter by status", ["All"] + list(data['Current Step'].unique()), key="status_filter")
-        with col3:
             search_button = st.button("Search", key="search_button")
+        with col2:
+            st.markdown('<div style="margin-top: 2rem;">', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
         filtered_data = data
@@ -377,41 +382,43 @@ def main():
             student_name = selected_student['Student Name']
 
             edit_mode = st.toggle("Edit Mode", value=False)
-        
+
             # Application Status
-            st.subheader("Application Status")
-            steps = ['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'SEVIS', 'CLIENTS ']
-            current_step = selected_student['Current Step']
-            step_index = steps.index(current_step) if current_step in steps else 0
-            progress = ((step_index + 1) / len(steps)) * 100
-            
-            progress_bar = f"""
-            <div class="progress-container">
-                <div class="progress-bar" style="width: {progress}%;">
-                    {int(progress)}%
+            st.markdown('<div style="display: flex; justify-content: space-between;">', unsafe_allow_html=True)
+            with st.container():
+                st.subheader("Application Status")
+                steps = ['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'SEVIS', 'CLIENTS ']
+                current_step = selected_student['Current Step']
+                step_index = steps.index(current_step) if current_step in steps else 0
+                progress = ((step_index + 1) / len(steps)) * 100
+
+                progress_bar = f"""
+                <div class="progress-container">
+                    <div class="progress-bar" style="width: {progress}%;">
+                        {int(progress)}%
+                    </div>
                 </div>
-            </div>
-            """
-            st.markdown(progress_bar, unsafe_allow_html=True)
-            st.write(f"Current Step: {current_step}")
+                """
+                st.markdown(progress_bar, unsafe_allow_html=True)
+                st.write(f"Current Step: {current_step}")
 
-            if edit_mode:
-                visa_status = st.selectbox(
-                    "Visa Status",
-                    ['Denied', 'Approved', 'Not our school partner', 'Unknown'],
-                    index=['Denied', 'Approved', 'Not our school partner', 'Unknown'].index(get_visa_status(selected_student.get('Visa Result', 'Unknown'))),
-                    key="visa_status"
-                )
-                current_step = st.selectbox("Current Step", steps, index=step_index, key="current_step")
-            else:
-                st.write(f"**Visa Status:** {get_visa_status(selected_student.get('Visa Result', 'Unknown'))}")
+                if edit_mode:
+                    visa_status = st.selectbox(
+                        "Visa Status",
+                        ['Denied', 'Approved', 'Not our school partner', 'Unknown'],
+                        index=['Denied', 'Approved', 'Not our school partner', 'Unknown'].index(get_visa_status(selected_student.get('Visa Result', 'Unknown'))),
+                        key="visa_status"
+                    )
+                    current_step = st.selectbox("Current Step", steps, index=step_index, key="current_step")
+                else:
+                    st.write(f"**Visa Status:** {get_visa_status(selected_student.get('Visa Result', 'Unknown'))}")
 
-            interview_date = selected_student['EMBASSY ITW. DATE']
-            days_remaining = calculate_days_until_interview(interview_date)
-            if days_remaining is not None:
-                st.metric("Days until interview", days_remaining)
-            else:
-                st.metric("Days until interview", "N/A")
+                interview_date = selected_student['EMBASSY ITW. DATE']
+                days_remaining = calculate_days_until_interview(interview_date)
+                if days_remaining is not None:
+                    st.metric("Days until interview", days_remaining)
+                else:
+                    st.metric("Days until interview", "N/A")
             st.markdown('</div>', unsafe_allow_html=True)
 
             # Tabs for student information
