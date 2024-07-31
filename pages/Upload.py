@@ -385,6 +385,7 @@ def main():
                     'PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 
                     'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'SEVIS', 'CLIENTS '
                 ]
+                current_step=selected_student['Current Step']
                 step_index = steps.index(current_step) if current_step in steps else 0
                 progress = (step_index + 1) / len(steps)
                 st.progress(progress)
@@ -396,6 +397,7 @@ def main():
                     index=['Denied', 'Approved', 'Not our school partner', 'Unknown'].index(get_visa_status(selected_student.get('Visa Result', 'Unknown'))),
                     key="visa_status"
                 )
+                
                 
                 current_step = st.text_input("Current Step", selected_student['Current Step'], key="current_step")
                 
