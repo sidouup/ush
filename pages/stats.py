@@ -153,11 +153,14 @@ def statistics_page():
 
         # Time series chart of payments over time
         st.subheader("Payments Over Time")
-        payment_data = data[['DATE', 'Current Step']].dropna(subset=['DATE'])
-        payment_data['DATE'] = pd.to_datetime(payment_data['DATE'], errors='coerce')
-        payment_data = payment_data.dropna(subset=['DATE'])
-        payment_data['Month_Year'] = payment_data['DATE'].dt.to_period('M').astype(str)  # Convert Period to string
-        payments_over_time = payment_data.groupby('Month_Year').size().reset_index(name='Counts')
+        # Extracting and consolidating all DATE columns
+        date_columns = ['DATE']
+        date_data = pd.concat([data[col].dropna() for col in date_columns if col in data.columns], ignore_index=True)
+        date_data = pd.to_datetime(date_data, errors='coerce').dropna()
+        date_data = date_data.to_frame(name='DATE')
+        date_data['Month_Year'] = date_data['DATE'].dt.to_period('M').astype(str)  # Convert Period to string
+
+        payments_over_time = date_data.groupby('Month_Year').size().reset_index(name='Counts')
         payments_chart = px.line(payments_over_time, x='Month_Year', y='Counts', labels={'Month_Year': 'Date', 'Counts': 'Number of Payments'})
         st.plotly_chart(payments_chart)
     else:
