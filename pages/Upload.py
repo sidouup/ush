@@ -208,7 +208,7 @@ def upload_file_to_drive(file_path, mime_type, folder_id=None):
     return file.get('id')
 
 # Function to handle the creation of student folders and file upload
-def handle_file_upload(first_name, last_name, uploaded_files):
+def handle_file_upload(student_name, uploaded_files):
     # Ensure main procedures folder exists
     main_folder_name = 'procedures_folder'
     main_folder_id = check_folder_exists(main_folder_name)
@@ -216,10 +216,9 @@ def handle_file_upload(first_name, last_name, uploaded_files):
         main_folder_id = create_folder_in_drive(main_folder_name)
     
     # Create student folder inside main procedures folder
-    student_folder_name = f"{first_name}_{last_name}"
-    student_folder_id = check_folder_exists(student_folder_name, main_folder_id)
+    student_folder_id = check_folder_exists(student_name, main_folder_id)
     if not student_folder_id:
-        student_folder_id = create_folder_in_drive(student_folder_name, main_folder_id)
+        student_folder_id = create_folder_in_drive(student_name, main_folder_id)
     
     # Upload files to student's folder
     for uploaded_file in uploaded_files:
@@ -342,18 +341,16 @@ def main():
                     secret_q = st.text_input("Secret Question", selected_student['Secret Q.'], key="secret_q")
                 
                 with st.expander("📂 Upload Documents", expanded=True):
-                    first_name = st.text_input("First Name", key="first_name_upload")
-                    last_name = st.text_input("Last Name", key="last_name_upload")
                     uploaded_files = st.file_uploader("Upload Student Documents", type=["jpg", "jpeg", "png", "pdf"], accept_multiple_files=True, key="uploaded_files")
                     
                     if st.button("Upload Files"):
-                        if first_name and last_name and uploaded_files:
-                            if handle_file_upload(first_name, last_name, uploaded_files):
+                        if uploaded_files:
+                            if handle_file_upload(student_name, uploaded_files):
                                 st.success("Files uploaded successfully!")
                             else:
                                 st.error("An error occurred while uploading files.")
                         else:
-                            st.error("Please provide first name, last name, and select files to upload.")
+                            st.error("Please select files to upload.")
                             
             with col2:
                 st.subheader("Application Status")
