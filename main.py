@@ -332,15 +332,55 @@ def main():
                     st.write(f"**Sevis Payment:** {selected_student['Sevis payment ? ']}")
                     st.write(f"**Application Payment:** {selected_student['Application payment ?']}")
 
-                # Display document status here
+                    # Display document status here
                 document_status = check_document_status(student_name)
+                st.markdown("""
+                <style>
+                .document-status {
+                    background-color: white;
+                    border-radius: 10px;
+                    padding: 20px;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                }
+                .document-item {
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 10px;
+                    padding: 10px;
+                    background-color: #f8f9fa;
+                    border-radius: 5px;
+                }
+                .status-icon {
+                    font-size: 20px;
+                    margin-right: 10px;
+                }
+                .document-name {
+                    flex-grow: 1;
+                    font-weight: 500;
+                }
+                .file-link {
+                    color: #4a90e2;
+                    text-decoration: none;
+                    margin-left: 10px;
+                }
+                .file-link:hover {
+                    text-decoration: underline;
+                }
+                </style>
+                """, unsafe_allow_html=True)
+    
+                st.markdown("<div class='document-status'>", unsafe_allow_html=True)
                 st.subheader("Document Status")
                 for doc_type, status_info in document_status.items():
-                    color = "green" if status_info['status'] else "red"
-                    st.write(f"{doc_type}: <span style='color:{color};'>{'✔️' if status_info['status'] else '❌'}</span>", unsafe_allow_html=True)
-                    if status_info['status']:
-                        for file in status_info['files']:
-                            st.write(f"- [{file['name']}]({file['webViewLink']})")
+                    icon = "✅" if status_info['status'] else "❌"
+                    st.markdown(f"""
+                    <div class='document-item'>
+                        <span class='status-icon'>{icon}</span>
+                        <span class='document-name'>{doc_type}</span>
+                        {"".join([f"<a href='{file['webViewLink']}' target='_blank' class='file-link'>{file['name']}</a>" for file in status_info['files']])}
+                    </div>
+                    """, unsafe_allow_html=True)
+                st.markdown("</div>", unsafe_allow_html=True)
 
         else:
             st.info("No students found matching the search criteria.")
