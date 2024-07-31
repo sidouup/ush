@@ -191,6 +191,17 @@ def check_folder_exists(folder_name, parent_id=None):
     else:
         return None
 
+# Function to check if a file exists in a folder in Google Drive
+def check_file_exists(file_name, folder_id):
+    service = get_google_drive_service()
+    query = f"name='{file_name}' and '{folder_id}' in parents"
+    results = service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
+    files = results.get('files', [])
+    if files:
+        return True
+    else:
+        return False
+
 # Function to upload a file to Google Drive
 def upload_file_to_drive(file_path, mime_type, folder_id=None):
     service = get_google_drive_service()
@@ -208,7 +219,7 @@ def upload_file_to_drive(file_path, mime_type, folder_id=None):
     return file.get('id')
 
 # Function to handle the creation of student folders and file upload
-def handle_file_upload(student_name, uploaded_files):
+def handle_file_upload(student_name, document_type, uploaded_files):
     # Ensure main procedures folder exists
     main_folder_name = 'procedures_folder'
     main_folder_id = check_folder_exists(main_folder_name)
@@ -222,12 +233,16 @@ def handle_file_upload(student_name, uploaded_files):
     
     # Upload files to student's folder
     for uploaded_file in uploaded_files:
-        bytes_data = uploaded_file.read()
-        with open(uploaded_file.name, "wb") as f:
-            f.write(bytes_data)
-        mime_type = uploaded_file.type
-        upload_file_to_drive(uploaded_file.name, mime_type, student_folder_id)
-        os.remove(uploaded_file.name)
+        file_name = f"{document_type}_{uploaded_file.name}"
+        if not check_file_exists(file_name, student_folder_id):
+            bytes_data = uploaded_file.read()
+            with open(uploaded_file.name, "wb") as f:
+                f.write(bytes_data)
+            mime_type = uploaded_file.type
+            upload_file_to_drive(uploaded_file.name, mime_type, student_folder_id)
+            os.remove(uploaded_file.name)
+        else:
+            st.warning(f"{document_type} already exists for this student.")
     return True
 
 
@@ -342,11 +357,12 @@ def main():
                     secret_q = st.text_input("Secret Question", selected_student['Secret Q.'], key="secret_q")
                 
                 with st.expander("📂 Upload Documents", expanded=True):
+                    document_type = st.selectbox("Select Document Type", ["Passport", "Bank Statement", "Financial Letter", "Transcripts", "Diplomas", "English Test"], key="document_type")
                     uploaded_files = st.file_uploader("Upload Student Documents", type=["jpg", "jpeg", "png", "pdf"], accept_multiple_files=True, key="uploaded_files")
                     
                     if st.button("Upload Files"):
                         if uploaded_files:
-                            if handle_file_upload(student_name, uploaded_files):
+                            if handle_file_upload(student_name, document_type, uploaded_files):
                                 st.success("Files uploaded successfully!")
                             else:
                                 st.error("An error occurred while uploading files.")
