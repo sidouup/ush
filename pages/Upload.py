@@ -51,12 +51,55 @@ def load_data(spreadsheet_id):
             'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
             'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
         ],
-        # Add other sheets headers as needed
+        'APPLICATION': [
+            'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
+            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
+            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
+            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
+        ],
+        'SCAN & SEND': [
+            'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
+            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
+            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
+            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
+        ],
+        'ARAMEX & RDV': [
+            'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
+            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
+            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
+            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
+        ],
+        'DS-160': [
+            'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
+            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
+            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
+            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
+        ],
+        'ITW Prep.': [
+            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
+            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
+            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
+            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
+        ],
+        'SEVIS': [
+            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
+            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
+            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
+            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
+        ],
+        'CLIENTS ': [
+            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
+            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
+            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
+            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
+        ]
     }
     
     try:
         client = get_google_sheet_client()
+        st.write("Google Sheets client initialized successfully.")
         sheet = client.open_by_key(spreadsheet_id)
+        st.write("Opened spreadsheet successfully.")
         
         combined_data = pd.DataFrame()
         
@@ -82,6 +125,7 @@ def load_data(spreadsheet_id):
         
         combined_data.drop_duplicates(subset='Student Name', keep='last', inplace=True)
         combined_data.reset_index(drop=True, inplace=True)
+        st.write("Data loaded successfully.")
         return combined_data
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
@@ -95,6 +139,27 @@ def save_data(df, spreadsheet_id, sheet_name):
     sheet = client.open_by_key(spreadsheet_id)
     worksheet = sheet.worksheet(sheet_name)
     worksheet.update([df.columns.values.tolist()] + df.values.tolist())
+
+# Function to calculate days until interview
+def calculate_days_until_interview(interview_date):
+    try:
+        interview_date = pd.to_datetime(interview_date, format='%d/%m/%Y', errors='coerce')
+        if pd.isnull(interview_date):
+            return None
+        today = pd.to_datetime(datetime.today().strftime('%Y-%m-%d'))
+        days_remaining = (interview_date - today).days
+        return days_remaining
+    except Exception as e:
+        return None
+
+# Function to get visa status
+def get_visa_status(result):
+    result_mapping = {
+        'Denied': 'Denied',
+        'Approved': 'Approved',
+        'Not our school partner': 'Not our school partner',
+    }
+    return result_mapping.get(result, 'Unknown')
 
 # Main function
 def main():
