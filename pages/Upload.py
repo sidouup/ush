@@ -545,7 +545,7 @@ def main():
                 st.markdown("</div>", unsafe_allow_html=True)
 
 # JavaScript for delete functionality
-st.markdown(f"""
+                st.markdown(f"""
                     <div class='document-item'>
                         <span class='status-icon'>{icon}</span>
                         <span class='document-name'>{doc_type}</span>
