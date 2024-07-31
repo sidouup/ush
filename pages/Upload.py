@@ -335,7 +335,12 @@ def main():
             )
             
             selected_student = filtered_data.iloc[selected_index]
-            
+            document_status = check_document_status(student_name)
+            st.subheader("Document Status")
+            for doc_type, status in document_status.items():
+                color = "green" if status else "red"
+                st.write(f"{doc_type}: <span style='color:{color};'>{'✔️' if status else '❌'}</span>", unsafe_allow_html=True)
+
             col1, col2 = st.columns([2, 1])
             with col1:
                 with st.expander("📋 Personal Information", expanded=True):
@@ -378,11 +383,6 @@ def main():
                         else:
                             st.error("Please select files to upload.")
                 
-                document_status = check_document_status(student_name)
-                st.subheader("Document Status")
-                for doc_type, status in document_status.items():
-                    color = "green" if status else "red"
-                    st.write(f"{doc_type}: <span style='color:{color};'>{'✔️' if status else '❌'}</span>", unsafe_allow_html=True)
                                             
             with col2:
                 st.subheader("Application Status")
