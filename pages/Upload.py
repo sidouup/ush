@@ -574,6 +574,7 @@ def main():
                 </script>
                 """, unsafe_allow_html=True)
 
+
             if edit_mode and st.button("Save Changes"):
                 updated_student = {
                     'First Name': first_name,
