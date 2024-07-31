@@ -162,6 +162,75 @@ def get_visa_status(result):
         'Not our school partner': 'Not our school partner',
     }
     return result_mapping.get(result, 'Unknown')
+def create_folder_in_drive(folder_name, parent_id=None):
+    service = get_google_drive_service()
+    folder_metadata = {
+        'name': folder_name,
+        'mimeType': 'application/vnd.google-apps.folder'
+    }
+    if parent_id:
+        folder_metadata['parents'] = [parent_id]
+    
+    folder = service.files().create(
+        body=folder_metadata,
+        fields='id'
+    ).execute()
+    return folder.get('id')
+
+# Function to check if a folder exists in Google Drive
+def check_folder_exists(folder_name, parent_id=None):
+    service = get_google_drive_service()
+    query = f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder'"
+    if parent_id:
+        query += f" and '{parent_id}' in parents"
+    
+    results = service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
+    folders = results.get('files', [])
+    if folders:
+        return folders[0].get('id')
+    else:
+        return None
+
+# Function to upload a file to Google Drive
+def upload_file_to_drive(file_path, mime_type, folder_id=None):
+    service = get_google_drive_service()
+    file_metadata = {'name': os.path.basename(file_path)}
+    if folder_id:
+        file_metadata['parents'] = [folder_id]
+    
+    media = MediaFileUpload(file_path, mimetype=mime_type)
+    file = service.files().create(
+        body=file_metadata,
+        media_body=media,
+        fields='id'
+    ).execute()
+    
+    return file.get('id')
+
+# Function to handle the creation of student folders and file upload
+def handle_file_upload(first_name, last_name, uploaded_files):
+    # Ensure main procedures folder exists
+    main_folder_name = 'procedures_folder'
+    main_folder_id = check_folder_exists(main_folder_name)
+    if not main_folder_id:
+        main_folder_id = create_folder_in_drive(main_folder_name)
+    
+    # Create student folder inside main procedures folder
+    student_folder_name = f"{first_name}_{last_name}"
+    student_folder_id = check_folder_exists(student_folder_name, main_folder_id)
+    if not student_folder_id:
+        student_folder_id = create_folder_in_drive(student_folder_name, main_folder_id)
+    
+    # Upload files to student's folder
+    for uploaded_file in uploaded_files:
+        bytes_data = uploaded_file.read()
+        with open(uploaded_file.name, "wb") as f:
+            f.write(bytes_data)
+        mime_type = uploaded_file.type
+        upload_file_to_drive(uploaded_file.name, mime_type, student_folder_id)
+        os.remove(uploaded_file.name)
+    return True
+
 
 # Main function
 def main():
@@ -273,19 +342,19 @@ def main():
                     secret_q = st.text_input("Secret Question", selected_student['Secret Q.'], key="secret_q")
                 
                 with st.expander("📂 Upload Documents", expanded=True):
+                    first_name = st.text_input("First Name", key="first_name_upload")
+                    last_name = st.text_input("Last Name", key="last_name_upload")
                     uploaded_files = st.file_uploader("Upload Student Documents", type=["jpg", "jpeg", "png", "pdf"], accept_multiple_files=True, key="uploaded_files")
-                    folder_id = st.text_input("Google Drive Folder ID", "", key="folder_id")
                     
                     if st.button("Upload Files"):
-                        for uploaded_file in uploaded_files:
-                            bytes_data = uploaded_file.read()
-                            with open(uploaded_file.name, "wb") as f:
-                                f.write(bytes_data)
-                            mime_type = uploaded_file.type
-                            upload_file_to_drive(uploaded_file.name, mime_type, folder_id)
-                            os.remove(uploaded_file.name)
-                        st.success("Files uploaded successfully!")
-            
+                        if first_name and last_name and uploaded_files:
+                            if handle_file_upload(first_name, last_name, uploaded_files):
+                                st.success("Files uploaded successfully!")
+                            else:
+                                st.error("An error occurred while uploading files.")
+                        else:
+                            st.error("Please provide first name, last name, and select files to upload.")
+                            
             with col2:
                 st.subheader("Application Status")
                 
