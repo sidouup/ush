@@ -540,20 +540,6 @@ def main():
             </script>
             """, unsafe_allow_html=True)
 
-        if edit_mode and st.button("Save Changes"):
-            updated_student = {
-                # ... (include all fields from the form)
-                'Visa Result': visa_status,
-                'Current Step': current_step,
-                # ... (other fields remain the same)
-            }
-            
-            for key, value in updated_student.items():
-                data.at[selected_index, key] = value
-
-            save_data(data, spreadsheet_id, selected_student['Current Step'])
-            st.success("Changes saved successfully!")
-
 
         if edit_mode and st.button("Save Changes"):
             updated_student = {
