@@ -359,8 +359,8 @@ def main():
         col1, col2 = st.columns([2, 3])
         
         with col1:
-            status_filter = st.selectbox("Filter by status", current_steps, key="status_filter")
-
+            st.markdown("**Filter by status**", unsafe_allow_html=True)
+            status_filter = st.selectbox("", ["All"] + list(data['Current Step'].unique()), key="status_filter")
         # Apply filter based on status
         filtered_data = data if status_filter == "All" else data[data['Current Step'] == status_filter]
         
