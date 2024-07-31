@@ -122,6 +122,9 @@ def load_data():
         return pd.DataFrame()
 
 def save_data(df, sheet_name):
+    # Replace NaN and inf values with empty strings
+    df = df.replace([pd.NA, pd.NaT, float('inf'), float('-inf')], '')
+
     client = get_google_sheet_client()
     sheet = client.open_by_key(SPREADSHEET_ID)
     worksheet = sheet.worksheet(sheet_name)
