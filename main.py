@@ -17,8 +17,21 @@ def load_data_from_sheets():
     sheet_metadata = service.spreadsheets().get(spreadsheetId=sheet_id).execute()
     sheets = sheet_metadata.get('sheets', '')
     
-    combined_data = pd.DataFrame()
+    all_columns = set()
+    data_frames = []
     
+    # First pass: collect all unique column names
+    for sheet in sheets:
+        sheet_name = sheet['properties']['title']
+        range_name = f"{sheet_name}!A1:ZZ1"
+        result = service.spreadsheets().values().get(
+            spreadsheetId=sheet_id, range=range_name).execute()
+        headers = result.get('values', [[]])[0]
+        all_columns.update(headers)
+    
+    all_columns = list(all_columns)
+    
+    # Second pass: load data using consistent column names
     for sheet in sheets:
         sheet_name = sheet['properties']['title']
         range_name = f"{sheet_name}!A1:ZZ"
@@ -29,15 +42,29 @@ def load_data_from_sheets():
         if not values:
             continue
         
-        df = pd.DataFrame(values[1:], columns=values[0])
-        df['Student Name'] = df.iloc[:, 1].astype(str) + " " + df.iloc[:, 2].astype(str)
-        df.dropna(subset=['Student Name'], inplace=True)
-        df.dropna(how='all', inplace=True)
+        headers = values[0]
+        df = pd.DataFrame(values[1:], columns=headers)
+        
+        # Reindex the dataframe with all_columns
+        df = df.reindex(columns=all_columns)
+        
+        # Add 'Current Step' column
         df['Current Step'] = sheet_name
-        combined_data = pd.concat([combined_data, df], ignore_index=True)
+        
+        data_frames.append(df)
     
+    # Combine all dataframes
+    combined_data = pd.concat(data_frames, ignore_index=True)
+    
+    # Create 'Student Name' column
+    if 'First Name' in combined_data.columns and 'Last Name' in combined_data.columns:
+        combined_data['Student Name'] = combined_data['First Name'].astype(str) + " " + combined_data['Last Name'].astype(str)
+    
+    combined_data.dropna(subset=['Student Name'], inplace=True)
+    combined_data.dropna(how='all', inplace=True)
     combined_data.drop_duplicates(subset='Student Name', keep='last', inplace=True)
     combined_data.reset_index(drop=True, inplace=True)
+    
     return combined_data
 
 # Utility functions (unchanged)
@@ -59,59 +86,10 @@ def calculate_days_until_interview(interview_date):
         return days_remaining
     except Exception as e:
         return None
-
-# Set page config
+        
 st.set_page_config(page_title="Student Application Tracker", layout="wide")
 
-
 # Custom CSS (unchanged)
-st.markdown("""
-
-<style>
-    .reportview-container {
-        background: #f0f2f6;
-    }
-    .main .block-container {
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-    }
-    h1, h2, h3 {
-        color: #1E3A8A;
-    }
-    .stSelectbox, .stTextInput {
-        background-color: white;
-        color: #2c3e50;
-        border-radius: 5px;
-    }
-    .stExpander {
-        background-color: white;
-        border-radius: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    .css-1544g2n {
-        padding: 2rem;
-    }
-    .stMetric {
-        background-color: #f8f9fa;
-        border-radius: 10px;
-        padding: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-    .stMetric .metric-label {
-        font-weight: bold;
-    }
-    .stButton>button {
-        background-color: #ff7f50;
-        color: white;
-        font-weight: bold;
-    }
-    .stButton>button:hover {
-        background-color: #ff6347;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-# Main title with logo (unchanged)
 st.markdown("""
     <div style="display: flex; align-items: center;">
         <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=297,h=404,fit=crop/YBgonz9JJqHRMK43/blue-red-minimalist-high-school-logo-9-AVLN0K6MPGFK2QbL.png" style="margin-right: 10px; width: 50px; height: auto;">
@@ -155,19 +133,22 @@ try:
             
             with col1:
                 with st.expander("📋 Personal Information", expanded=True):
-                    st.write(selected_student[['First Name', 'Last Name', 'Phone N°', 'E-mail', 'Emergency contact N°', 'Attempts', 'Address']])
+                    personal_info = ['First Name', 'Last Name', 'Phone N°', 'E-mail', 'Emergency contact N°', 'Attempts', 'Address']
+                    st.write(selected_student[personal_info].dropna())
                 
                 with st.expander("🏫 School Information", expanded=True):
-                    st.write(selected_student[['Chosen School', 'Duration', 'School Entry Date', 'Entry Date in the US']])
+                    school_info = ['Chosen School', 'Duration', 'School Entry Date', 'Entry Date in the US']
+                    st.write(selected_student[school_info].dropna())
                 
                 with st.expander("🏛️ Embassy Information", expanded=True):
-                    st.write(selected_student[['ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV', 'EMBASSY ITW. DATE', 'DS-160 maker', 'Password DS-160', 'Secret Q.']])
+                    embassy_info = ['ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV', 'EMBASSY ITW. DATE', 'DS-160 maker', 'Password DS-160', 'Secret Q.']
+                    st.write(selected_student[embassy_info].dropna())
             
             with col2:
                 st.subheader("Application Status")
                 
                 # Visa Status
-                visa_status = get_visa_status(selected_student['Visa Result'])
+                visa_status = get_visa_status(selected_student.get('Visa Result', 'Unknown'))
                 st.metric("Visa Status", visa_status)
                 
                 # Current Step
@@ -175,7 +156,7 @@ try:
                 st.metric("Current Step", current_step)
                 
                 # Days until interview
-                interview_date = selected_student['EMBASSY ITW. DATE']
+                interview_date = selected_student.get('EMBASSY ITW. DATE')
                 days_remaining = calculate_days_until_interview(interview_date)
                 if days_remaining is not None:
                     st.metric("Days until interview", days_remaining)
@@ -184,7 +165,8 @@ try:
                 
                 # Payment Information
                 with st.expander("💰 Payment Information", expanded=True):
-                    st.write(selected_student[['DATE','Payment Method ', 'Sevis payment ? ', 'Application payment ?']])
+                    payment_info = ['DATE', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?']
+                    st.write(selected_student[payment_info].dropna())
         else:
             st.info("No students found matching the search criteria.")
 
@@ -213,5 +195,6 @@ except Exception as e:
 # Footer
 st.markdown("---")
 st.markdown("© 2024 The Us House. All rights reserved.")
+
 
 
