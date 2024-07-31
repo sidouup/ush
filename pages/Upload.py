@@ -236,11 +236,13 @@ def handle_file_upload(student_name, document_type, uploaded_files):
 def check_document_status(student_name):
     parent_folder_id = '1It91HqQDsYeSo1MuYgACtmkmcO82vzXp'
     student_folder_id = check_folder_exists(student_name, parent_folder_id)
-    if not student_folder_id:
-        return {}
-
+    
     document_types = ["Passport", "Bank Statement", "Financial Letter", "Transcripts", "Diplomas", "English Test"]
-    document_status = {}
+    document_status = {doc_type: False for doc_type in document_types}
+
+    if not student_folder_id:
+        return document_status
+
     for document_type in document_types:
         document_folder_id = check_folder_exists(document_type, student_folder_id)
         document_status[document_type] = bool(document_folder_id and check_file_exists_in_folder(document_folder_id))
