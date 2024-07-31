@@ -262,7 +262,7 @@ def main():
                     st.write(f"**Chosen School:** {selected_student['Chosen School']}")
                     st.write(f"**Duration:** {selected_student['Duration']}")
                     st.write(f"**School Entry Date:** {selected_student['School Entry Date']}")
-st.write(f"**Entry Date in the US:** {selected_student['Entry Date in the US']}")
+                    st.write(f"**Entry Date in the US:** {selected_student['Entry Date in the US']}")
                 
                 with st.expander("🏛️ Embassy Information", expanded=True):
                     st.write(f"**Address in the U.S:** {selected_student['ADDRESS in the U.S']}")
