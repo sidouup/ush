@@ -41,11 +41,13 @@ def main():
             background-color: white;
             color: #2c3e50;
             border-radius: 5px;
+            padding: 10px;
         }
         .stExpander {
             background-color: white;
             border-radius: 10px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 10px;
         }
         .css-1544g2n {
             padding: 2rem;
@@ -62,10 +64,15 @@ def main():
         .stButton>button {
             background-color: #ff7f50;
             color: white;
-            font-weight: bold.
+            font-weight: bold;
         }
         .stButton>button:hover {
-            background-color: #ff6347.
+            background-color: #ff6347;
+        }
+        .stTextInput input {
+            font-size: 1rem;
+            padding: 10px;
+            margin-bottom: 10px;
         }
     </style>
     """, unsafe_allow_html=True)
@@ -80,32 +87,45 @@ def main():
 
     st.header("📝 Enter Student Information")
 
-    first_name = st.text_input("First Name")
-    last_name = st.text_input("Last Name")
-    phone_number = st.text_input("Phone Number")
-    email = st.text_input("Email")
-    emergency_contact = st.text_input("Emergency Contact Number")
-    address = st.text_input("Address")
-    chosen_school = st.text_input("Chosen School")
-    duration = st.text_input("Duration")
-    payment_method = st.text_input("Payment Method")
-    sevis_payment = st.text_input("Sevis Payment")
-    application_payment = st.text_input("Application Payment")
-    ds160_maker = st.text_input("DS-160 Maker")
-    password_ds160 = st.text_input("Password DS-160")
-    secret_q = st.text_input("Secret Question")
-    school_entry_date = st.text_input("School Entry Date")
-    entry_date_in_us = st.text_input("Entry Date in the US")
-    address_us = st.text_input("Address in the U.S")
-    email_rdv = st.text_input("E-mail RDV")
-    password_rdv = st.text_input("Password RDV")
-    embassy_itw_date = st.text_input("Embassy Interview Date")
-    attempts = st.text_input("Attempts")
-    visa_result = st.text_input("Visa Result")
-    agent = st.text_input("Agent")
-    note = st.text_input("Note")
+    # Personal Information
+    with st.expander("📋 Personal Information", expanded=True):
+        first_name = st.text_input("First Name ✏️")
+        last_name = st.text_input("Last Name ✏️")
+        phone_number = st.text_input("Phone Number 📞")
+        email = st.text_input("Email 📧")
+        emergency_contact = st.text_input("Emergency Contact Number 🚨")
+        address = st.text_input("Address 🏠")
+    
+    # School Information
+    with st.expander("🏫 School Information", expanded=True):
+        chosen_school = st.text_input("Chosen School 🎓")
+        duration = st.text_input("Duration ⏳")
+        school_entry_date = st.text_input("School Entry Date 📅")
+        entry_date_in_us = st.text_input("Entry Date in the US ✈️")
 
-    if st.button("Add Student"):
+    # Embassy Information
+    with st.expander("🏛️ Embassy Information", expanded=True):
+        address_us = st.text_input("Address in the U.S 📍")
+        email_rdv = st.text_input("E-mail RDV 📧")
+        password_rdv = st.text_input("Password RDV 🔒")
+        embassy_itw_date = st.text_input("Embassy Interview Date 📅")
+        ds160_maker = st.text_input("DS-160 Maker 📝")
+        password_ds160 = st.text_input("Password DS-160 🔒")
+        secret_q = st.text_input("Secret Question ❓")
+    
+    # Payment Information
+    with st.expander("💰 Payment Information", expanded=True):
+        payment_method = st.text_input("Payment Method 💳")
+        sevis_payment = st.text_input("Sevis Payment 💵")
+        application_payment = st.text_input("Application Payment 💵")
+
+    # Additional Information
+    attempts = st.text_input("Attempts 🔄")
+    visa_result = st.text_input("Visa Result 🛂")
+    agent = st.text_input("Agent 🧑‍💼")
+    note = st.text_input("Note 📝")
+
+    if st.button("Add Student", key="add_student_button"):
         student_data = [
             first_name, last_name, phone_number, address, email, emergency_contact, chosen_school,
             duration, payment_method, sevis_payment, application_payment, ds160_maker, password_ds160,
@@ -113,7 +133,7 @@ def main():
             attempts, visa_result, agent, note
         ]
         add_student_to_sheet(student_data)
-        st.success("Student added successfully!")
+        st.success("Student added successfully! 🎉")
 
     # Footer
     st.markdown("---")
