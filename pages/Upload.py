@@ -309,32 +309,32 @@ def main():
         .stButton>button {
             background-color: #ff7f50;
             color: white;
-            font-weight: bold.
+            font-weight: bold;
         }
         .stButton>button:hover {
-            background-color: #ff6347.
+            background-color: #ff6347;
         }
         .stTextInput input {
-            font-size: 1rem.
-            padding: 10px.
-            margin-bottom: 10px.
+            font-size: 1rem;
+            padding: 10px;
+            margin-bottom: 10px;
         }
         /* Progress bar styling */
         .progress-container {
-            width: 100%.
-            background-color: #e0e0e0.
-            border-radius: 10px.
-            margin-bottom: 1rem.
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 1rem;
         }
         .progress-bar {
-            height: 20px.
-            background-color: #4caf50.
-            border-radius: 10px.
-            transition: width 0.5s ease-in-out.
-            text-align: center.
-            line-height: 20px.
-            color: white.
-            font-weight: bold.
+            height: 20px;
+            background-color: #4caf50;
+            border-radius: 10px;
+            transition: width 0.5s ease-in-out;
+            text-align: center;
+            line-height: 20px;
+            color: white;
+            font-weight: bold;
         }
     </style>
     """, unsafe_allow_html=True)
@@ -368,11 +368,9 @@ def main():
             </div>
             """, unsafe_allow_html=True)
             status_filter = st.selectbox("", ["All"] + list(data['Current Step'].unique()), key="status_filter")
-            
-            search_button = st.button("Search", key="search_button")
 
         filtered_data = data
-        if search_query and search_button:
+        if search_query:
             filtered_data = filtered_data[filtered_data['Student Name'].str.contains(search_query, case=False, na=False)]
         if status_filter != "All":
             filtered_data = filtered_data[filtered_data['Current Step'] == status_filter]
@@ -427,15 +425,7 @@ def main():
         st.markdown('</div>', unsafe_allow_html=True)
 
         if not filtered_data.empty:
-            st.markdown('<div class="stCard">', unsafe_allow_html=True)
-            selected_index = st.selectbox(
-                "Select a student to view details",
-                range(len(filtered_data)),
-                format_func=lambda i: f"{filtered_data.iloc[i]['Student Name']} - {filtered_data.iloc[i]['Current Step']}",
-                key="selected_index"
-            )
-
-            selected_student = filtered_data.iloc[selected_index]
+            selected_student = filtered_data.iloc[0]
             student_name = selected_student['Student Name']
 
             edit_mode = st.toggle("Edit Mode", value=False)
