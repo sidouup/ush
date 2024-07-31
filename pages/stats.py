@@ -162,7 +162,7 @@ def plot_insights(data):
     # Payment trends by month
     st.header("Payment Trends by Month")
     if 'DATE' in data.columns:
-        data['Month'] = data['DATE'].dt.to_period('M')
+        data['Month'] = data['DATE'].dt.to_period('M').astype(str)  # Convert Period to string
         monthly_payment_trends = data.groupby('Month').size().reset_index(name='Payments')
         fig8 = px.bar(monthly_payment_trends, x='Month', y='Payments', title='Payment Trends by Month')
         st.plotly_chart(fig8)
