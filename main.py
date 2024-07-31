@@ -212,7 +212,7 @@ def main():
             
             with col1:
                 with st.expander("📋 Personal Information", expanded=True):
-                    st.write(selected_student[['First Name', 'Last Name', 'Phone N°', 'E-mail', 'Emergency contact N°', 'Attempts', 'Address']])
+                    st.write(selected_student[['First Name', 'Last Name', 'Phone N°', 'E-mail', 'Emergency contact N° ', 'Attempts', 'Address']])
                 
                 with st.expander("🏫 School Information", expanded=True):
                     st.write(selected_student[['Chosen School', 'Duration', 'School Entry Date', 'Entry Date in the US']])
