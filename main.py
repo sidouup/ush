@@ -2,50 +2,30 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 import plotly.express as px
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
-import io
+import gspread
+from google.oauth2.service_account import Credentials
 
-# Function to load data from Google Sheets and return it as an Excel file in-memory
-def load_google_sheets_to_excel(sheet_id, credentials):
-    service = build("sheets", "v4", credentials=credentials)
-    sheet_metadata = service.spreadsheets().get(spreadsheetId=sheet_id).execute()
-    sheets = sheet_metadata.get('sheets', '')
-    
-    output = io.BytesIO()
-    
-    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-        for sheet in sheets:
-            sheet_name = sheet['properties']['title']
-            result = service.spreadsheets().values().get(spreadsheetId=sheet_id, range=sheet_name).execute()
-            values = result.get('values', [])
-            if not values or len(values) < 2:
-                continue
-            
-            headers = values[0]
-            data = values[1:]
+# Google Sheets configuration
+private_gsheets_url = "https://docs.google.com/spreadsheets/d/1NPc-dQ7uts1c1JjNoABBou-uq2ixzUTiSBTB8qlTuOQ/edit?gid=503506128#gid=503506128"
 
-            # Ensure each row has the same number of columns as the headers
-            data = [row for row in data if len(row) == len(headers)]
+# Set up Google Sheets credentials
+scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+credentials = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=scope)
+client = gspread.authorize(credentials)
 
-            # Create DataFrame and write to Excel
-            df = pd.DataFrame(data, columns=headers)
-            df.to_excel(writer, sheet_name=sheet_name, index=False)
-    
-    output.seek(0)
-    return output
-
-# Function to load and combine data from all sheets in the provided Excel file
-def load_and_combine_data(excel_file):
-    xls = pd.ExcelFile(excel_file)
+# Function to load and combine data from all sheets in the Google Sheet
+def load_and_combine_data(gsheets_url):
+    sheet = client.open_by_url(gsheets_url)
     combined_data = pd.DataFrame()
     
-    for sheet_name in xls.sheet_names:
-        df = pd.read_excel(excel_file, sheet_name=sheet_name)
+    for sheet_name in sheet.worksheets():
+        worksheet = sheet.worksheet(sheet_name.title)
+        data = worksheet.get_all_records()
+        df = pd.DataFrame(data)
         df['Student Name'] = df.iloc[:, 1].astype(str) + " " + df.iloc[:, 2].astype(str)
         df.dropna(subset=['Student Name'], inplace=True)
         df.dropna(how='all', inplace=True)
-        df['Current Step'] = sheet_name
+        df['Current Step'] = sheet_name.title
         combined_data = pd.concat([combined_data, df], ignore_index=True)
     
     combined_data.drop_duplicates(subset='Student Name', keep='last', inplace=True)
@@ -129,18 +109,8 @@ st.markdown("""
     </div>
     """, unsafe_allow_html=True)
 
-# Load data from Google Sheets
-credentials = service_account.Credentials.from_service_account_info(
-    st.secrets["gcp_service_account"],
-    scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"],
-)
-sheet_id = st.secrets["private_gsheets_url"].split("/")[5]
-
-# Load and transform data from Google Sheets into an Excel file in-memory
-excel_file = load_google_sheets_to_excel(sheet_id, credentials)
-
-# Load and combine data from the in-memory Excel file
-data = load_and_combine_data(excel_file)
+# Load and combine data from all sheets in the Google Sheet
+data = load_and_combine_data(private_gsheets_url)
 
 # Combined search and selection functionality
 st.header("👤 Student Search and Details")
@@ -178,7 +148,7 @@ if not filtered_data.empty:
             st.write(selected_student[['Chosen School', 'Duration', 'School Entry Date', 'Entry Date in the US']])
         
         with st.expander("🏛️ Embassy Information", expanded=True):
-            st.write(selected_student[['ADDRESS in the U.S', 'E-MAIL RDV', 'PASSWORD RDV', 'EMBASSY ITW. DATE', 'DS-160 maker', 'Password DS-160', 'Secret Q.']])
+            st.write(selected_student[['ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV', 'EMBASSY ITW. DATE', 'DS-160 maker', 'Password DS-160', 'Secret Q.']])
     
     with col2:
         st.subheader("Application Status")
@@ -201,7 +171,7 @@ if not filtered_data.empty:
         
         # Payment Information
         with st.expander("💰 Payment Information", expanded=True):
-            st.write(selected_student[['DATE','Payment Method ', 'Sevis payment ?', 'Application payment ?']])
+            st.write(selected_student[['DATE','Payment Method ', 'Sevis payment ? ', 'Application payment ?']])
 else:
     st.info("No students found matching the search criteria.")
 
