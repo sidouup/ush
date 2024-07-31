@@ -363,13 +363,6 @@ def main():
                     password_ds160 = st.text_input("Password DS-160", selected_student['Password DS-160'], key="password_ds160")
                     secret_q = st.text_input("Secret Question", selected_student['Secret Q.'], key="secret_q")
                 
-                # Check document status immediately
-                document_status = check_document_status(student_name)
-                st.subheader("Document Status")
-                for doc_type, status in document_status.items():
-                    color = "green" if status else "red"
-                    st.write(f"{doc_type}: <span style='color:{color};'>{'✔️' if status else '❌'}</span>", unsafe_allow_html=True)
-                
                 with st.expander("📂 Upload Documents", expanded=True):
                     document_type = st.selectbox("Select Document Type", ["Passport", "Bank Statement", "Financial Letter", "Transcripts", "Diplomas", "English Test"], key="document_type")
                     uploaded_files = st.file_uploader("Upload Student Documents", type=["jpg", "jpeg", "png", "pdf"], accept_multiple_files=True, key="uploaded_files")
@@ -408,6 +401,13 @@ def main():
                     payment_method = st.text_input("Payment Method", selected_student['Payment Method '], key="payment_method")
                     sevis_payment = st.text_input("Sevis Payment", selected_student['Sevis payment ? '], key="sevis_payment")
                     application_payment = st.text_input("Application Payment", selected_student['Application payment ?'], key="application_payment")
+
+                # Display document status here
+                document_status = check_document_status(student_name)
+                st.subheader("Document Status")
+                for doc_type, status in document_status.items():
+                    color = "green" if status else "red"
+                    st.write(f"{doc_type}: <span style='color:{color};'>{'✔️' if status else '❌'}</span>", unsafe_allow_html=True)
 
             if st.button("Save Changes"):
                 updated_student = {
