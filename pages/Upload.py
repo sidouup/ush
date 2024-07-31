@@ -359,19 +359,7 @@ def main():
         col1, col2 = st.columns([2, 3])
         
         with col1:
-            # Use selectbox for search bar with suggestions
-            search_query = st.selectbox("🔍 Search for a student (First or Last Name)", options=student_names, key="search_query")
-            
-            # HTML for bold title and selectbox without extra space
-            st.markdown("""
-            <div style="margin-bottom: -20px;">
-                <p style="font-weight: bold; margin-bottom: 5px;">Filter by status</p>
-            </div>
-            """, unsafe_allow_html=True)
-            status_filter = st.selectbox("", ["All"] + list(data['Current Step'].unique()), key="status_filter")
-            
-            search_button = st.button("Search", key="search_button")
-        # Apply filter based on status
+            status_filter = st.selectbox("Filter by status", current_steps, key="status_filter")        # Apply filter based on status
         filtered_data = data if status_filter == "All" else data[data['Current Step'] == status_filter]
         
         # Extract list of student names from filtered data
