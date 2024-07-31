@@ -4,7 +4,6 @@ from datetime import datetime
 import plotly.express as px
 import gspread
 from google.oauth2.service_account import Credentials
-import json
 
 # Use Streamlit secrets for service account info
 SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
@@ -17,7 +16,7 @@ def get_google_sheet_client():
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
     creds = Credentials.from_service_account_info(SERVICE_ACCOUNT_INFO, scopes=scope)
     return gspread.authorize(creds)
-
+    
 def load_data():
     sheet_headers = {
         'PAYMENT & MAIL': [
@@ -102,25 +101,12 @@ def load_data():
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
         return pd.DataFrame()
-        
-def get_visa_status(result):
-    result_mapping = {
-        'Denied': 'Denied',
-        'Approved': 'Approved',
-        'Not our school partner': 'Not our school partner',
-    }
-    return result_mapping.get(result, 'Unknown')
 
-def calculate_days_until_interview(interview_date):
-    try:
-        interview_date = pd.to_datetime(interview_date, format='%d/%m/%Y', errors='coerce')
-        if pd.isnull(interview_date):
-            return None
-        today = pd.to_datetime(datetime.today().strftime('%Y-%m-%d'))
-        days_remaining = (interview_date - today).days
-        return days_remaining
-    except Exception as e:
-        return None
+def save_data(df, sheet_name):
+    client = get_google_sheet_client()
+    sheet = client.open_by_key(SPREADSHEET_ID)
+    worksheet = sheet.worksheet(sheet_name)
+    worksheet.update([df.columns.values.tolist()] + df.values.tolist())
 
 def main():
     # Set page config
@@ -209,32 +195,47 @@ def main():
             
             selected_student = filtered_data.iloc[selected_index]
             
-            # Display student details
+            # Display and edit student details
             col1, col2 = st.columns([2, 1])
             
             with col1:
                 with st.expander("📋 Personal Information", expanded=True):
-                    st.write(selected_student[['First Name', 'Last Name', 'Phone N°', 'E-mail', 'Emergency contact N°', 'Attempts', 'Address']])
+                    first_name = st.text_input("First Name", selected_student['First Name'])
+                    last_name = st.text_input("Last Name", selected_student['Last Name'])
+                    phone_number = st.text_input("Phone Number", selected_student['Phone N°'])
+                    email = st.text_input("Email", selected_student['E-mail'])
+                    emergency_contact = st.text_input("Emergency Contact Number", selected_student['Emergency contact N°'])
+                    address = st.text_input("Address", selected_student['Address'])
+                    attempts = st.text_input("Attempts", selected_student['Attempts'])
                 
                 with st.expander("🏫 School Information", expanded=True):
-                    st.write(selected_student[['Chosen School', 'Duration', 'School Entry Date', 'Entry Date in the US']])
+                    chosen_school = st.text_input("Chosen School", selected_student['Chosen School'])
+                    duration = st.text_input("Duration", selected_student['Duration'])
+                    school_entry_date = st.text_input("School Entry Date", selected_student['School Entry Date'])
+                    entry_date_in_us = st.text_input("Entry Date in the US", selected_student['Entry Date in the US'])
                 
                 with st.expander("🏛️ Embassy Information", expanded=True):
-                    st.write(selected_student[['ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV', 'EMBASSY ITW. DATE', 'DS-160 maker', 'Password DS-160', 'Secret Q.']])
+                    address_us = st.text_input("Address in the U.S", selected_student['ADDRESS in the U.S'])
+                    email_rdv = st.text_input("E-mail RDV", selected_student[' E-MAIL RDV'])
+                    password_rdv = st.text_input("Password RDV", selected_student['PASSWORD RDV'])
+                    embassy_itw_date = st.text_input("Embassy Interview Date", selected_student['EMBASSY ITW. DATE'])
+                    ds160_maker = st.text_input("DS-160 Maker", selected_student['DS-160 maker'])
+                    password_ds160 = st.text_input("Password DS-160", selected_student['Password DS-160'])
+                    secret_q = st.text_input("Secret Question", selected_student['Secret Q.'])
             
             with col2:
                 st.subheader("Application Status")
                 
                 # Visa Status
-                visa_status = get_visa_status(selected_student.get('Visa Result', 'Unknown'))
-                st.metric("Visa Status", visa_status)
+                visa_status = st.selectbox(
+                    "Visa Status",
+                    ['Denied', 'Approved', 'Not our school partner', 'Unknown'],
+                    index=['Denied', 'Approved', 'Not our school partner', 'Unknown'].index(get_visa_status(selected_student.get('Visa Result', 'Unknown')))
+                )
                 
                 # Current Step
-                current_step = selected_student['Current Step']
-                st.metric("Current Step", current_step)
-                
-                # Days until interview
-                interview_date = selected_student.get('EMBASSY ITW. DATE')
+                current_step = st.text_input("Current Step", selected_student['Current Step'])
+                interview_date = st.text_input("Embassy Interview Date", selected_student['EMBASSY ITW. DATE'])
                 days_remaining = calculate_days_until_interview(interview_date)
                 if days_remaining is not None:
                     st.metric("Days until interview", days_remaining)
@@ -243,7 +244,49 @@ def main():
                 
                 # Payment Information
                 with st.expander("💰 Payment Information", expanded=True):
-                    st.write(selected_student[['DATE', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?']])
+                    payment_date = st.text_input("Payment Date", selected_student['DATE'])
+                    payment_method = st.text_input("Payment Method", selected_student['Payment Method '])
+                    sevis_payment = st.text_input("Sevis Payment", selected_student['Sevis payment ? '])
+                    application_payment = st.text_input("Application Payment", selected_student['Application payment ?'])
+
+            # Save changes button
+            if st.button("Save Changes"):
+                # Update the selected student record with new values
+                updated_student = {
+                    'First Name': first_name,
+                    'Last Name': last_name,
+                    'Phone N°': phone_number,
+                    'E-mail': email,
+                    'Emergency contact N°': emergency_contact,
+                    'Address': address,
+                    'Attempts': attempts,
+                    'Chosen School': chosen_school,
+                    'Duration': duration,
+                    'School Entry Date': school_entry_date,
+                    'Entry Date in the US': entry_date_in_us,
+                    'ADDRESS in the U.S': address_us,
+                    ' E-MAIL RDV': email_rdv,
+                    'PASSWORD RDV': password_rdv,
+                    'EMBASSY ITW. DATE': embassy_itw_date,
+                    'DS-160 maker': ds160_maker,
+                    'Password DS-160': password_ds160,
+                    'Secret Q.': secret_q,
+                    'Visa Result': visa_status,
+                    'Current Step': current_step,
+                    'DATE': payment_date,
+                    'Payment Method ': payment_method,
+                    'Sevis payment ? ': sevis_payment,
+                    'Application payment ?': application_payment,
+                }
+                
+                # Update the DataFrame
+                for key, value in updated_student.items():
+                    data.at[selected_index, key] = value
+
+                # Save updated data back to Google Sheets
+                save_data(data, selected_student['Current Step'])
+                st.success("Changes saved successfully!")
+
         else:
             st.info("No students found matching the search criteria.")
 
@@ -270,3 +313,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
