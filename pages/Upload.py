@@ -545,34 +545,18 @@ def main():
                 st.markdown("</div>", unsafe_allow_html=True)
 
 # JavaScript for delete functionality
-                st.markdown(r"""
-                <script>
-                function deleteFile(fileId) {
-                    if (confirm('Are you sure you want to delete this file?')) {
-                        fetch('/delete_file', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({file_id: fileId}),
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                alert('File deleted successfully');
-                                location.reload();
-                            } else {
-                                alert('Failed to delete file: ' + data.error);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('An error occurred while deleting the file');
-                        });
-                    }
-                }
-                </script>
-                """, unsafe_allow_html=True)
+st.markdown(f"""
+                    <div class='document-item'>
+                        <span class='status-icon'>{icon}</span>
+                        <span class='document-name'>{doc_type}</span>
+                        {"".join([f"<a href='{file['webViewLink']}' target='_blank' class='file-link'>{file['name']}</a><span class='delete-button' onclick='deleteFile(\"{file['id']}\")'>🗑️</span>" for file in status_info['files']])}
+                    </div>
+                    """, unsafe_allow_html=True)
+
+
+
+
+
 
 
             if edit_mode and st.button("Save Changes"):
