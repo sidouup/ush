@@ -539,10 +539,9 @@ def main():
                     <div class='document-item'>
                         <span class='status-icon'>{icon}</span>
                         <span class='document-name'>{doc_type}</span>
-                        {"".join([f"<a href='{file['webViewLink']}' target='_blank' class='file-link'>{file['name']}</a><span class='delete-button' onclick='deleteFile(\"{file['id']}\")'>🗑️</span>" for file in status_info['files']])}
+                        {"".join([f"<a href='{file['webViewLink']}' target='_blank' class='file-link'>{file['name']}</a><span class='delete-button' onclick='deleteFile(&quot;{file['id']}&quot;)'>🗑️</span>" for file in status_info['files']])}
                     </div>
                     """, unsafe_allow_html=True)
-
                 # JavaScript for delete functionality
                 st.markdown(r"""
                 <script>
