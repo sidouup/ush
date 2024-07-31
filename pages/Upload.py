@@ -544,8 +544,8 @@ def main():
                     """, unsafe_allow_html=True)
                 st.markdown("</div>", unsafe_allow_html=True)
 
-                # JavaScript for delete functionality
-                st.markdown("""
+# JavaScript for delete functionality
+                st.markdown(r"""
                 <script>
                 function deleteFile(fileId) {
                     if (confirm('Are you sure you want to delete this file?')) {
@@ -573,6 +573,7 @@ def main():
                 }
                 </script>
                 """, unsafe_allow_html=True)
+
             if edit_mode and st.button("Save Changes"):
                 updated_student = {
                     'First Name': first_name,
