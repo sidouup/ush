@@ -2,33 +2,15 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 import plotly.express as px
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
 
-# Function to load and combine data from all sheets in Google Sheets
-def load_and_combine_data(sheet_id, credentials):
-    service = build("sheets", "v4", credentials=credentials)
-    sheet_metadata = service.spreadsheets().get(spreadsheetId=sheet_id).execute()
-    sheets = sheet_metadata.get('sheets', '')
-    
+# Function to load and combine data from all sheets in the Excel file
+def load_and_combine_data(file_path):
+    xls = pd.ExcelFile(file_path)
     combined_data = pd.DataFrame()
     
-    for sheet in sheets:
-        sheet_name = sheet['properties']['title']
-        result = service.spreadsheets().values().get(spreadsheetId=sheet_id, range=sheet_name).execute()
-        values = result.get('values', [])
-        if not values or len(values) < 2:
-            continue
+    for sheet_name in xls.sheet_names:
+        df = pd.read_excel(file_path, sheet_name=sheet_name)
         
-        headers = values[0]
-        data = values[1:]
-
-        # Ensure each row has the same number of columns as the headers
-        data = [row for row in data if len(row) == len(headers)]
-
-        # Create DataFrame and filter necessary columns
-        df = pd.DataFrame(data, columns=headers)
-
         # Add missing columns if necessary
         required_columns = ['First Name', 'Last Name', 'Phone N°', 'E-mail', 'Emergency contact N°', 
                             'Attempts', 'Address', 'Chosen School', 'Duration', 'School Entry Date', 
@@ -38,9 +20,10 @@ def load_and_combine_data(sheet_id, credentials):
         for col in required_columns:
             if col not in df.columns:
                 df[col] = None
-
+        
         df['Student Name'] = df['First Name'].astype(str) + " " + df['Last Name'].astype(str)
         df.dropna(subset=['Student Name'], inplace=True)
+        df.dropna(how='all', inplace=True)
         df['Current Step'] = sheet_name
         combined_data = pd.concat([combined_data, df], ignore_index=True)
     
@@ -125,92 +108,92 @@ st.markdown("""
     </div>
     """, unsafe_allow_html=True)
 
-# Load data from Google Sheets
-credentials = service_account.Credentials.from_service_account_info(
-    st.secrets["gcp_service_account"],
-    scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"],
-)
-sheet_id = st.secrets["private_gsheets_url"].split("/")[5]
+# Load data from the uploaded Excel file
+uploaded_file = file_path
 
-# Load and combine data from all sheets
-data = load_and_combine_data(sheet_id, credentials)
+if uploaded_file is not None:
+    # Load and combine data from all sheets
+    data = load_and_combine_data(uploaded_file)
 
-# Combined search and selection functionality
-st.header("👤 Student Search and Details")
-col1, col2 = st.columns([3, 1])
-with col1:
-    search_query = st.text_input("🔍 Search for a student (First or Last Name)")
-with col2:
-    st.markdown("<br>", unsafe_allow_html=True)  # Add some vertical space
-    search_button = st.button("Search", key="search_button", help="Click to search")
-
-# Filter data based on search query
-if search_query and search_button:
-    filtered_data = data[data['Student Name'].str.contains(search_query, case=False, na=False)]
-else:
-    filtered_data = data
-
-# Display filtered data with selection capability
-if not filtered_data.empty:
-    selected_index = st.selectbox(
-        "Select a student to view details",
-        range(len(filtered_data)),
-        format_func=lambda i: f"{filtered_data.iloc[i]['Student Name']} - {filtered_data.iloc[i]['Current Step']}"
-    )
-    
-    selected_student = filtered_data.iloc[selected_index]
-    
-    # Display student details
-    col1, col2 = st.columns([2, 1])
-    
+    # Combined search and selection functionality
+    st.header("👤 Student Search and Details")
+    col1, col2 = st.columns([3, 1])
     with col1:
-        with st.expander("📋 Personal Information", expanded=True):
-            st.write(selected_student[['First Name', 'Last Name', 'Phone N°', 'E-mail', 'Emergency contact N°', 'Attempts', 'Address']])
-        
-        with st.expander("🏫 School Information", expanded=True):
-            st.write(selected_student[['Chosen School', 'Duration', 'School Entry Date', 'Entry Date in the US']])
-        
-        with st.expander("🏛️ Embassy Information", expanded=True):
-            st.write(selected_student[['ADDRESS in the U.S', 'E-MAIL RDV', 'PASSWORD RDV', 'EMBASSY ITW. DATE', 'DS-160 maker', 'Password DS-160', 'Secret Q.']])
-    
+        search_query = st.text_input("🔍 Search for a student (First or Last Name)")
     with col2:
-        st.subheader("Application Status")
+        st.markdown("<br>", unsafe_allow_html=True)  # Add some vertical space
+        search_button = st.button("Search", key="search_button", help="Click to search")
+    
+    # Filter data based on search query
+    if search_query and search_button:
+        filtered_data = data[data['Student Name'].str.contains(search_query, case=False, na=False)]
+    else:
+        filtered_data = data
+
+    # Display filtered data with selection capability
+    if not filtered_data.empty:
+        selected_index = st.selectbox(
+            "Select a student to view details",
+            range(len(filtered_data)),
+            format_func=lambda i: f"{filtered_data.iloc[i]['Student Name']} - {filtered_data.iloc[i]['Current Step']}"
+        )
         
-        # Visa Status
-        visa_status = get_visa_status(selected_student['Visa Result'])
-        st.metric("Visa Status", visa_status)
+        selected_student = filtered_data.iloc[selected_index]
         
-        # Current Step
-        current_step = selected_student['Current Step']
-        st.metric("Current Step", current_step)
+        # Display student details
+        col1, col2 = st.columns([2, 1])
         
-        # Days until interview
-        interview_date = selected_student['EMBASSY ITW. DATE']
-        days_remaining = calculate_days_until_interview(interview_date)
-        if days_remaining is not None:
-            st.metric("Days until interview", days_remaining)
-        else:
-            st.metric("Days until interview", "N/A")
+        with col1:
+            with st.expander("📋 Personal Information", expanded=True):
+                st.write(selected_student[['First Name', 'Last Name', 'Phone N°', 'E-mail', 'Emergency contact N°', 'Attempts', 'Address']])
+            
+            with st.expander("🏫 School Information", expanded=True):
+                st.write(selected_student[['Chosen School', 'Duration', 'School Entry Date', 'Entry Date in the US']])
+            
+            with st.expander("🏛️ Embassy Information", expanded=True):
+                st.write(selected_student[['ADDRESS in the U.S', 'E-MAIL RDV', 'PASSWORD RDV', 'EMBASSY ITW. DATE', 'DS-160 maker', 'Password DS-160', 'Secret Q.']])
         
-        # Payment Information
-        with st.expander("💰 Payment Information", expanded=True):
-            st.write(selected_student[['DATE','Payment Method ', 'Sevis payment ?', 'Application payment ?']])
+        with col2:
+            st.subheader("Application Status")
+            
+            # Visa Status
+            visa_status = get_visa_status(selected_student['Visa Result'])
+            st.metric("Visa Status", visa_status)
+            
+            # Current Step
+            current_step = selected_student['Current Step']
+            st.metric("Current Step", current_step)
+            
+            # Days until interview
+            interview_date = selected_student['EMBASSY ITW. DATE']
+            days_remaining = calculate_days_until_interview(interview_date)
+            if days_remaining is not None:
+                st.metric("Days until interview", days_remaining)
+            else:
+                st.metric("Days until interview", "N/A")
+            
+            # Payment Information
+            with st.expander("💰 Payment Information", expanded=True):
+                st.write(selected_student[['DATE','Payment Method ', 'Sevis payment ?', 'Application payment ?']])
+    else:
+        st.info("No students found matching the search criteria.")
+
+    # Dashboard with all clients (moved to the end)
+    st.header("📊 Dashboard - All Clients")
+    
+    # Create a bar chart of students per step
+    step_counts = data['Current Step'].value_counts()
+    fig = px.bar(step_counts, x=step_counts.index, y=step_counts.values, 
+                 labels={'x': 'Application Step', 'y': 'Number of Students'},
+                 title='Students per Application Step')
+    fig.update_layout(
+        plot_bgcolor='rgba(0,0,0,0.05)',
+        paper_bgcolor='rgba(0,0,0,0)',
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
 else:
-    st.info("No students found matching the search criteria.")
-
-# Dashboard with all clients (moved to the end)
-st.header("📊 Dashboard - All Clients")
-
-# Create a bar chart of students per step
-step_counts = data['Current Step'].value_counts()
-fig = px.bar(step_counts, x=step_counts.index, y=step_counts.values, 
-             labels={'x': 'Application Step', 'y': 'Number of Students'},
-             title='Students per Application Step')
-fig.update_layout(
-    plot_bgcolor='rgba(0,0,0,0.05)',
-    paper_bgcolor='rgba(0,0,0,0)',
-)
-st.plotly_chart(fig, use_container_width=True)
+    st.info("👆 Please upload an Excel file to proceed.")
 
 # Footer
 st.markdown("---")
