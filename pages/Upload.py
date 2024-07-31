@@ -187,6 +187,7 @@ def main():
                     emergency_contact = st.text_input("Emergency Contact Number", selected_student['Emergency contact N°'], key="emergency_contact")
                     address = st.text_input("Address", selected_student['Address'], key="address")
                     attempts = st.text_input("Attempts", selected_student['Attempts'], key="attempts")
+                
                 with st.expander("🏫 School Information", expanded=True):
                     chosen_school = st.text_input("Chosen School", selected_student['Chosen School'], key="chosen_school")
                     duration = st.text_input("Duration", selected_student['Duration'], key="duration")
@@ -201,6 +202,20 @@ def main():
                     ds160_maker = st.text_input("DS-160 Maker", selected_student['DS-160 maker'], key="ds160_maker")
                     password_ds160 = st.text_input("Password DS-160", selected_student['Password DS-160'], key="password_ds160")
                     secret_q = st.text_input("Secret Question", selected_student['Secret Q.'], key="secret_q")
+                
+                with st.expander("📂 Upload Documents", expanded=True):
+                    uploaded_files = st.file_uploader("Upload Student Documents", type=["jpg", "jpeg", "png", "pdf"], accept_multiple_files=True, key="uploaded_files")
+                    folder_id = st.text_input("Google Drive Folder ID", "", key="folder_id")
+                    
+                    if st.button("Upload Files"):
+                        for uploaded_file in uploaded_files:
+                            bytes_data = uploaded_file.read()
+                            with open(uploaded_file.name, "wb") as f:
+                                f.write(bytes_data)
+                            mime_type = uploaded_file.type
+                            upload_file_to_drive(uploaded_file.name, mime_type, folder_id)
+                            os.remove(uploaded_file.name)
+                        st.success("Files uploaded successfully!")
             
             with col2:
                 st.subheader("Application Status")
