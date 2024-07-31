@@ -23,6 +23,18 @@ def get_visa_status(result):
         'Not our school partner': 'Not our school partner',
     }
     return result_mapping.get(result, 'Unknown')
+
+def calculate_days_until_interview(interview_date):
+    try:
+        interview_date = pd.to_datetime(interview_date, format='%d/%m/%Y', errors='coerce')
+        if pd.isnull(interview_date):
+            return None
+        today = pd.to_datetime(datetime.today().strftime('%Y-%m-%d'))
+        days_remaining = (interview_date - today).days
+        return days_remaining
+    except Exception as e:
+        return None
+
     
 def load_data():
     sheet_headers = {
