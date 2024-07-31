@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import gspread
 from google.oauth2.service_account import Credentials
+from gspread.exceptions import GSpreadException
 
 # Use Streamlit secrets to load credentials
 credentials_dict = {
@@ -33,6 +34,19 @@ st.title("Google Sheet Viewer")
 # Display the content of each worksheet
 for worksheet in worksheets:
     st.header(worksheet.title)
-    data = worksheet.get_all_records()
-    df = pd.DataFrame(data)
+    try:
+        data = worksheet.get_all_records()
+        df = pd.DataFrame(data)
+    except GSpreadException as e:
+        st.error(f"Error in worksheet '{worksheet.title}': {e}")
+        # Attempt to fix by manually setting expected headers if known
+        headers = worksheet.row_values(1)
+        data = worksheet.get_all_records(expected_headers=headers)
+        df = pd.DataFrame(data)
+    except Exception as e:
+        st.error(f"An unexpected error occurred in worksheet '{worksheet.title}': {e}")
+        continue
     st.dataframe(df)
+
+# Adding a less frequent health check (this might not be necessary on Streamlit Share)
+st.set_option('server.healthCheckInterval', 10000)
