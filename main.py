@@ -88,6 +88,8 @@ def load_data():
             df = pd.DataFrame(data)
             if not df.empty:
                 if 'First Name' in df.columns and 'Last Name' in df.columns:
+                    df['First Name'] = df['First Name'].astype(str)
+                    df['Last Name'] = df['Last Name'].astype(str)
                     df['Student Name'] = df['First Name'] + " " + df['Last Name']
                 df.dropna(subset=['Student Name'], inplace=True)
                 df.dropna(how='all', inplace=True)
