@@ -389,7 +389,50 @@ def main():
                     st.write(f"**Address:** {selected_student['Address']}")
                     st.write(f"**Attempts:** {selected_student['Attempts']}")
             
-            # ... [Keep the content for tab2, tab3, and tab4 as in the previous version] ...
+            with tab2:
+                st.subheader("🏫 School Information")
+                if edit_mode:
+                    chosen_school = st.text_input("Chosen School", selected_student['Chosen School'], key="chosen_school")
+                    duration = st.text_input("Duration", selected_student['Duration'], key="duration")
+                    school_entry_date = st.text_input("School Entry Date", selected_student['School Entry Date'], key="school_entry_date")
+                    entry_date_in_us = st.text_input("Entry Date in the US", selected_student['Entry Date in the US'], key="entry_date_in_us")
+                else:
+                    st.write(f"**Chosen School:** {selected_student['Chosen School']}")
+                    st.write(f"**Duration:** {selected_student['Duration']}")
+                    st.write(f"**School Entry Date:** {selected_student['School Entry Date']}")
+                    st.write(f"**Entry Date in the US:** {selected_student['Entry Date in the US']}")
+            
+            with tab3:
+                st.subheader("🏛️ Embassy Information")
+                if edit_mode:
+                    address_us = st.text_input("Address in the U.S", selected_student['ADDRESS in the U.S'], key="address_us")
+                    email_rdv = st.text_input("E-mail RDV", selected_student[' E-MAIL RDV'], key="email_rdv")
+                    password_rdv = st.text_input("Password RDV", selected_student['PASSWORD RDV'], key="password_rdv")
+                    embassy_itw_date = st.text_input("Embassy Interview Date", selected_student['EMBASSY ITW. DATE'], key="embassy_itw_date")
+                    ds160_maker = st.text_input("DS-160 Maker", selected_student['DS-160 maker'], key="ds160_maker")
+                    password_ds160 = st.text_input("Password DS-160", selected_student['Password DS-160'], key="password_ds160")
+                    secret_q = st.text_input("Secret Question", selected_student['Secret Q.'], key="secret_q")
+                else:
+                    st.write(f"**Address in the U.S:** {selected_student['ADDRESS in the U.S']}")
+                    st.write(f"**E-mail RDV:** {selected_student[' E-MAIL RDV']}")
+                    st.write(f"**Password RDV:** {selected_student['PASSWORD RDV']}")
+                    st.write(f"**Embassy Interview Date:** {selected_student['EMBASSY ITW. DATE']}")
+                    st.write(f"**DS-160 Maker:** {selected_student['DS-160 maker']}")
+                    st.write(f"**Password DS-160:** {selected_student['Password DS-160']}")
+                    st.write(f"**Secret Question:** {selected_student['Secret Q.']}")
+            
+            with tab4:
+                st.subheader("💰 Payment Information")
+                if edit_mode:
+                    payment_date = st.text_input("Payment Date", selected_student['DATE'], key="payment_date")
+                    payment_method = st.text_input("Payment Method", selected_student['Payment Method '], key="payment_method")
+                    sevis_payment = st.text_input("Sevis Payment", selected_student['Sevis payment ? '], key="sevis_payment")
+                    application_payment = st.text_input("Application Payment", selected_student['Application payment ?'], key="application_payment")
+                else:
+                    st.write(f"**Payment Date:** {selected_student['DATE']}")
+                    st.write(f"**Payment Method:** {selected_student['Payment Method ']}")
+                    st.write(f"**Sevis Payment:** {selected_student['Sevis payment ? ']}")
+                    st.write(f"**Application Payment:** {selected_student['Application payment ?']}")
 
             with tab5:
                 st.subheader("📂 Document Upload and Status")
