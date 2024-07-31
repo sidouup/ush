@@ -4,13 +4,29 @@ from datetime import datetime
 import plotly.express as px
 
 # Function to load and combine data from all sheets in the Excel file
-def load_and_combine_data(file_path):
-    xls = pd.ExcelFile(file_path)
+def load_and_combine_data(sheet_id, credentials):
+    service = build("sheets", "v4", credentials=credentials)
+    sheet_metadata = service.spreadsheets().get(spreadsheetId=sheet_id).execute()
+    sheets = sheet_metadata.get('sheets', '')
+    
     combined_data = pd.DataFrame()
     
-    for sheet_name in xls.sheet_names:
-        df = pd.read_excel(file_path, sheet_name=sheet_name)
+    for sheet in sheets:
+        sheet_name = sheet['properties']['title']
+        result = service.spreadsheets().values().get(spreadsheetId=sheet_id, range=sheet_name).execute()
+        values = result.get('values', [])
+        if not values or len(values) < 2:
+            continue
         
+        headers = values[0]
+        data = values[1:]
+
+        # Ensure each row has the same number of columns as the headers
+        data = [row for row in data if len(row) == len(headers)]
+
+        # Create DataFrame and filter necessary columns
+        df = pd.DataFrame(data, columns=headers)
+
         # Add missing columns if necessary
         required_columns = ['First Name', 'Last Name', 'Phone N°', 'E-mail', 'Emergency contact N°', 
                             'Attempts', 'Address', 'Chosen School', 'Duration', 'School Entry Date', 
@@ -20,10 +36,9 @@ def load_and_combine_data(file_path):
         for col in required_columns:
             if col not in df.columns:
                 df[col] = None
-        
+
         df['Student Name'] = df['First Name'].astype(str) + " " + df['Last Name'].astype(str)
         df.dropna(subset=['Student Name'], inplace=True)
-        df.dropna(how='all', inplace=True)
         df['Current Step'] = sheet_name
         combined_data = pd.concat([combined_data, df], ignore_index=True)
     
