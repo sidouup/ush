@@ -331,163 +331,163 @@ def main():
         else:
             filtered_data = data
 
-    if not filtered_data.empty:
-        selected_index = st.selectbox(
-            "Select a student to view details",
-            range(len(filtered_data)),
-            format_func=lambda i: f"{filtered_data.iloc[i]['Student Name']} - {filtered_data.iloc[i]['Current Step']}",
-            key="selected_index"
-        )
-    
-        selected_student = filtered_data.iloc[selected_index]
-        student_name = selected_student['Student Name']
-    
-        # Create three columns: left for personal info, middle for school/embassy info, right for documents
-        col1, col2, col3 = st.columns([2, 2, 1.5])
+        if not filtered_data.empty:
+            selected_index = st.selectbox(
+                "Select a student to view details",
+                range(len(filtered_data)),
+                format_func=lambda i: f"{filtered_data.iloc[i]['Student Name']} - {filtered_data.iloc[i]['Current Step']}",
+                key="selected_index"
+            )
         
-        with col1:
-            with st.expander("📋 Personal Information", expanded=True):
-                st.write(f"**First Name:** {selected_student['First Name']}")
-                st.write(f"**Last Name:** {selected_student['Last Name']}")
-                st.write(f"**Phone Number:** {selected_student['Phone N°']}")
-                st.write(f"**Email:** {selected_student['E-mail']}")
-                st.write(f"**Emergency Contact Number:** {selected_student['Emergency contact N°']}")
-                st.write(f"**Address:** {selected_student['Address']}")
-                st.write(f"**Attempts:** {selected_student['Attempts']}")
-            
-            with st.expander("🏫 School Information", expanded=True):
-                st.write(f"**Chosen School:** {selected_student['Chosen School']}")
-                st.write(f"**Duration:** {selected_student['Duration']}")
-                st.write(f"**School Entry Date:** {selected_student['School Entry Date']}")
-                st.write(f"**Entry Date in the US:** {selected_student['Entry Date in the US']}")
+            selected_student = filtered_data.iloc[selected_index]
+            student_name = selected_student['Student Name']
         
-        with col2:
-            with st.expander("🏛️ Embassy Information", expanded=True):
-                st.write(f"**Address in the U.S:** {selected_student['ADDRESS in the U.S']}")
-                st.write(f"**E-mail RDV:** {selected_student[' E-MAIL RDV']}")
-                st.write(f"**Password RDV:** {selected_student['PASSWORD RDV']}")
-                st.write(f"**Embassy Interview Date:** {selected_student['EMBASSY ITW. DATE']}")
-                st.write(f"**DS-160 Maker:** {selected_student['DS-160 maker']}")
-                st.write(f"**Password DS-160:** {selected_student['Password DS-160']}")
-                st.write(f"**Secret Question:** {selected_student['Secret Q.']}")
+            # Create three columns: left for personal info, middle for school/embassy info, right for documents
+            col1, col2, col3 = st.columns([2, 2, 1.5])
             
-            with st.expander("💰 Payment Information", expanded=True):
-                st.write(f"**Payment Date:** {selected_student['DATE']}")
-                st.write(f"**Payment Method:** {selected_student['Payment Method ']}")
-                st.write(f"**Sevis Payment:** {selected_student['Sevis payment ? ']}")
-                st.write(f"**Application Payment:** {selected_student['Application payment ?']}")
-
-            # Application Status
-            st.subheader("Application Status")
-            steps = [
-                'PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 
-                'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'SEVIS', 'CLIENTS '
-            ]
+            with col1:
+                with st.expander("📋 Personal Information", expanded=True):
+                    st.write(f"**First Name:** {selected_student['First Name']}")
+                    st.write(f"**Last Name:** {selected_student['Last Name']}")
+                    st.write(f"**Phone Number:** {selected_student['Phone N°']}")
+                    st.write(f"**Email:** {selected_student['E-mail']}")
+                    st.write(f"**Emergency Contact Number:** {selected_student['Emergency contact N°']}")
+                    st.write(f"**Address:** {selected_student['Address']}")
+                    st.write(f"**Attempts:** {selected_student['Attempts']}")
+                
+                with st.expander("🏫 School Information", expanded=True):
+                    st.write(f"**Chosen School:** {selected_student['Chosen School']}")
+                    st.write(f"**Duration:** {selected_student['Duration']}")
+                    st.write(f"**School Entry Date:** {selected_student['School Entry Date']}")
+                    st.write(f"**Entry Date in the US:** {selected_student['Entry Date in the US']}")
             
-            current_step = selected_student['Current Step']
-            step_index = steps.index(current_step) if current_step in steps else 0
-            progress = (step_index + 1) / len(steps)
-            
-            progress_html = f"""
-            <style>
-            .progress-container {{
-              width: 100%;
-              background-color: #f3f3f3;
-              border-radius: 25px;
-              overflow: hidden;
-            }}
-            
-            .progress-bar {{
-              width: {progress * 100}%;
-              height: 30px;
-              background-color: green;
-              text-align: center;
-              line-height: 30px;
-              color: white;
-              border-radius: 25px;
-            }}
-            </style>
-            <div class="progress-container">
-              <div class="progress-bar">{int(progress * 100)}%</div>
-            </div>
-            """
-            
-            st.components.v1.html(progress_html, height=50)
-            
-            st.write(f"**Visa Status:** {get_visa_status(selected_student.get('Visa Result', 'Unknown'))}")
-            st.write(f"**Current Step:** {selected_student['Current Step']}")
-            
-            interview_date = selected_student['EMBASSY ITW. DATE']
-            days_remaining = calculate_days_until_interview(interview_date)
-            if days_remaining is not None:
-                st.metric("Days until interview", days_remaining)
-            else:
-                st.metric("Days until interview", "N/A")
-
-        with col3:
-            st.subheader("📂 Document Upload")
-            document_type = st.selectbox("Select Document Type", 
-                                         ["Passport", "Bank Statement", "Financial Letter", 
-                                          "Transcripts", "Diplomas", "English Test", "Payment Receipt"], 
-                                         key="document_type")
-            uploaded_file = st.file_uploader("Upload Document", type=["jpg", "jpeg", "png", "pdf"], key="uploaded_file")
-            
-            if uploaded_file and st.button("Upload Document"):
-                file_id = handle_file_upload(student_name, document_type, uploaded_file)
-                if file_id:
-                    st.success(f"{document_type} uploaded successfully!")
-                else:
-                    st.error("An error occurred while uploading the document.")
-
-            # Display document status here
-            document_status = check_document_status(student_name)
-            st.markdown("""
-            <style>
-            .document-status {
-                background-color: white;
-                border-radius: 10px;
-                padding: 20px;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            }
-            .document-item {
-                display: flex;
-                align-items: center;
-                margin-bottom: 10px;
-                padding: 10px;
-                background-color: #f8f9fa;
-                border-radius: 5px;
-            }
-            .status-icon {
-                font-size: 20px;
-                margin-right: 10px;
-            }
-            .document-name {
-                flex-grow: 1;
-                font-weight: 500;
-            }
-            .file-link {
-                color: #4a90e2;
-                text-decoration: none;
-                margin-left: 10px;
-            }
-            .file-link:hover {
-                text-decoration: underline;
-            }
-            </style>
-            """, unsafe_allow_html=True)
+            with col2:
+                with st.expander("🏛️ Embassy Information", expanded=True):
+                    st.write(f"**Address in the U.S:** {selected_student['ADDRESS in the U.S']}")
+                    st.write(f"**E-mail RDV:** {selected_student[' E-MAIL RDV']}")
+                    st.write(f"**Password RDV:** {selected_student['PASSWORD RDV']}")
+                    st.write(f"**Embassy Interview Date:** {selected_student['EMBASSY ITW. DATE']}")
+                    st.write(f"**DS-160 Maker:** {selected_student['DS-160 maker']}")
+                    st.write(f"**Password DS-160:** {selected_student['Password DS-160']}")
+                    st.write(f"**Secret Question:** {selected_student['Secret Q.']}")
+                
+                with st.expander("💰 Payment Information", expanded=True):
+                    st.write(f"**Payment Date:** {selected_student['DATE']}")
+                    st.write(f"**Payment Method:** {selected_student['Payment Method ']}")
+                    st.write(f"**Sevis Payment:** {selected_student['Sevis payment ? ']}")
+                    st.write(f"**Application Payment:** {selected_student['Application payment ?']}")
     
-            st.markdown("<div class='document-status'>", unsafe_allow_html=True)
-            st.subheader("Document Status")
-            for doc_type, status_info in document_status.items():
-                icon = "✅" if status_info['status'] else "❌"
-                st.markdown(f"""
-                <div class='document-item'>
-                    <span class='status-icon'>{icon}</span>
-                    <span class='document-name'>{doc_type}</span>
-                    {"".join([f"<a href='{file['webViewLink']}' target='_blank' class='file-link'>{file['name']}</a>" for file in status_info['files']])}
+                # Application Status
+                st.subheader("Application Status")
+                steps = [
+                    'PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 
+                    'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'SEVIS', 'CLIENTS '
+                ]
+                
+                current_step = selected_student['Current Step']
+                step_index = steps.index(current_step) if current_step in steps else 0
+                progress = (step_index + 1) / len(steps)
+                
+                progress_html = f"""
+                <style>
+                .progress-container {{
+                  width: 100%;
+                  background-color: #f3f3f3;
+                  border-radius: 25px;
+                  overflow: hidden;
+                }}
+                
+                .progress-bar {{
+                  width: {progress * 100}%;
+                  height: 30px;
+                  background-color: green;
+                  text-align: center;
+                  line-height: 30px;
+                  color: white;
+                  border-radius: 25px;
+                }}
+                </style>
+                <div class="progress-container">
+                  <div class="progress-bar">{int(progress * 100)}%</div>
                 </div>
+                """
+                
+                st.components.v1.html(progress_html, height=50)
+                
+                st.write(f"**Visa Status:** {get_visa_status(selected_student.get('Visa Result', 'Unknown'))}")
+                st.write(f"**Current Step:** {selected_student['Current Step']}")
+                
+                interview_date = selected_student['EMBASSY ITW. DATE']
+                days_remaining = calculate_days_until_interview(interview_date)
+                if days_remaining is not None:
+                    st.metric("Days until interview", days_remaining)
+                else:
+                    st.metric("Days until interview", "N/A")
+    
+            with col3:
+                st.subheader("📂 Document Upload")
+                document_type = st.selectbox("Select Document Type", 
+                                             ["Passport", "Bank Statement", "Financial Letter", 
+                                              "Transcripts", "Diplomas", "English Test", "Payment Receipt"], 
+                                             key="document_type")
+                uploaded_file = st.file_uploader("Upload Document", type=["jpg", "jpeg", "png", "pdf"], key="uploaded_file")
+                
+                if uploaded_file and st.button("Upload Document"):
+                    file_id = handle_file_upload(student_name, document_type, uploaded_file)
+                    if file_id:
+                        st.success(f"{document_type} uploaded successfully!")
+                    else:
+                        st.error("An error occurred while uploading the document.")
+    
+                # Display document status here
+                document_status = check_document_status(student_name)
+                st.markdown("""
+                <style>
+                .document-status {
+                    background-color: white;
+                    border-radius: 10px;
+                    padding: 20px;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                }
+                .document-item {
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 10px;
+                    padding: 10px;
+                    background-color: #f8f9fa;
+                    border-radius: 5px;
+                }
+                .status-icon {
+                    font-size: 20px;
+                    margin-right: 10px;
+                }
+                .document-name {
+                    flex-grow: 1;
+                    font-weight: 500;
+                }
+                .file-link {
+                    color: #4a90e2;
+                    text-decoration: none;
+                    margin-left: 10px;
+                }
+                .file-link:hover {
+                    text-decoration: underline;
+                }
+                </style>
                 """, unsafe_allow_html=True)
-            st.markdown("</div>", unsafe_allow_html=True)
+        
+                st.markdown("<div class='document-status'>", unsafe_allow_html=True)
+                st.subheader("Document Status")
+                for doc_type, status_info in document_status.items():
+                    icon = "✅" if status_info['status'] else "❌"
+                    st.markdown(f"""
+                    <div class='document-item'>
+                        <span class='status-icon'>{icon}</span>
+                        <span class='document-name'>{doc_type}</span>
+                        {"".join([f"<a href='{file['webViewLink']}' target='_blank' class='file-link'>{file['name']}</a>" for file in status_info['files']])}
+                    </div>
+                    """, unsafe_allow_html=True)
+                st.markdown("</div>", unsafe_allow_html=True)
 
             if st.button("Save Changes"):
                 updated_student = {
