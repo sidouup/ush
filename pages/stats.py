@@ -107,6 +107,7 @@ def load_data(spreadsheet_id):
 
 # Main function for the statistics page
 # Main function for the statistics page
+# Main function for the statistics page
 def statistics_page():
     st.set_page_config(page_title="Student Application Statistics", layout="wide")
 
@@ -152,9 +153,11 @@ def statistics_page():
 
         # Time series chart of payments over time
         st.subheader("Payments Over Time")
-        data['DATE'] = pd.to_datetime(data['DATE'], errors='coerce')
-        data['Month_Year'] = data['DATE'].dt.to_period('M').astype(str)  # Convert Period to string
-        payments_over_time = data.groupby('Month_Year').size().reset_index(name='Counts')
+        payment_data = data[['DATE', 'Current Step']].dropna(subset=['DATE'])
+        payment_data['DATE'] = pd.to_datetime(payment_data['DATE'], errors='coerce')
+        payment_data = payment_data.dropna(subset=['DATE'])
+        payment_data['Month_Year'] = payment_data['DATE'].dt.to_period('M').astype(str)  # Convert Period to string
+        payments_over_time = payment_data.groupby('Month_Year').size().reset_index(name='Counts')
         payments_chart = px.line(payments_over_time, x='Month_Year', y='Counts', labels={'Month_Year': 'Date', 'Counts': 'Number of Payments'})
         st.plotly_chart(payments_chart)
     else:
