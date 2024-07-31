@@ -171,13 +171,9 @@ def create_folder_in_drive(folder_name, parent_id=None):
     if parent_id:
         folder_metadata['parents'] = [parent_id]
     
-    folder = service.files().create(
-        body=folder_metadata,
-        fields='id'
-    ).execute()
+    folder = service.files().create(body=folder_metadata, fields='id').execute()
     return folder.get('id')
 
-# Function to check if a folder exists in Google Drive
 def check_folder_exists(folder_name, parent_id=None):
     service = get_google_drive_service()
     query = f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder'"
@@ -186,64 +182,52 @@ def check_folder_exists(folder_name, parent_id=None):
     
     results = service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
     folders = results.get('files', [])
-    if folders:
-        return folders[0].get('id')
-    else:
-        return None
+    return folders[0].get('id') if folders else None
 
-# Function to check if a file exists in a folder in Google Drive
 def check_file_exists(file_name, folder_id):
     service = get_google_drive_service()
     query = f"name='{file_name}' and '{folder_id}' in parents"
     results = service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
     files = results.get('files', [])
-    if files:
-        return True
-    else:
-        return False
+    return bool(files)
 
-# Function to upload a file to Google Drive
 def upload_file_to_drive(file_path, mime_type, folder_id=None):
     service = get_google_drive_service()
     file_metadata = {'name': os.path.basename(file_path)}
     if folder_id:
         file_metadata['parents'] = [folder_id]
     
-    media = MediaFileUpload(file_path, mimetype=mime_type)
-    file = service.files().create(
-        body=file_metadata,
-        media_body=media,
-        fields='id'
-    ).execute()
-    
+    media = MediaFileUpload(file_path, mimetype=mime_type, resumable=True)
+    file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
     return file.get('id')
 
-# Function to handle the creation of student folders and file upload
 def handle_file_upload(phone_number, document_type, uploaded_files):
-    # Ensure main procedures folder exists
     main_folder_name = 'procedures_folder'
     main_folder_id = check_folder_exists(main_folder_name)
     if not main_folder_id:
         main_folder_id = create_folder_in_drive(main_folder_name)
     
-    # Create student folder inside main procedures folder
     student_folder_id = check_folder_exists(phone_number, main_folder_id)
     if not student_folder_id:
         student_folder_id = create_folder_in_drive(phone_number, main_folder_id)
     
-    # Upload files to student's folder
+    uploaded_file_ids = []
     for uploaded_file in uploaded_files:
         file_name = f"{document_type}_{uploaded_file.name}"
         if not check_file_exists(file_name, student_folder_id):
-            bytes_data = uploaded_file.read()
-            with open(uploaded_file.name, "wb") as f:
-                f.write(bytes_data)
-            mime_type = uploaded_file.type
-            upload_file_to_drive(uploaded_file.name, mime_type, student_folder_id)
-            os.remove(uploaded_file.name)
+            with st.spinner(f"Uploading {file_name}..."):
+                temp_file_path = f"/tmp/{file_name}"
+                with open(temp_file_path, "wb") as f:
+                    f.write(uploaded_file.getbuffer())
+                mime_type = uploaded_file.type
+                file_id = upload_file_to_drive(temp_file_path, mime_type, student_folder_id)
+                uploaded_file_ids.append(file_id)
+                os.remove(temp_file_path)
+            st.success(f"{file_name} uploaded successfully!")
         else:
-            st.warning(f"{document_type} already exists for this student.")
-    return True
+            st.warning(f"{file_name} already exists for this student.")
+    
+    return uploaded_file_ids
 
 # Main function
 
@@ -363,8 +347,9 @@ def main():
                     
                     if st.button("Upload Files"):
                         if uploaded_files:
-                            if handle_file_upload(phone_number, document_type, uploaded_files):
-                                st.success("Files uploaded successfully!")
+                            uploaded_file_ids = handle_file_upload(phone_number, document_type, uploaded_files)
+                            if uploaded_file_ids:
+                                st.success(f"Files uploaded successfully! File IDs: {', '.join(uploaded_file_ids)}")
                             else:
                                 st.error("An error occurred while uploading files.")
                         else:
