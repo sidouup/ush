@@ -19,7 +19,18 @@ def load_and_combine_data(sheet_id, credentials):
         values = result.get('values', [])
         if not values:
             continue
-        df = pd.DataFrame(values[1:], columns=values[0])
+
+        # Ensure that the values contain at least two rows (one for headers and one for data)
+        if len(values) < 2:
+            continue
+        
+        headers = values[0]
+        data = values[1:]
+
+        # Ensure each row has the same number of columns as the headers
+        data = [row for row in data if len(row) == len(headers)]
+        
+        df = pd.DataFrame(data, columns=headers)
         df['Student Name'] = df.iloc[:, 1].astype(str) + " " + df.iloc[:, 2].astype(str)
         df.dropna(subset=['Student Name'], inplace=True)
         df.dropna(how='all', inplace=True)
