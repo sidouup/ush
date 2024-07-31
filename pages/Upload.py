@@ -640,7 +640,8 @@ def main():
 
     st.markdown("---")
     st.markdown("© 2024 The Us House. All rights reserved.")
-
+if __name__ == "__main__":
+    main()
 
 
 
