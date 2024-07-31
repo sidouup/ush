@@ -48,7 +48,6 @@ def load_and_combine_data(sheet_id, credentials):
     combined_data.reset_index(drop=True, inplace=True)
     return combined_data
 
-
 # Function to map visa status based on the 'visa result' column
 def get_visa_status(result):
     result_mapping = {
