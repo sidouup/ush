@@ -44,7 +44,6 @@ def upload_file_to_drive(file_path, mime_type, folder_id=None):
     
     return file.get('id')
 
-
 # Function to load data from Google Sheets
 def load_data(spreadsheet_id):
     sheet_headers = {
@@ -163,6 +162,8 @@ def get_visa_status(result):
         'Not our school partner': 'Not our school partner',
     }
     return result_mapping.get(result, 'Unknown')
+
+# Function to check if a folder exists in Google Drive
 def check_folder_exists(folder_name, parent_id=None):
     service = get_google_drive_service()
     query = f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder'"
@@ -194,33 +195,14 @@ def check_file_exists(file_name, folder_id):
     files = results.get('files', [])
     return bool(files)
 
-# Function to upload a file to Google Drive
-def upload_file_to_drive(file_path, mime_type, folder_id=None):
-    service = get_google_drive_service()
-    file_metadata = {'name': os.path.basename(file_path)}
-    if folder_id:
-        file_metadata['parents'] = [folder_id]
-    
-    media = MediaFileUpload(file_path, mimetype=mime_type)
-    try:
-        file = service.files().create(
-            body=file_metadata,
-            media_body=media,
-            fields='id'
-        ).execute()
-        file_id = file.get('id')
-        st.success(f"File uploaded successfully: {file_id}")
-        return file_id
-    except Exception as e:
-        st.error(f"Error uploading file: {e}")
-        return None
-
 # Function to handle file upload and folder creation
 def handle_file_upload(phone_number, document_type, uploaded_files):
+    parent_folder_id = '1It91HqQDsYeSo1MuYgACtmkmcO82vzXp'  # Use the provided parent folder ID
+    
     main_folder_name = 'procedures_folder'
-    main_folder_id = check_folder_exists(main_folder_name)
+    main_folder_id = check_folder_exists(main_folder_name, parent_folder_id)
     if not main_folder_id:
-        main_folder_id = create_folder_in_drive(main_folder_name)
+        main_folder_id = create_folder_in_drive(main_folder_name, parent_folder_id)
     st.write(f"Main folder ID: {main_folder_id}")
 
     student_folder_id = check_folder_exists(phone_number, main_folder_id)
@@ -252,7 +234,6 @@ def handle_file_upload(phone_number, document_type, uploaded_files):
             st.warning(f"{file_name} already exists for this student.")
     
     return uploaded_file_ids
-
 
 # Main function
 def main():
