@@ -16,6 +16,13 @@ def get_google_sheet_client():
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
     creds = Credentials.from_service_account_info(SERVICE_ACCOUNT_INFO, scopes=scope)
     return gspread.authorize(creds)
+def get_visa_status(result):
+    result_mapping = {
+        'Denied': 'Denied',
+        'Approved': 'Approved',
+        'Not our school partner': 'Not our school partner',
+    }
+    return result_mapping.get(result, 'Unknown')
     
 def load_data():
     sheet_headers = {
