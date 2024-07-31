@@ -270,28 +270,30 @@ def check_file_exists_in_folder(folder_id):
 def main():
     st.set_page_config(page_title="Student Application Tracker", layout="wide")
 
-    # Custom CSS (keep your existing styles and add styles for the 3D progress bar)
+        # Custom CSS (keep your existing styles and add styles for the 3D progress bar)
     st.markdown("""
     <style>
-        /* Your existing CSS styles */
-        .progress-container {
-          width: 100%;
-          background-color: #f3f3f3;
-          border-radius: 25px;
-          overflow: hidden;
-          box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        
-        .progress-bar {
-          height: 30px;
-          background: linear-gradient(90deg, #4CAF50, #45a049);
-          text-align: center;
-          line-height: 30px;
-          color: white;
-          border-radius: 25px;
-          transition: width 0.5s ease-in-out;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1) inset;
-        }
+    .progress-container {
+        width: 100%;
+        background-color: #f0f0f0;
+        padding: 3px;
+        border-radius: 30px;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, .2);
+    }
+    
+    .progress-bar {
+        width: 0%;
+        height: 25px;
+        background-image: linear-gradient(to right, #4CAF50, #45a049);
+        border-radius: 30px;
+        transition: width 0.5s ease-in-out;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -334,19 +336,20 @@ def main():
 
             edit_mode = st.toggle("Edit Mode", value=False)
         
-            # Application Status (with 3D progress bar)
             st.subheader("Application Status")
             steps = ['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'SEVIS', 'CLIENTS ']
             current_step = selected_student['Current Step']
             step_index = steps.index(current_step) if current_step in steps else 0
             progress = ((step_index + 1) / len(steps)) * 100
             
-            progress_html = f"""
+            progress_bar = f"""
             <div class="progress-container">
-              <div class="progress-bar" style="width: {progress}%;">{int(progress)}%</div>
+                <div class="progress-bar" style="width: {progress}%;">
+                    {int(progress)}%
+                </div>
             </div>
             """
-            st.components.v1.html(progress_html, height=50)
+            st.components.v1.html(progress_bar, height=40)
             st.write(f"Current Step: {current_step}")
 
             if edit_mode:
