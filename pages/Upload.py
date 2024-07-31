@@ -199,33 +199,32 @@ def check_file_exists(file_name, folder_id):
 def handle_file_upload(phone_number, document_type, uploaded_files):
     parent_folder_id = '1It91HqQDsYeSo1MuYgACtmkmcO82vzXp'  # Use the provided parent folder ID
     
-    main_folder_name = 'procedures_folder'
-    main_folder_id = check_folder_exists(main_folder_name, parent_folder_id)
-    if not main_folder_id:
-        main_folder_id = create_folder_in_drive(main_folder_name, parent_folder_id)
-    st.write(f"Main folder ID: {main_folder_id}")
-
-    student_folder_id = check_folder_exists(phone_number, main_folder_id)
+    student_folder_id = check_folder_exists(phone_number, parent_folder_id)
     if not student_folder_id:
-        student_folder_id = create_folder_in_drive(phone_number, main_folder_id)
+        student_folder_id = create_folder_in_drive(phone_number, parent_folder_id)
     st.write(f"Student folder ID for {phone_number}: {student_folder_id}")
-    
+
+    document_folder_id = check_folder_exists(document_type, student_folder_id)
+    if not document_folder_id:
+        document_folder_id = create_folder_in_drive(document_type, student_folder_id)
+    st.write(f"Document folder ID for {document_type}: {document_folder_id}")
+
     uploaded_file_ids = []
     for uploaded_file in uploaded_files:
-        file_name = f"{document_type}_{uploaded_file.name}"
+        file_name = uploaded_file.name
         
         # Ensure no double extensions
         if file_name.lower().endswith('.pdf.pdf'):
             file_name = file_name[:-4]
         st.write(f"File name to be uploaded: {file_name}")
 
-        if not check_file_exists(file_name, student_folder_id):
+        if not check_file_exists(file_name, document_folder_id):
             with st.spinner(f"Uploading {file_name}..."):
                 temp_file_path = f"/tmp/{file_name}"
                 with open(temp_file_path, "wb") as f:
                     f.write(uploaded_file.getbuffer())
                 mime_type = uploaded_file.type
-                file_id = upload_file_to_drive(temp_file_path, mime_type, student_folder_id)
+                file_id = upload_file_to_drive(temp_file_path, mime_type, document_folder_id)
                 if file_id:
                     uploaded_file_ids.append(file_id)
                 os.remove(temp_file_path)
@@ -234,6 +233,25 @@ def handle_file_upload(phone_number, document_type, uploaded_files):
             st.warning(f"{file_name} already exists for this student.")
     
     return uploaded_file_ids
+def check_document_status(phone_number):
+    parent_folder_id = '1It91HqQDsYeSo1MuYgACtmkmcO82vzXp'
+    student_folder_id = check_folder_exists(phone_number, parent_folder_id)
+    if not student_folder_id:
+        return {}
+
+    document_types = ["Passport", "Bank Statement", "Financial Letter", "Transcripts", "Diplomas", "English Test"]
+    document_status = {}
+    for document_type in document_types:
+        document_folder_id = check_folder_exists(document_type, student_folder_id)
+        document_status[document_type] = bool(document_folder_id and check_file_exists_in_folder(document_folder_id))
+    
+    return document_status
+
+def check_file_exists_in_folder(folder_id):
+    service = get_google_drive_service()
+    query = f"'{folder_id}' in parents"
+    results = service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
+    return bool(results.get('files', []))
 
 # Main function
 def main():
@@ -347,7 +365,7 @@ def main():
                 with st.expander("📂 Upload Documents", expanded=True):
                     document_type = st.selectbox("Select Document Type", ["Passport", "Bank Statement", "Financial Letter", "Transcripts", "Diplomas", "English Test"], key="document_type")
                     uploaded_files = st.file_uploader("Upload Student Documents", type=["jpg", "jpeg", "png", "pdf"], accept_multiple_files=True, key="uploaded_files")
-                    
+                
                     if st.button("Upload Files"):
                         if uploaded_files:
                             uploaded_file_ids = handle_file_upload(phone_number, document_type, uploaded_files)
@@ -357,7 +375,13 @@ def main():
                                 st.error("An error occurred while uploading files.")
                         else:
                             st.error("Please select files to upload.")
-                            
+                
+                document_status = check_document_status(phone_number)
+                st.subheader("Document Status")
+                for doc_type, status in document_status.items():
+                    color = "green" if status else "red"
+                    st.write(f"{doc_type}: <span style='color:{color};'>{'✔️' if status else '❌'}</span>", unsafe_allow_html=True)
+                                            
             with col2:
                 st.subheader("Application Status")
                 
