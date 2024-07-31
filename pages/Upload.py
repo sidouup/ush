@@ -350,23 +350,32 @@ def main():
     data = load_data(spreadsheet_id)
 
     if not data.empty:
-        # Extract list of student names
-        student_names = data['Student Name'].tolist()
+        # Extract list of current steps for filtering
+        current_steps = list(data['Current Step'].unique())
+        current_steps.insert(0, "All")
 
         # Search and filter section with application status on the same line
         st.markdown('<div class="stCard" style="display: flex; justify-content: space-between;">', unsafe_allow_html=True)
-        col2, col1 = st.columns([3, 2])
-        with col2:
-            # Use selectbox for search bar with suggestions
-            search_query = st.selectbox("🔍 Search for a student (First or Last Name)", options=student_names, key="search_query")
-            status_filter = st.selectbox("Filter by status", ["All"] + list(data['Current Step'].unique()), key="status_filter")
-            search_button = st.button("Search", key="search_button")
+        col1, col2 = st.columns([2, 3])
+        
+        with col1:
+            status_filter = st.selectbox("Filter by status", current_steps, key="status_filter")
 
-        filtered_data = data
+        # Apply filter based on status
+        filtered_data = data if status_filter == "All" else data[data['Current Step'] == status_filter]
+        
+        # Extract list of student names from filtered data
+        student_names = filtered_data['Student Name'].tolist()
+        
+        with col2:
+            # Use selectbox for search bar with suggestions from filtered data
+            search_query = st.selectbox("🔍 Search for a student (First or Last Name)", options=student_names, key="search_query")
+
+        # Filter data further based on search query
         if search_query:
             filtered_data = filtered_data[filtered_data['Student Name'] == search_query]
-        if status_filter != "All":
-            filtered_data = filtered_data[filtered_data['Current Step'] == status_filter]
+
+        st.markdown('</div>', unsafe_allow_html=True)
 
         with col1:
             st.subheader("Application Status")
@@ -403,10 +412,7 @@ def main():
             selected_student = filtered_data.iloc[0]
             student_name = selected_student['Student Name']
 
-            edit_mode = st.toggle("Edit Mode", value=False)
-        
-            # Tabs for student information
-        
+            edit_mode = st.toggle("Edit Mode", value=False)        
             # Tabs for student information
             tab1, tab2, tab3, tab4 = st.tabs(["Personal", "School", "Embassy", "Payment"])
             
