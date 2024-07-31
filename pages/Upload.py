@@ -352,11 +352,15 @@ def main():
     data = load_data(spreadsheet_id)
 
     if not data.empty:
+        # Extract list of student names
+        student_names = data['Student Name'].tolist()
+
         # Search and filter section with application status on the same line
         st.markdown('<div class="stCard" style="display: flex; justify-content: space-between;">', unsafe_allow_html=True)
         col2, col1 = st.columns([3, 2])
         with col2:
-            search_query = st.text_input("🔍 Search for a student (First or Last Name)", key="search_query")
+            # Use selectbox for search bar with suggestions
+            search_query = st.selectbox("🔍 Search for a student (First or Last Name)", options=student_names, key="search_query")
             status_filter = st.selectbox("Filter by status", ["All"] + list(data['Current Step'].unique()), key="status_filter")
             search_button = st.button("Search", key="search_button")
 
