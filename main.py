@@ -75,20 +75,47 @@ def load_data_from_sheets():
     sheet_id = st.secrets["private_gsheets_url"].split("/")[5]
     result = service.spreadsheets().values().get(spreadsheetId=sheet_id, range="A1:ZZ1000").execute()
     data = result.get("values", [])
-
-    df = pd.DataFrame(data[1:], columns=data[0])
-    df['Student Name'] = df['First Name'] + " " + df['Last Name']
-    df.dropna(subset=['Student Name'], inplace=True)
+    
+    if not data:
+        st.error("No data found in the Google Sheet.")
+        return None
+    
+    # Use the first row as column names
+    columns = data[0]
+    
+    # Create DataFrame with dynamic column names
+    df = pd.DataFrame(data[1:], columns=columns)
+    
+    # Display information about the DataFrame
+    st.write(f"Columns in the sheet: {', '.join(columns)}")
+    st.write(f"Number of columns: {len(columns)}")
+    st.write(f"Number of rows: {len(df)}")
+    
+    # Check if 'First Name' and 'Last Name' columns exist
+    if 'First Name' in df.columns and 'Last Name' in df.columns:
+        df['Student Name'] = df['First Name'] + " " + df['Last Name']
+    else:
+        st.warning("'First Name' or 'Last Name' column not found. 'Student Name' column not created.")
+    
     df.dropna(how='all', inplace=True)
     
     return df
 
 try:
     data = load_data_from_sheets()
-    st.session_state['data'] = data
-    st.success("Data loaded successfully from Google Sheets!")
+    if data is not None:
+        st.session_state['data'] = data
+        st.success("Data loaded successfully from Google Sheets!")
+        
+        # Display the first few rows of the data
+        st.write("First few rows of the data:")
+        st.write(data.head())
+    else:
+        st.error("Failed to load data from Google Sheets.")
 except Exception as e:
     st.error(f"Error loading data: {str(e)}")
+    import traceback
+    st.error(traceback.format_exc())
     st.stop()
 
 # Utility functions
