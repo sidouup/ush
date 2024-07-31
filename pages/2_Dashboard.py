@@ -15,12 +15,16 @@ def get_google_sheet_client():
     creds = Credentials.from_service_account_info(SERVICE_ACCOUNT_INFO, scopes=scope)
     return gspread.authorize(creds)
 
-def load_sheet(sheet_name):
+def load_sheet(sheet_name, expected_headers):
     client = get_google_sheet_client()
     sheet = client.open_by_key(SPREADSHEET_ID)
     worksheet = sheet.worksheet(sheet_name)
-    data = worksheet.get_all_records()
-    return pd.DataFrame(data)
+    data = worksheet.get_all_records(expected_headers=expected_headers)
+    df = pd.DataFrame(data)
+    
+    # Ensure all columns are treated as strings to avoid type conversion issues
+    df = df.applymap(str)
+    return df
 
 def main():
     # Set page config
@@ -95,8 +99,62 @@ def main():
     sheet_names = [ws.title for ws in sheet.worksheets()]
     selected_sheet = st.selectbox("Choose a sheet to view", sheet_names)
 
+    # Define expected headers for each sheet
+    sheet_headers = {
+        'PAYMENT & MAIL': [
+            'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
+            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
+            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
+            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
+        ],
+        'APPLICATION': [
+            'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
+            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
+            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
+            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
+        ],
+        'SCAN & SEND': [
+            'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
+            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
+            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
+            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
+        ],
+        'ARAMEX & RDV': [
+            'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
+            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
+            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
+            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
+        ],
+        'DS-160': [
+            'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
+            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
+            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
+            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
+        ],
+        'ITW Prep.': [
+            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
+            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
+            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
+            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
+        ],
+        'SEVIS': [
+            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
+            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
+            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
+            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
+        ],
+        'CLIENTS ': [
+            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
+            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
+            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
+            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
+        ]
+    }
+
+
     if selected_sheet:
-        data = load_sheet(selected_sheet)
+        expected_headers = sheet_headers.get(selected_sheet, None)
+        data = load_sheet(selected_sheet, expected_headers)
         if not data.empty:
             st.dataframe(data)
         else:
