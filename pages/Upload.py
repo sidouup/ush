@@ -384,26 +384,28 @@ def main():
                 current_step = filtered_data.iloc[0]['Current Step'] if not filtered_data.empty else "Unknown"
                 step_index = steps.index(current_step) if current_step in steps else 0
                 progress = ((step_index + 1) / len(steps)) * 100
-
+        
                 progress_bar = f"""
                 <div class="progress-container">
-                    <div class="progress-bar" style="width: {progress}%;">
+                    <div class="progress-bar" style="width: {progress}%; background-color: #4caf50;">
                         {int(progress)}%
                     </div>
                 </div>
                 """
                 st.markdown(progress_bar, unsafe_allow_html=True)
                 st.write(f"Current Step: {current_step}")
-
+        
                 visa_status = filtered_data.iloc[0]['Visa Result'] if not filtered_data.empty else "Unknown"
                 st.write(f"**Visa Status:** {visa_status}")
-
+        
                 interview_date = filtered_data.iloc[0]['EMBASSY ITW. DATE'] if not filtered_data.empty else None
                 days_remaining = calculate_days_until_interview(interview_date)
                 if days_remaining is not None:
                     st.metric("Days until interview", days_remaining)
                 else:
                     st.metric("Days until interview", "N/A")
+            else:
+                st.write("No data available for the current filters.")
             else:
                 st.write("No data available for the current filters.")
         st.markdown('</div>', unsafe_allow_html=True)
