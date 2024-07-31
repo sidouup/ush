@@ -287,7 +287,7 @@ def main():
         background-color: white;
         border-radius: 10px;
         padding: 1.5rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         margin-bottom: 1rem;
     }
 
@@ -352,6 +352,41 @@ def main():
     .stTabs [aria-selected="true"] {
         background-color: white;
         border-top: 3px solid #1a237e;
+    }
+
+    /* Document status items */
+    .document-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .status-icon {
+        margin-right: 0.5rem;
+    }
+
+    .document-name {
+        font-weight: bold;
+        flex-grow: 1;
+    }
+
+    .file-link {
+        color: #1a237e;
+        text-decoration: none;
+        margin-right: 0.5rem;
+    }
+
+    .file-link:hover {
+        text-decoration: underline;
+    }
+
+    .delete-button {
+        color: red;
+        cursor: pointer;
+    }
+
+    .delete-button:hover {
+        color: darkred;
     }
     </style>
     """, unsafe_allow_html=True)
