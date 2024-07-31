@@ -231,6 +231,7 @@ def handle_file_upload(student_name, uploaded_files):
     return True
 
 
+
 # Main function
 def main():
     st.set_page_config(page_title="Student Application Tracker", layout="wide")
