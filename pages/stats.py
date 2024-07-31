@@ -166,3 +166,5 @@ def plot_insights(data):
 spreadsheet_id = 'your_spreadsheet_id_here'  # Replace with your Google Sheets ID
 data = load_data(spreadsheet_id)
 plot_insights(data)
+if __name__ == "__main__":
+    statistics_page()
