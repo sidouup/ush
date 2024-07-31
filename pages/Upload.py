@@ -331,131 +331,113 @@ def main():
         else:
             filtered_data = data
 
-        if not filtered_data.empty:
-            selected_index = st.selectbox(
-                "Select a student to view details",
-                range(len(filtered_data)),
-                format_func=lambda i: f"{filtered_data.iloc[i]['Student Name']} - {filtered_data.iloc[i]['Current Step']}",
-                key="selected_index"
-            )
+    if not filtered_data.empty:
+        selected_index = st.selectbox(
+            "Select a student to view details",
+            range(len(filtered_data)),
+            format_func=lambda i: f"{filtered_data.iloc[i]['Student Name']} - {filtered_data.iloc[i]['Current Step']}",
+            key="selected_index"
+        )
+    
+        selected_student = filtered_data.iloc[selected_index]
+        student_name = selected_student['Student Name']
+    
+        # Create three columns: left for personal info, middle for school/embassy info, right for documents
+        col1, col2, col3 = st.columns([2, 2, 1.5])
         
-            selected_student = filtered_data.iloc[selected_index]
-            student_name = selected_student['Student Name']
+        with col1:
+            with st.expander("📋 Personal Information", expanded=True):
+                st.write(f"**First Name:** {selected_student['First Name']}")
+                st.write(f"**Last Name:** {selected_student['Last Name']}")
+                st.write(f"**Phone Number:** {selected_student['Phone N°']}")
+                st.write(f"**Email:** {selected_student['E-mail']}")
+                st.write(f"**Emergency Contact Number:** {selected_student['Emergency contact N°']}")
+                st.write(f"**Address:** {selected_student['Address']}")
+                st.write(f"**Attempts:** {selected_student['Attempts']}")
+            
+            with st.expander("🏫 School Information", expanded=True):
+                st.write(f"**Chosen School:** {selected_student['Chosen School']}")
+                st.write(f"**Duration:** {selected_student['Duration']}")
+                st.write(f"**School Entry Date:** {selected_student['School Entry Date']}")
+                st.write(f"**Entry Date in the US:** {selected_student['Entry Date in the US']}")
         
-            col1, col2 = st.columns([2, 1])
-            with col1:
-                with st.expander("📋 Personal Information", expanded=True):
-                    first_name = st.text_input("First Name", selected_student['First Name'], key="first_name")
-                    last_name = st.text_input("Last Name", selected_student['Last Name'], key="last_name")
-                    phone_number = st.text_input("Phone Number", selected_student['Phone N°'], key="phone_number")
-                    email = st.text_input("Email", selected_student['E-mail'], key="email")
-                    emergency_contact = st.text_input("Emergency Contact Number", selected_student['Emergency contact N°'], key="emergency_contact")
-                    address = st.text_input("Address", selected_student['Address'], key="address")
-                    attempts = st.text_input("Attempts", selected_student['Attempts'], key="attempts")
-                
-                with st.expander("🏫 School Information", expanded=True):
-                    chosen_school = st.text_input("Chosen School", selected_student['Chosen School'], key="chosen_school")
-                    duration = st.text_input("Duration", selected_student['Duration'], key="duration")
-                    school_entry_date = st.text_input("School Entry Date", selected_student['School Entry Date'], key="school_entry_date")
-                    entry_date_in_us = st.text_input("Entry Date in the US", selected_student['Entry Date in the US'], key="entry_date_in_us")
-                
-                with st.expander("🏛️ Embassy Information", expanded=True):
-                    address_us = st.text_input("Address in the U.S", selected_student['ADDRESS in the U.S'], key="address_us")
-                    email_rdv = st.text_input("E-mail RDV", selected_student[' E-MAIL RDV'], key="email_rdv")
-                    password_rdv = st.text_input("Password RDV", selected_student['PASSWORD RDV'], key="password_rdv")
-                    embassy_itw_date = st.text_input("Embassy Interview Date", selected_student['EMBASSY ITW. DATE'], key="embassy_itw_date")
-                    ds160_maker = st.text_input("DS-160 Maker", selected_student['DS-160 maker'], key="ds160_maker")
-                    password_ds160 = st.text_input("Password DS-160", selected_student['Password DS-160'], key="password_ds160")
-                    secret_q = st.text_input("Secret Question", selected_student['Secret Q.'], key="secret_q")
-                
-                with st.expander("📂 Upload Documents", expanded=True):
-                    document_type = st.selectbox("Select Document Type", ["Passport", "Bank Statement", "Financial Letter", "Transcripts", "Diplomas", "English Test"], key="document_type")
-                    uploaded_files = st.file_uploader("Upload Student Documents", type=["jpg", "jpeg", "png", "pdf"], accept_multiple_files=True, key="uploaded_files")
-                
-                    if st.button("Upload Files"):
-                        if uploaded_files:
-                            uploaded_file_ids = handle_file_upload(student_name, document_type, uploaded_files)
-                            if uploaded_file_ids:
-                                st.success(f"Files uploaded successfully! File IDs: {', '.join(uploaded_file_ids)}")
-                            else:
-                                st.error("An error occurred while uploading files.")
-                        else:
-                            st.error("Please select files to upload.")
-                                            
-            with col2:
-                st.subheader("Application Status")
-                steps = [
-                    'PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 
-                    'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'SEVIS', 'CLIENTS '
-                ]
-                
-                # Calculate the current step and progress
-                current_step = selected_student['Current Step']
-                step_index = steps.index(current_step) if current_step in steps else 0
-                progress = (step_index + 1) / len(steps)
-                
-                # HTML and CSS for a custom progress bar
-                progress_html = f"""
-                <style>
-                .progress-container {{
-                  width: 100%;
-                  background-color: #f3f3f3;
-                  border-radius: 25px;
-                  overflow: hidden;
-                }}
-                
-                .progress-bar {{
-                  width: {progress * 100}%;
-                  height: 30px; /* Adjust height to make it bigger */
-                  background-color: green; /* Custom green color */
-                  text-align: center;
-                  line-height: 30px; /* Center text vertically */
-                  color: white;
-                  border-radius: 25px; /* Rounded edges */
-                }}
-                </style>
-                <div class="progress-container">
-                  <div class="progress-bar">{int(progress * 100)}%</div>
-                </div>
-                """
-                
-                # Display the custom progress bar
-                st.components.v1.html(progress_html, height=50)  # Adjust height to fit the larger progress bar
-
-                
-                visa_status = st.selectbox(
-                    "Visa Status",
-                    ['Denied', 'Approved', 'Not our school partner', 'Unknown'],
-                    index=['Denied', 'Approved', 'Not our school partner', 'Unknown'].index(get_visa_status(selected_student.get('Visa Result', 'Unknown'))),
-                    key="visa_status"
-                )
-                
-                
-                current_step = st.text_input("Current Step", selected_student['Current Step'], key="current_step")
-                
-                interview_date = st.text_input("Embassy Interview Date", selected_student['EMBASSY ITW. DATE'], key="interview_date")
-                days_remaining = calculate_days_until_interview(interview_date)
-                if days_remaining is not None:
-                    st.metric("Days until interview", days_remaining)
-                else:
-                    st.metric("Days until interview", "N/A")
-                
+        with col2:
+            with st.expander("🏛️ Embassy Information", expanded=True):
+                st.write(f"**Address in the U.S:** {selected_student['ADDRESS in the U.S']}")
+                st.write(f"**E-mail RDV:** {selected_student[' E-MAIL RDV']}")
+                st.write(f"**Password RDV:** {selected_student['PASSWORD RDV']}")
+                st.write(f"**Embassy Interview Date:** {selected_student['EMBASSY ITW. DATE']}")
+                st.write(f"**DS-160 Maker:** {selected_student['DS-160 maker']}")
+                st.write(f"**Password DS-160:** {selected_student['Password DS-160']}")
+                st.write(f"**Secret Question:** {selected_student['Secret Q.']}")
+            
             with st.expander("💰 Payment Information", expanded=True):
-                payment_date = st.text_input("Payment Date", selected_student['DATE'], key="payment_date")
-                payment_method = st.text_input("Payment Method", selected_student['Payment Method '], key="payment_method")
-                sevis_payment = st.text_input("Sevis Payment", selected_student['Sevis payment ? '], key="sevis_payment")
-                application_payment = st.text_input("Application Payment", selected_student['Application payment ?'], key="application_payment")
+                st.write(f"**Payment Date:** {selected_student['DATE']}")
+                st.write(f"**Payment Method:** {selected_student['Payment Method ']}")
+                st.write(f"**Sevis Payment:** {selected_student['Sevis payment ? ']}")
+                st.write(f"**Application Payment:** {selected_student['Application payment ?']}")
 
-                # Add payment receipt upload functionality
-                st.write("Upload Payment Receipt")
-                payment_receipt = st.file_uploader("Upload Payment Receipt", type=["pdf", "jpg", "jpeg", "png"], key="payment_receipt")
-                if payment_receipt:
-                    if st.button("Upload Payment Receipt"):
-                        file_id = handle_file_upload(student_name, "Payment Receipts", payment_receipt)
-                        if file_id:
-                            st.success(f"Payment receipt uploaded successfully! File ID: {file_id}")
-                        else:
-                            st.error("An error occurred while uploading the payment receipt.")
+            # Application Status
+            st.subheader("Application Status")
+            steps = [
+                'PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 
+                'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'SEVIS', 'CLIENTS '
+            ]
+            
+            current_step = selected_student['Current Step']
+            step_index = steps.index(current_step) if current_step in steps else 0
+            progress = (step_index + 1) / len(steps)
+            
+            progress_html = f"""
+            <style>
+            .progress-container {{
+              width: 100%;
+              background-color: #f3f3f3;
+              border-radius: 25px;
+              overflow: hidden;
+            }}
+            
+            .progress-bar {{
+              width: {progress * 100}%;
+              height: 30px;
+              background-color: green;
+              text-align: center;
+              line-height: 30px;
+              color: white;
+              border-radius: 25px;
+            }}
+            </style>
+            <div class="progress-container">
+              <div class="progress-bar">{int(progress * 100)}%</div>
+            </div>
+            """
+            
+            st.components.v1.html(progress_html, height=50)
+            
+            st.write(f"**Visa Status:** {get_visa_status(selected_student.get('Visa Result', 'Unknown'))}")
+            st.write(f"**Current Step:** {selected_student['Current Step']}")
+            
+            interview_date = selected_student['EMBASSY ITW. DATE']
+            days_remaining = calculate_days_until_interview(interview_date)
+            if days_remaining is not None:
+                st.metric("Days until interview", days_remaining)
+            else:
+                st.metric("Days until interview", "N/A")
+
+        with col3:
+            st.subheader("📂 Document Upload")
+            document_type = st.selectbox("Select Document Type", 
+                                         ["Passport", "Bank Statement", "Financial Letter", 
+                                          "Transcripts", "Diplomas", "English Test", "Payment Receipt"], 
+                                         key="document_type")
+            uploaded_file = st.file_uploader("Upload Document", type=["jpg", "jpeg", "png", "pdf"], key="uploaded_file")
+            
+            if uploaded_file and st.button("Upload Document"):
+                file_id = handle_file_upload(student_name, document_type, uploaded_file)
+                if file_id:
+                    st.success(f"{document_type} uploaded successfully!")
+                else:
+                    st.error("An error occurred while uploading the document.")
 
             # Display document status here
             document_status = check_document_status(student_name)
