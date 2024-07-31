@@ -167,4 +167,4 @@ spreadsheet_id = 'your_spreadsheet_id_here'  # Replace with your Google Sheets I
 data = load_data(spreadsheet_id)
 plot_insights(data)
 if __name__ == "__main__":
-    statistics_page()
+    plot_insights()
