@@ -404,8 +404,7 @@ def main():
                     st.metric("Days until interview", days_remaining)
                 else:
                     st.metric("Days until interview", "N/A")
-            else:
-                st.write("No data available for the current filters.")
+
             else:
                 st.write("No data available for the current filters.")
         st.markdown('</div>', unsafe_allow_html=True)
