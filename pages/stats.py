@@ -16,35 +16,34 @@ def get_google_sheet_client():
     creds = Credentials.from_service_account_info(SERVICE_ACCOUNT_INFO, scopes=SCOPES)
     return gspread.authorize(creds)
 
-
 def load_data(spreadsheet_id):
     sheet_headers = {
         'PAYMENT & MAIL': [
-            'DATE','First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
+            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
             'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
             'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
             'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
         ],
         'APPLICATION': [
-            'DATE','First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
+            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
             'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
             'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
             'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
         ],
         'SCAN & SEND': [
-            'DATE','First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
+            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
             'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
             'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
             'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
         ],
         'ARAMEX & RDV': [
-            'DATE','First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
+            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
             'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
             'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
             'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
         ],
         'DS-160': [
-            'DATE','First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
+            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
             'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
             'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
             'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
@@ -68,24 +67,22 @@ def load_data(spreadsheet_id):
             'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
         ]
     }
-    
+
     try:
         client = get_google_sheet_client()
-
         sheet = client.open_by_key(spreadsheet_id)
-  
-        
+
         combined_data = pd.DataFrame()
-        
+
         for worksheet in sheet.worksheets():
             title = worksheet.title
             expected_headers = sheet_headers.get(title, None)
-            
+
             if expected_headers:
                 data = worksheet.get_all_records(expected_headers=expected_headers)
             else:
                 data = worksheet.get_all_records()
-            
+
             df = pd.DataFrame(data)
             if not df.empty:
                 if 'First Name' in df.columns and 'Last Name' in df.columns:
@@ -96,7 +93,7 @@ def load_data(spreadsheet_id):
                 df.dropna(how='all', inplace=True)
                 df['Current Step'] = title
                 combined_data = pd.concat([combined_data, df], ignore_index=True)
-        
+
         combined_data.drop_duplicates(subset='Student Name', keep='last', inplace=True)
         combined_data.reset_index(drop=True, inplace=True)
 
@@ -104,7 +101,7 @@ def load_data(spreadsheet_id):
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
         return pd.DataFrame()
-        
+
 def plot_insights(data):
     # Ensure the DATE column is datetime type
     data['DATE'] = pd.to_datetime(data['DATE'], errors='coerce')
@@ -162,9 +159,15 @@ def plot_insights(data):
     fig7 = px.histogram(entry_dates_us, x='Entry Date in the US', title='Entry Dates in the US')
     st.plotly_chart(fig7)
 
-# Example of how to call the function with loaded data
-spreadsheet_id = 'your_spreadsheet_id_here'  # Replace with your Google Sheets ID
-data = load_data(spreadsheet_id)
-plot_insights(data)
+# Main function to run the Streamlit app
+def main():
+    st.title("Google Sheets Data Insights")
+    spreadsheet_id = st.text_input("Enter your Google Sheets ID:")
+    
+    if spreadsheet_id:
+        data = load_data(spreadsheet_id)
+        if not data.empty:
+            plot_insights(data)
+
 if __name__ == "__main__":
-    plot_insights()
+    main()
