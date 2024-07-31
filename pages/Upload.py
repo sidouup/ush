@@ -381,6 +381,14 @@ def main():
                                             
             with col2:
                 st.subheader("Application Status")
+                steps = [
+                    'PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 
+                    'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'SEVIS', 'CLIENTS '
+                ]
+                step_index = steps.index(current_step) if current_step in steps else 0
+                progress = (step_index + 1) / len(steps)
+                st.progress(progress)
+
                 
                 visa_status = st.selectbox(
                     "Visa Status",
