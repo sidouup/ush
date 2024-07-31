@@ -272,122 +272,53 @@ def main():
 
     st.markdown("""
     <style>
-    /* Main container and background */
-    .main .block-container {
-        padding: 2rem;
-        max-width: 90%;
-    }
-
-    .stApp {
-        background-color: #f0f2f5;
-    }
-
-    /* Card styling */
-    .stCard {
-        background-color: white;
-        border-radius: 10px;
-        padding: 1.5rem;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        margin-bottom: 1rem;
-    }
-
-    /* Headers */
-    h1, h2, h3 {
-        color: #1a237e;
-        font-family: 'Helvetica Neue', Arial, sans-serif;
-        font-weight: 700;
-    }
-
-    /* Progress bar styling */
-    .progress-container {
-        width: 100%;
-        background-color: #e0e0e0;
-        border-radius: 10px;
-        margin-bottom: 1rem;
-    }
-    
-    .progress-bar {
-        height: 20px;
-        background-color: #4caf50;
-        border-radius: 10px;
-        transition: width 0.5s ease-in-out;
-        text-align: center;
-        line-height: 20px;
-        color: white;
-        font-weight: bold;
-    }
-
-    /* Input fields and buttons */
-    .stTextInput > div > div > input,
-    .stSelectbox > div > div > select {
-        background-color: #f5f5f5;
-        border: 1px solid #e0e0e0;
-        border-radius: 5px;
-        padding: 0.5rem;
-    }
-
-    .stButton > button {
-        background-color: #1a237e;
-        color: white;
-        border-radius: 5px;
-        border: none;
-        padding: 0.5rem 1rem;
-        font-weight: 600;
-    }
-
-    /* Tabs styling */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 10px;
-        border-bottom: 1px solid #e0e0e0;
-    }
-
-    .stTabs [data-baseweb="tab"] {
-        height: 50px;
-        background-color: #f5f5f5;
-        border-radius: 5px 5px 0 0;
-        color: #1a237e;
-        font-weight: 600;
-    }
-
-    .stTabs [aria-selected="true"] {
-        background-color: white;
-        border-top: 3px solid #1a237e;
-    }
-
-    /* Document status items */
-    .document-item {
-        display: flex;
-        align-items: center;
-        margin-bottom: 0.5rem;
-    }
-
-    .status-icon {
-        margin-right: 0.5rem;
-    }
-
-    .document-name {
-        font-weight: bold;
-        flex-grow: 1;
-    }
-
-    .file-link {
-        color: #1a237e;
-        text-decoration: none;
-        margin-right: 0.5rem;
-    }
-
-    .file-link:hover {
-        text-decoration: underline;
-    }
-
-    .delete-button {
-        color: red;
-        cursor: pointer;
-    }
-
-    .delete-button:hover {
-        color: darkred;
-    }
+        .reportview-container {
+            background: #f0f2f6;
+        }
+        .main .block-container {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+        h1, h2, h3 {
+            color: #1E3A8A;
+        }
+        .stSelectbox, .stTextInput {
+            background-color: white;
+            color: #2c3e50;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .stExpander {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 10px;
+        }
+        .css-1544g2n {
+            padding: 2rem;
+        }
+        .stMetric {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .stMetric .metric-label {
+            font-weight: bold;
+        }
+        .stButton>button {
+            background-color: #ff7f50;
+            color: white;
+            font-weight: bold;
+        }
+        .stButton>button:hover {
+            background-color: #ff6347;
+        }
+        .stTextInput input {
+            font-size: 1rem;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
     </style>
     """, unsafe_allow_html=True)
 
