@@ -106,6 +106,7 @@ def load_data(spreadsheet_id):
         return pd.DataFrame()
 
 # Main function for the statistics page
+# Main function for the statistics page
 def statistics_page():
     st.set_page_config(page_title="Student Application Statistics", layout="wide")
 
