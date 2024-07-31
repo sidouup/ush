@@ -9,4 +9,3 @@ gspread
 gspread-dataframe
 xlsxwriter
 openpyxl
-googleapiclient.http
