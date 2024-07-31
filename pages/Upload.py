@@ -399,7 +399,8 @@ def main():
                     st.metric("Days until interview", days_remaining)
                 else:
                     st.metric("Days until interview", "N/A")
-        
+            else:
+                st.write("No data available for the current filters.")
         with col3:
             document_status = check_document_status(student_name)
             st.subheader("Document Status")
