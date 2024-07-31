@@ -348,14 +348,6 @@ def main():
                     address = st.text_input("Address", selected_student['Address'], key="address")
                     attempts = st.text_input("Attempts", selected_student['Attempts'], key="attempts")
                 
-                # Check document status immediately
-                document_status = check_document_status(student_name)
-                st.subheader("Document Status")
-                for doc_type, status in document_status.items():
-                    color = "green" if status else "red"
-                    st.write(f"{doc_type}: <span style='color:{color};'>{'✔️' if status else '❌'}</span>", unsafe_allow_html=True)
-
-                
                 with st.expander("🏫 School Information", expanded=True):
                     chosen_school = st.text_input("Chosen School", selected_student['Chosen School'], key="chosen_school")
                     duration = st.text_input("Duration", selected_student['Duration'], key="duration")
@@ -371,6 +363,13 @@ def main():
                     password_ds160 = st.text_input("Password DS-160", selected_student['Password DS-160'], key="password_ds160")
                     secret_q = st.text_input("Secret Question", selected_student['Secret Q.'], key="secret_q")
                 
+                # Check document status immediately
+                document_status = check_document_status(student_name)
+                st.subheader("Document Status")
+                for doc_type, status in document_status.items():
+                    color = "green" if status else "red"
+                    st.write(f"{doc_type}: <span style='color:{color};'>{'✔️' if status else '❌'}</span>", unsafe_allow_html=True)
+                
                 with st.expander("📂 Upload Documents", expanded=True):
                     document_type = st.selectbox("Select Document Type", ["Passport", "Bank Statement", "Financial Letter", "Transcripts", "Diplomas", "English Test"], key="document_type")
                     uploaded_files = st.file_uploader("Upload Student Documents", type=["jpg", "jpeg", "png", "pdf"], accept_multiple_files=True, key="uploaded_files")
@@ -384,7 +383,6 @@ def main():
                                 st.error("An error occurred while uploading files.")
                         else:
                             st.error("Please select files to upload.")
-                
                                             
             with col2:
                 st.subheader("Application Status")
