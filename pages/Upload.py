@@ -217,7 +217,7 @@ def main():
         </div>
         """, unsafe_allow_html=True)
 
-    spreadsheet_id = "1NPc-dQ7uts1c1JjNoABBou-uq2ixzUTiSBTB8qlTuOQ"
+    spreadsheet_id = "your_spreadsheet_id"
     data = load_data(spreadsheet_id)
 
     if not data.empty:
@@ -347,16 +347,30 @@ def main():
             st.info("No students found matching the search criteria.")
 
         st.header("📊 Dashboard - All Clients")
-        
-        step_counts = data['Current Step'].value_counts()
-        fig = px.bar(step_counts, x=step_counts.index, y=step_counts.values, 
-                     labels={'x': 'Application Step', 'y': 'Number of Students'},
-                     title='Students per Application Step')
-        fig.update_layout(
-            plot_bgcolor='rgba(0,0,0,0.05)',
-            paper_bgcolor='rgba(0,0,0,0)',
-        )
-        st.plotly_chart(fig, use_container_width=True)
+
+        # Ensure the data frame is not empty before creating the chart
+        if not data.empty and 'Current Step' in data.columns:
+            step_counts = data['Current Step'].value_counts()
+            st.write("Step counts calculated successfully.")
+
+            try:
+                fig = px.bar(
+                    step_counts,
+                    x=step_counts.index,
+                    y=step_counts.values,
+                    labels={'x': 'Application Step', 'y': 'Number of Students'},
+                    title='Students per Application Step'
+                )
+                fig.update_layout(
+                    plot_bgcolor='rgba(0,0,0,0.05)',
+                    paper_bgcolor='rgba(0,0,0,0)',
+                )
+                st.plotly_chart(fig, use_container_width=True)
+                st.write("Chart rendered successfully.")
+            except Exception as e:
+                st.error(f"An error occurred while creating the chart: {str(e)}")
+        else:
+            st.error("No data available for creating the chart. Please check your Google Sheets connection and data.")
 
     else:
         st.error("No data available. Please check your Google Sheets connection and data.")
