@@ -163,6 +163,17 @@ def get_visa_status(result):
         'Not our school partner': 'Not our school partner',
     }
     return result_mapping.get(result, 'Unknown')
+def check_folder_exists(folder_name, parent_id=None):
+    service = get_google_drive_service()
+    query = f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder'"
+    if parent_id:
+        query += f" and '{parent_id}' in parents"
+    
+    results = service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
+    folders = results.get('files', [])
+    return folders[0].get('id') if folders else None
+
+# Function to create a new folder in Google Drive
 def create_folder_in_drive(folder_name, parent_id=None):
     service = get_google_drive_service()
     folder_metadata = {
@@ -175,16 +186,7 @@ def create_folder_in_drive(folder_name, parent_id=None):
     folder = service.files().create(body=folder_metadata, fields='id').execute()
     return folder.get('id')
 
-def check_folder_exists(folder_name, parent_id=None):
-    service = get_google_drive_service()
-    query = f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder'"
-    if parent_id:
-        query += f" and '{parent_id}' in parents"
-    
-    results = service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
-    folders = results.get('files', [])
-    return folders[0].get('id') if folders else None
-
+# Function to check if a file exists in a folder
 def check_file_exists(file_name, folder_id):
     service = get_google_drive_service()
     query = f"name='{file_name}' and '{folder_id}' in parents"
@@ -192,6 +194,7 @@ def check_file_exists(file_name, folder_id):
     files = results.get('files', [])
     return bool(files)
 
+# Function to upload a file to Google Drive
 def upload_file_to_drive(file_path, mime_type, folder_id=None):
     service = get_google_drive_service()
     file_metadata = {'name': os.path.basename(file_path)}
@@ -206,24 +209,24 @@ def upload_file_to_drive(file_path, mime_type, folder_id=None):
             fields='id'
         ).execute()
         file_id = file.get('id')
-        logging.info(f"File uploaded successfully: {file_id}")
+        st.success(f"File uploaded successfully: {file_id}")
         return file_id
     except Exception as e:
-        logging.error(f"Error uploading file: {e}")
         st.error(f"Error uploading file: {e}")
         return None
 
+# Function to handle file upload and folder creation
 def handle_file_upload(phone_number, document_type, uploaded_files):
     main_folder_name = 'procedures_folder'
     main_folder_id = check_folder_exists(main_folder_name)
     if not main_folder_id:
         main_folder_id = create_folder_in_drive(main_folder_name)
-    logging.info(f"Main folder ID: {main_folder_id}")
+    st.write(f"Main folder ID: {main_folder_id}")
 
     student_folder_id = check_folder_exists(phone_number, main_folder_id)
     if not student_folder_id:
         student_folder_id = create_folder_in_drive(phone_number, main_folder_id)
-    logging.info(f"Student folder ID for {phone_number}: {student_folder_id}")
+    st.write(f"Student folder ID for {phone_number}: {student_folder_id}")
     
     uploaded_file_ids = []
     for uploaded_file in uploaded_files:
@@ -232,7 +235,7 @@ def handle_file_upload(phone_number, document_type, uploaded_files):
         # Ensure no double extensions
         if file_name.lower().endswith('.pdf.pdf'):
             file_name = file_name[:-4]
-        logging.info(f"File name to be uploaded: {file_name}")
+        st.write(f"File name to be uploaded: {file_name}")
 
         if not check_file_exists(file_name, student_folder_id):
             with st.spinner(f"Uploading {file_name}..."):
@@ -249,8 +252,6 @@ def handle_file_upload(phone_number, document_type, uploaded_files):
             st.warning(f"{file_name} already exists for this student.")
     
     return uploaded_file_ids
-
-# Main function
 
 
 # Main function
