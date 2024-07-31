@@ -353,7 +353,7 @@ def main():
     if not data.empty:
         # Search and filter section with application status on the same line
         st.markdown('<div class="stCard" style="display: flex; justify-content: space-between;">', unsafe_allow_html=True)
-        col1, col2 = st.columns([3, 2])
+        col2, col1 = st.columns([3, 2])
         with col2:
             search_query = st.text_input("🔍 Search for a student (First or Last Name)", key="search_query")
             status_filter = st.selectbox("Filter by status", ["All"] + list(data['Current Step'].unique()), key="status_filter")
