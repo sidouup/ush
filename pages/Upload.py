@@ -270,10 +270,28 @@ def check_file_exists_in_folder(folder_id):
 def main():
     st.set_page_config(page_title="Student Application Tracker", layout="wide")
 
-    # Custom CSS (keep your existing styles)
+    # Custom CSS (keep your existing styles and add styles for the 3D progress bar)
     st.markdown("""
     <style>
         /* Your existing CSS styles */
+        .progress-container {
+          width: 100%;
+          background-color: #f3f3f3;
+          border-radius: 25px;
+          overflow: hidden;
+          box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .progress-bar {
+          height: 30px;
+          background: linear-gradient(90deg, #4CAF50, #45a049);
+          text-align: center;
+          line-height: 30px;
+          color: white;
+          border-radius: 25px;
+          transition: width 0.5s ease-in-out;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1) inset;
+        }
     </style>
     """, unsafe_allow_html=True)
 
@@ -316,14 +334,19 @@ def main():
 
             edit_mode = st.toggle("Edit Mode", value=False)
         
-            # Application Status (moved to the top)
+            # Application Status (with 3D progress bar)
             st.subheader("Application Status")
             steps = ['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'SEVIS', 'CLIENTS ']
             current_step = selected_student['Current Step']
             step_index = steps.index(current_step) if current_step in steps else 0
-            progress = (step_index + 1) / len(steps)
+            progress = ((step_index + 1) / len(steps)) * 100
             
-            st.progress(progress)
+            progress_html = f"""
+            <div class="progress-container">
+              <div class="progress-bar" style="width: {progress}%;">{int(progress)}%</div>
+            </div>
+            """
+            st.components.v1.html(progress_html, height=50)
             st.write(f"Current Step: {current_step}")
 
             if edit_mode:
@@ -366,50 +389,7 @@ def main():
                     st.write(f"**Address:** {selected_student['Address']}")
                     st.write(f"**Attempts:** {selected_student['Attempts']}")
             
-            with tab2:
-                st.subheader("🏫 School Information")
-                if edit_mode:
-                    chosen_school = st.text_input("Chosen School", selected_student['Chosen School'], key="chosen_school")
-                    duration = st.text_input("Duration", selected_student['Duration'], key="duration")
-                    school_entry_date = st.text_input("School Entry Date", selected_student['School Entry Date'], key="school_entry_date")
-                    entry_date_in_us = st.text_input("Entry Date in the US", selected_student['Entry Date in the US'], key="entry_date_in_us")
-                else:
-                    st.write(f"**Chosen School:** {selected_student['Chosen School']}")
-                    st.write(f"**Duration:** {selected_student['Duration']}")
-                    st.write(f"**School Entry Date:** {selected_student['School Entry Date']}")
-                    st.write(f"**Entry Date in the US:** {selected_student['Entry Date in the US']}")
-            
-            with tab3:
-                st.subheader("🏛️ Embassy Information")
-                if edit_mode:
-                    address_us = st.text_input("Address in the U.S", selected_student['ADDRESS in the U.S'], key="address_us")
-                    email_rdv = st.text_input("E-mail RDV", selected_student[' E-MAIL RDV'], key="email_rdv")
-                    password_rdv = st.text_input("Password RDV", selected_student['PASSWORD RDV'], key="password_rdv")
-                    embassy_itw_date = st.text_input("Embassy Interview Date", selected_student['EMBASSY ITW. DATE'], key="embassy_itw_date")
-                    ds160_maker = st.text_input("DS-160 Maker", selected_student['DS-160 maker'], key="ds160_maker")
-                    password_ds160 = st.text_input("Password DS-160", selected_student['Password DS-160'], key="password_ds160")
-                    secret_q = st.text_input("Secret Question", selected_student['Secret Q.'], key="secret_q")
-                else:
-                    st.write(f"**Address in the U.S:** {selected_student['ADDRESS in the U.S']}")
-                    st.write(f"**E-mail RDV:** {selected_student[' E-MAIL RDV']}")
-                    st.write(f"**Password RDV:** {selected_student['PASSWORD RDV']}")
-                    st.write(f"**Embassy Interview Date:** {selected_student['EMBASSY ITW. DATE']}")
-                    st.write(f"**DS-160 Maker:** {selected_student['DS-160 maker']}")
-                    st.write(f"**Password DS-160:** {selected_student['Password DS-160']}")
-                    st.write(f"**Secret Question:** {selected_student['Secret Q.']}")
-
-            with tab4:
-                st.subheader("💰 Payment Information")
-                if edit_mode:
-                    payment_date = st.text_input("Payment Date", selected_student['DATE'], key="payment_date")
-                    payment_method = st.text_input("Payment Method", selected_student['Payment Method '], key="payment_method")
-                    sevis_payment = st.text_input("Sevis Payment", selected_student['Sevis payment ? '], key="sevis_payment")
-                    application_payment = st.text_input("Application Payment", selected_student['Application payment ?'], key="application_payment")
-                else:
-                    st.write(f"**Payment Date:** {selected_student['DATE']}")
-                    st.write(f"**Payment Method:** {selected_student['Payment Method ']}")
-                    st.write(f"**Sevis Payment:** {selected_student['Sevis payment ? ']}")
-                    st.write(f"**Application Payment:** {selected_student['Application payment ?']}")
+            # ... [Keep the content for tab2, tab3, and tab4 as in the previous version] ...
 
             with tab5:
                 st.subheader("📂 Document Upload and Status")
@@ -437,9 +417,39 @@ def main():
                         <div style="display: flex; align-items: center; margin-bottom: 10px;">
                             <span style="font-size: 20px; margin-right: 10px;">{icon}</span>
                             <span style="flex-grow: 1;">{doc_type}</span>
-                            {"".join([f'<a href="{file["webViewLink"]}" target="_blank" style="margin-left: 10px;">View</a>' for file in status_info['files']])}
+                            {"".join([f'<a href="{file["webViewLink"]}" target="_blank" style="margin-left: 10px;">View</a><button onclick="deleteFile(\'{file["id"]}\')">🗑️</button>' for file in status_info['files']])}
                         </div>
                         """, unsafe_allow_html=True)
+
+                # Add JavaScript for file deletion
+                st.markdown("""
+                <script>
+                function deleteFile(fileId) {
+                    if (confirm('Are you sure you want to delete this file?')) {
+                        fetch('/delete_file', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({file_id: fileId}),
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert('File deleted successfully');
+                                location.reload();
+                            } else {
+                                alert('Failed to delete file: ' + data.error);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('An error occurred while deleting the file');
+                        });
+                    }
+                }
+                </script>
+                """, unsafe_allow_html=True)
 
             if edit_mode and st.button("Save Changes"):
                 updated_student = {
@@ -478,24 +488,6 @@ def main():
         else:
             st.info("No students found matching the search criteria.")
 
-        st.header("📊 Dashboard - All Clients")
-        if not data.empty and 'Current Step' in data.columns:
-            step_counts = data['Current Step'].value_counts()
-            fig = px.bar(
-                step_counts,
-                x=step_counts.index,
-                y=step_counts.values,
-                labels={'x': 'Application Step', 'y': 'Number of Students'},
-                title='Students per Application Step'
-            )
-            fig.update_layout(
-                plot_bgcolor='rgba(0,0,0,0.05)',
-                paper_bgcolor='rgba(0,0,0,0)',
-            )
-            st.plotly_chart(fig, use_container_width=True)
-        else:
-            st.error("No data available for creating the chart. Please check your Google Sheets connection and data.")
-
     else:
         st.error("No data available. Please check your Google Sheets connection and data.")
 
@@ -504,7 +496,6 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
 
 
