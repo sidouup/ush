@@ -8,6 +8,7 @@ from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 import plotly.express as px
+import logging
 
 
 # Use Streamlit secrets for service account info
@@ -197,23 +198,42 @@ def upload_file_to_drive(file_path, mime_type, folder_id=None):
     if folder_id:
         file_metadata['parents'] = [folder_id]
     
-    media = MediaFileUpload(file_path, mimetype=mime_type, resumable=True)
-    file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-    return file.get('id')
+    media = MediaFileUpload(file_path, mimetype=mime_type)
+    try:
+        file = service.files().create(
+            body=file_metadata,
+            media_body=media,
+            fields='id'
+        ).execute()
+        file_id = file.get('id')
+        logging.info(f"File uploaded successfully: {file_id}")
+        return file_id
+    except Exception as e:
+        logging.error(f"Error uploading file: {e}")
+        st.error(f"Error uploading file: {e}")
+        return None
 
 def handle_file_upload(phone_number, document_type, uploaded_files):
     main_folder_name = 'procedures_folder'
     main_folder_id = check_folder_exists(main_folder_name)
     if not main_folder_id:
         main_folder_id = create_folder_in_drive(main_folder_name)
-    
+    logging.info(f"Main folder ID: {main_folder_id}")
+
     student_folder_id = check_folder_exists(phone_number, main_folder_id)
     if not student_folder_id:
         student_folder_id = create_folder_in_drive(phone_number, main_folder_id)
+    logging.info(f"Student folder ID for {phone_number}: {student_folder_id}")
     
     uploaded_file_ids = []
     for uploaded_file in uploaded_files:
         file_name = f"{document_type}_{uploaded_file.name}"
+        
+        # Ensure no double extensions
+        if file_name.lower().endswith('.pdf.pdf'):
+            file_name = file_name[:-4]
+        logging.info(f"File name to be uploaded: {file_name}")
+
         if not check_file_exists(file_name, student_folder_id):
             with st.spinner(f"Uploading {file_name}..."):
                 temp_file_path = f"/tmp/{file_name}"
@@ -221,7 +241,8 @@ def handle_file_upload(phone_number, document_type, uploaded_files):
                     f.write(uploaded_file.getbuffer())
                 mime_type = uploaded_file.type
                 file_id = upload_file_to_drive(temp_file_path, mime_type, student_folder_id)
-                uploaded_file_ids.append(file_id)
+                if file_id:
+                    uploaded_file_ids.append(file_id)
                 os.remove(temp_file_path)
             st.success(f"{file_name} uploaded successfully!")
         else:
