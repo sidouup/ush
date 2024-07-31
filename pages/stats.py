@@ -104,13 +104,22 @@ def load_data(spreadsheet_id):
 
 def plot_insights(data):
     # Ensure the DATE column is datetime type
+    total_records_before = len(data)
     data['DATE'] = pd.to_datetime(data['DATE'], errors='coerce')
+    total_records_after = data['DATE'].notna().sum()
+    dropped_records = total_records_before - total_records_after
 
     st.title("Student Application Insights")
 
     # Overview of the data
     st.header("Data Overview")
     st.write(data.describe(include='all'))
+
+    # Display the number of dropped records due to date format issues
+    st.header("Dropped Records Due to Date Format Issues")
+    st.write(f"Total records before date parsing: {total_records_before}")
+    st.write(f"Total records after date parsing: {total_records_after}")
+    st.write(f"Number of records dropped due to invalid date format: {dropped_records}")
 
     # Distribution of students by chosen school
     st.header("Distribution by Chosen School")
@@ -166,6 +175,19 @@ def plot_insights(data):
         monthly_payment_trends = data.groupby('Month').size().reset_index(name='Payments')
         fig8 = px.bar(monthly_payment_trends, x='Month', y='Payments', title='Payment Trends by Month')
         st.plotly_chart(fig8)
+
+# Main function to run the Streamlit app
+def main():
+    st.title("Google Sheets Data Insights")
+    spreadsheet_id = "1NPc-dQ7uts1c1JjNoABBou-uq2ixzUTiSBTB8qlTuOQ"
+    
+    if spreadsheet_id:
+        data = load_data(spreadsheet_id)
+        if not data.empty:
+            plot_insights(data)
+
+if __name__ == "__main__":
+    main()
 
 
 # Main function to run the Streamlit app
