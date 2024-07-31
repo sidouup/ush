@@ -196,13 +196,13 @@ def check_file_exists(file_name, folder_id):
     return bool(files)
 
 # Function to handle file upload and folder creation
-def handle_file_upload(phone_number, document_type, uploaded_files):
+def handle_file_upload(student_name, document_type, uploaded_files):
     parent_folder_id = '1It91HqQDsYeSo1MuYgACtmkmcO82vzXp'  # Use the provided parent folder ID
     
-    student_folder_id = check_folder_exists(phone_number, parent_folder_id)
+    student_folder_id = check_folder_exists(student_name, parent_folder_id)
     if not student_folder_id:
-        student_folder_id = create_folder_in_drive(phone_number, parent_folder_id)
-    st.write(f"Student folder ID for {phone_number}: {student_folder_id}")
+        student_folder_id = create_folder_in_drive(student_name, parent_folder_id)
+    st.write(f"Student folder ID for {student_name}: {student_folder_id}")
 
     document_folder_id = check_folder_exists(document_type, student_folder_id)
     if not document_folder_id:
@@ -233,9 +233,9 @@ def handle_file_upload(phone_number, document_type, uploaded_files):
             st.warning(f"{file_name} already exists for this student.")
     
     return uploaded_file_ids
-def check_document_status(phone_number):
+def check_document_status(student_name):
     parent_folder_id = '1It91HqQDsYeSo1MuYgACtmkmcO82vzXp'
-    student_folder_id = check_folder_exists(phone_number, parent_folder_id)
+    student_folder_id = check_folder_exists(student_name, parent_folder_id)
     if not student_folder_id:
         return {}
 
@@ -368,7 +368,7 @@ def main():
                 
                     if st.button("Upload Files"):
                         if uploaded_files:
-                            uploaded_file_ids = handle_file_upload(phone_number, document_type, uploaded_files)
+                            uploaded_file_ids = handle_file_upload(student_name, document_type, uploaded_files)
                             if uploaded_file_ids:
                                 st.success(f"Files uploaded successfully! File IDs: {', '.join(uploaded_file_ids)}")
                             else:
@@ -376,7 +376,7 @@ def main():
                         else:
                             st.error("Please select files to upload.")
                 
-                document_status = check_document_status(phone_number)
+                document_status = check_document_status(student_name)
                 st.subheader("Document Status")
                 for doc_type, status in document_status.items():
                     color = "green" if status else "red"
