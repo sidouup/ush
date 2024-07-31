@@ -99,9 +99,9 @@ def load_data(spreadsheet_id):
     
     try:
         client = get_google_sheet_client()
-        st.write("Google Sheets client initialized successfully.")
+
         sheet = client.open_by_key(spreadsheet_id)
-        st.write("Opened spreadsheet successfully.")
+  
         
         combined_data = pd.DataFrame()
         
@@ -127,7 +127,7 @@ def load_data(spreadsheet_id):
         
         combined_data.drop_duplicates(subset='Student Name', keep='last', inplace=True)
         combined_data.reset_index(drop=True, inplace=True)
-        st.write("Data loaded successfully.")
+
         return combined_data
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
@@ -339,10 +339,9 @@ def main():
     </style>
     """, unsafe_allow_html=True)
 
-    # App header with logo
     st.markdown("""
     <div class="stCard" style="display: flex; align-items: center; justify-content: space-between;">
-        <img src="file-kSwxoyGTpRap4G7NJ2kfl1jj" width="100">
+        <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=297,h=404,fit=crop/YBgonz9JJqHRMK43/blue-red-minimalist-high-school-logo-9-AVLN0K6MPGFK2QbL.png" width="150" height="150">
         <h1>Student Application Tracker</h1>
     </div>
     """, unsafe_allow_html=True)
