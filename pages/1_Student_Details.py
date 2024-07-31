@@ -43,7 +43,7 @@ if not filtered_data.empty:
             st.write(selected_student[['Chosen School', 'Duration', 'School Entry Date', 'Entry Date in the US']])
         
         with st.expander("🏛️ Embassy Information", expanded=True):
-            st.write(selected_student[['ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV', 'EMBASSY ITW. DATE', 'DS-160 maker', 'Password DS-160', 'Secret Q.']])
+            st.write(selected_student[['ADDRESS in the U.S', 'E-MAIL RDV', 'PASSWORD RDV', 'EMBASSY ITW. DATE', 'DS-160 maker', 'Password DS-160', 'Secret Q.']])
     
     with col2:
         st.subheader("Application Status")
@@ -65,3 +65,4 @@ if not filtered_data.empty:
             st.write(selected_student[['DATE','Payment Method ', 'Sevis payment ? ', 'Application payment ?']])
 else:
     st.info("No students found matching the search criteria.")
+
