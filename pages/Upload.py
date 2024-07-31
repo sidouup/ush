@@ -333,20 +333,22 @@ def main():
                 format_func=lambda i: f"{filtered_data.iloc[i]['Student Name']} - {filtered_data.iloc[i]['Current Step']}",
                 key="selected_index"
             )
-            
+        
             selected_student = filtered_data.iloc[selected_index]
-
+            student_name = selected_student['Student Name']
+        
             col1, col2 = st.columns([2, 1])
             with col1:
                 with st.expander("📋 Personal Information", expanded=True):
                     first_name = st.text_input("First Name", selected_student['First Name'], key="first_name")
                     last_name = st.text_input("Last Name", selected_student['Last Name'], key="last_name")
-                    student_name = f"{first_name} {last_name}"
                     phone_number = st.text_input("Phone Number", selected_student['Phone N°'], key="phone_number")
                     email = st.text_input("Email", selected_student['E-mail'], key="email")
                     emergency_contact = st.text_input("Emergency Contact Number", selected_student['Emergency contact N°'], key="emergency_contact")
                     address = st.text_input("Address", selected_student['Address'], key="address")
                     attempts = st.text_input("Attempts", selected_student['Attempts'], key="attempts")
+                
+                # Check document status immediately
                 document_status = check_document_status(student_name)
                 st.subheader("Document Status")
                 for doc_type, status in document_status.items():
