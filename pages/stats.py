@@ -71,10 +71,7 @@ def load_data(spreadsheet_id):
     
     try:
         client = get_google_sheet_client()
-
         sheet = client.open_by_key(spreadsheet_id)
-  
-        
         combined_data = pd.DataFrame()
         
         for worksheet in sheet.worksheets():
@@ -99,7 +96,6 @@ def load_data(spreadsheet_id):
         
         combined_data.drop_duplicates(subset='Student Name', keep='last', inplace=True)
         combined_data.reset_index(drop=True, inplace=True)
-
         return combined_data
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
@@ -135,7 +131,7 @@ def statistics_page():
         st.subheader("Basic Statistics")
         st.write("Total Applications:", len(data))
         st.write("Applications by Current Step:")
-        step_counts = data['Worksheet'].value_counts()
+        step_counts = data['Current Step'].value_counts()
         st.write(step_counts)
 
         # Bar chart of applications by step
