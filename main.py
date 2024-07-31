@@ -9,8 +9,48 @@ st.set_page_config(page_title="Student Application Tracker", layout="wide")
 
 # Custom CSS (unchanged)
 st.markdown("""
+
 <style>
-    /* ... (keep the existing CSS) ... */
+    .reportview-container {
+        background: #f0f2f6;
+    }
+    .main .block-container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+    h1, h2, h3 {
+        color: #1E3A8A;
+    }
+    .stSelectbox, .stTextInput {
+        background-color: white;
+        color: #2c3e50;
+        border-radius: 5px;
+    }
+    .stExpander {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .css-1544g2n {
+        padding: 2rem;
+    }
+    .stMetric {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .stMetric .metric-label {
+        font-weight: bold;
+    }
+    .stButton>button {
+        background-color: #ff7f50;
+        color: white;
+        font-weight: bold;
+    }
+    .stButton>button:hover {
+        background-color: #ff6347;
+    }
 </style>
 """, unsafe_allow_html=True)
 
