@@ -399,8 +399,6 @@ with col2:
                 st.metric("Days until interview", days_remaining)
             else:
                 st.metric("Days until interview", "N/A")
-        else:
-            st.write("No data available for the current filters.")
     
     with col3:
         document_status = check_document_status(student_name)
@@ -414,7 +412,8 @@ with col2:
                 {"".join([f"<a href='{file['webViewLink']}' target='_blank' class='file-link'>{file['name']}</a><span class='delete-button' onclick='deleteFile(&quot;{file['id']}&quot;)'>🗑️</span>" for file in status_info['files']])}
             </div>
             """, unsafe_allow_html=True)
-
+    else:
+        st.write("No data available for the current filters.")
         with col1:
             st.subheader("Application Status")
             if not filtered_data.empty:
