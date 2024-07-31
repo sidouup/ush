@@ -350,8 +350,17 @@ def main():
     data = load_data(spreadsheet_id)
 
     if not data.empty:
-        # Extract list of student names
-        student_names = data['Student Name'].tolist()
+        # Extract list of current steps
+        current_steps = ["All"] + list(data['Current Step'].unique())
+
+        # Filter by status first
+        status_filter = st.selectbox("Filter by status", current_steps, key="status_filter")
+
+        # Filter data based on status
+        filtered_data = data if status_filter == "All" else data[data['Current Step'] == status_filter]
+
+        # Extract list of student names based on filtered data
+        student_names = filtered_data['Student Name'].tolist()
 
         # Search and filter section with application status and document status on the same line
         st.markdown('<div class="stCard" style="display: flex; justify-content: space-between;">', unsafe_allow_html=True)
@@ -360,26 +369,13 @@ def main():
         with col2:
             # Use selectbox for search bar with suggestions
             search_query = st.selectbox("🔍 Search for a student (First or Last Name)", options=student_names, key="search_query")
-            
-            # HTML for bold title and selectbox without extra space
-            st.markdown("""
-            <div style="margin-bottom: -20px;">
-                <p style="font-weight: bold; margin-bottom: 5px;">Filter by status</p>
-            </div>
-            """, unsafe_allow_html=True)
-            status_filter = st.selectbox("", ["All"] + list(data['Current Step'].unique()), key="status_filter")
-
-        filtered_data = data
-        if search_query:
-            filtered_data = filtered_data[filtered_data['Student Name'].str.contains(search_query, case=False, na=False)]
-        if status_filter != "All":
-            filtered_data = filtered_data[filtered_data['Current Step'] == status_filter]
 
         with col1:
             st.subheader("Application Status")
             if not filtered_data.empty:
+                selected_student = filtered_data[filtered_data['Student Name'] == search_query].iloc[0]
                 steps = ['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'SEVIS', 'CLIENTS ']
-                current_step = filtered_data.iloc[0]['Current Step'] if not filtered_data.empty else "Unknown"
+                current_step = selected_student['Current Step'] if not filtered_data.empty else "Unknown"
                 step_index = steps.index(current_step) if current_step in steps else 0
                 progress = ((step_index + 1) / len(steps)) * 100
 
@@ -393,10 +389,10 @@ def main():
                 st.markdown(progress_bar, unsafe_allow_html=True)
                 st.write(f"Current Step: {current_step}")
 
-                visa_status = filtered_data.iloc[0]['Visa Result'] if not filtered_data.empty else "Unknown"
+                visa_status = selected_student['Visa Result'] if not filtered_data.empty else "Unknown"
                 st.write(f"**Visa Status:** {visa_status}")
 
-                interview_date = filtered_data.iloc[0]['EMBASSY ITW. DATE'] if not filtered_data.empty else None
+                interview_date = selected_student['EMBASSY ITW. DATE'] if not filtered_data.empty else None
                 days_remaining = calculate_days_until_interview(interview_date)
                 if days_remaining is not None:
                     st.metric("Days until interview", days_remaining)
@@ -407,7 +403,7 @@ def main():
 
         with col3:
             if not filtered_data.empty:
-                student_name = filtered_data.iloc[0]['Student Name']
+                student_name = selected_student['Student Name']
                 document_status = check_document_status(student_name)
                 st.subheader("Document Status")
                 for doc_type, status_info in document_status.items():
@@ -421,14 +417,15 @@ def main():
                     """, unsafe_allow_html=True)
             else:
                 st.write("No data available for the current filters.")
-        
+
         st.markdown('</div>', unsafe_allow_html=True)
 
         if not filtered_data.empty:
-            selected_student = filtered_data.iloc[0]
+            selected_student = filtered_data[filtered_data['Student Name'] == search_query].iloc[0]
             student_name = selected_student['Student Name']
 
             edit_mode = st.toggle("Edit Mode", value=False)
+
 
             # Tabs for student information
             tab1, tab2, tab3, tab4 = st.tabs(["Personal", "School", "Embassy", "Payment"])
