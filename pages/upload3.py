@@ -300,6 +300,9 @@ def handle_file_upload(student_name, document_type, uploaded_file):
             os.remove(temp_file_path)
         if file_id:
             st.success(f"{file_name} uploaded successfully!")
+            if 'document_status_cache' in st.session_state:
+                st.session_state['document_status_cache'].pop(student_name, None)
+            st.rerun()
             return file_id
     else:
         st.warning(f"{file_name} already exists for this student.")
@@ -374,9 +377,15 @@ def trash_file_in_drive(file_id):
         return False
 
 def get_document_status(student_name):
-    service = get_google_drive_service()
-    document_status = asyncio.run(check_document_status_async(student_name, service))
-    return document_status
+    if 'document_status_cache' not in st.session_state:
+        st.session_state['document_status_cache'] = {}
+    if student_name in st.session_state['document_status_cache']:
+        return st.session_state['document_status_cache'][student_name]
+    else:
+        service = get_google_drive_service()
+        document_status = asyncio.run(check_document_status_async(student_name, service))
+        st.session_state['document_status_cache'][student_name] = document_status
+        return document_status
 
 # Debouncing inputs for edit mode
 debounce_lock = threading.Lock()
@@ -394,10 +403,7 @@ def debounce(func, wait=0.5):
 
 @debounce
 def update_student_data(*args, **kwargs):
-    key, value = args
-    if 'temp_student_data' not in st.session_state:
-        st.session_state.temp_student_data = {}
-    st.session_state.temp_student_data[key] = value
+    pass
 
 # Main function
 def main():
@@ -504,14 +510,11 @@ def main():
         filtered_data = data if status_filter == "All" else data[data['Current Step'] == status_filter]
         student_names = filtered_data['Student Name'].tolist()
 
-        def on_student_change():
-            st.session_state.selected_student = st.session_state.new_selected_student
-
         st.markdown('<div class="stCard" style="display: flex; justify-content: space-between;">', unsafe_allow_html=True)
         col2, col1, col3 = st.columns([3, 2, 3])
 
         with col2:
-            search_query = st.selectbox("🔍 Search for a student (First or Last Name)", options=student_names, key="new_selected_student", index=student_names.index(st.session_state.selected_student) if st.session_state.selected_student in student_names else 0, on_change=on_student_change)
+            search_query = st.selectbox("🔍 Search for a student (First or Last Name)", options=student_names, key="search_query", index=student_names.index(st.session_state.selected_student) if st.session_state.selected_student in student_names else 0)
             st.session_state.selected_student = search_query
 
         with col1:
@@ -564,8 +567,7 @@ def main():
                         if st.button("🗑️", key=f"delete_{status_info['files'][0]['id']}", help="Delete file"):
                             file_id = status_info['files'][0]['id']
                             if trash_file_in_drive(file_id):  # Use trash_file_in_drive instead of delete_file_from_drive
-                                if 'document_status_cache' in st.session_state:
-                                    st.session_state['document_status_cache'].pop(student_name, None)
+                                st.session_state['reload_data'] = True
                                 st.rerun()
                 else:
                     with col2:
@@ -584,13 +586,13 @@ def main():
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("📋 Personal Information")
                 if edit_mode:
-                    first_name = st.text_input("First Name", selected_student['First Name'], key="first_name", on_change=update_student_data, args=("First Name", selected_student['First Name']))
-                    last_name = st.text_input("Last Name", selected_student['Last Name'], key="last_name", on_change=update_student_data, args=("Last Name", selected_student['Last Name']))
-                    phone_number = st.text_input("Phone Number", selected_student['Phone N°'], key="phone_number", on_change=update_student_data, args=("Phone N°", selected_student['Phone N°']))
-                    email = st.text_input("Email", selected_student['E-mail'], key="email", on_change=update_student_data, args=("E-mail", selected_student['E-mail']))
-                    emergency_contact = st.text_input("Emergency Contact Number", selected_student['Emergency contact N°'], key="emergency_contact", on_change=update_student_data, args=("Emergency contact N°", selected_student['Emergency contact N°']))
-                    address = st.text_input("Address", selected_student['Address'], key="address", on_change=update_student_data, args=("Address", selected_student['Address']))
-                    attempts = st.text_input("Attempts", selected_student['Attempts'], key="attempts", on_change=update_student_data, args=("Attempts", selected_student['Attempts']))
+                    first_name = st.text_input("First Name", selected_student['First Name'], key="first_name", on_change=update_student_data)
+                    last_name = st.text_input("Last Name", selected_student['Last Name'], key="last_name", on_change=update_student_data)
+                    phone_number = st.text_input("Phone Number", selected_student['Phone N°'], key="phone_number", on_change=update_student_data)
+                    email = st.text_input("Email", selected_student['E-mail'], key="email", on_change=update_student_data)
+                    emergency_contact = st.text_input("Emergency Contact Number", selected_student['Emergency contact N°'], key="emergency_contact", on_change=update_student_data)
+                    address = st.text_input("Address", selected_student['Address'], key="address", on_change=update_student_data)
+                    attempts = st.text_input("Attempts", selected_student['Attempts'], key="attempts", on_change=update_student_data)
                 else:
                     st.write(f"**First Name:** {selected_student['First Name']}")
                     st.write(f"**Last Name:** {selected_student['Last Name']}")
@@ -605,10 +607,10 @@ def main():
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("🏫 School Information")
                 if edit_mode:
-                    chosen_school = st.text_input("Chosen School", selected_student['Chosen School'], key="chosen_school", on_change=update_student_data, args=("Chosen School", selected_student['Chosen School']))
-                    duration = st.text_input("Duration", selected_student['Duration'], key="duration", on_change=update_student_data, args=("Duration", selected_student['Duration']))
-                    school_entry_date = st.text_input("School Entry Date", selected_student['School Entry Date'], key="school_entry_date", on_change=update_student_data, args=("School Entry Date", selected_student['School Entry Date']))
-                    entry_date_in_us = st.text_input("Entry Date in the US", selected_student['Entry Date in the US'], key="entry_date_in_us", on_change=update_student_data, args=("Entry Date in the US", selected_student['Entry Date in the US']))
+                    chosen_school = st.text_input("Chosen School", selected_student['Chosen School'], key="chosen_school", on_change=update_student_data)
+                    duration = st.text_input("Duration", selected_student['Duration'], key="duration", on_change=update_student_data)
+                    school_entry_date = st.text_input("School Entry Date", selected_student['School Entry Date'], key="school_entry_date", on_change=update_student_data)
+                    entry_date_in_us = st.text_input("Entry Date in the US", selected_student['Entry Date in the US'], key="entry_date_in_us", on_change=update_student_data)
                 else:
                     st.write(f"**Chosen School:** {selected_student['Chosen School']}")
                     st.write(f"**Duration:** {selected_student['Duration']}")
@@ -620,13 +622,13 @@ def main():
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("🏛️ Embassy Information")
                 if edit_mode:
-                    address_us = st.text_input("Address in the U.S", selected_student['ADDRESS in the U.S'], key="address_us", on_change=update_student_data, args=("ADDRESS in the U.S", selected_student['ADDRESS in the U.S']))
-                    email_rdv = st.text_input("E-mail RDV", selected_student[' E-MAIL RDV'], key="email_rdv", on_change=update_student_data, args=(" E-MAIL RDV", selected_student[' E-MAIL RDV']))
-                    password_rdv = st.text_input("Password RDV", selected_student['PASSWORD RDV'], key="password_rdv", on_change=update_student_data, args=("PASSWORD RDV", selected_student['PASSWORD RDV']))
-                    embassy_itw_date = st.text_input("Embassy Interview Date", selected_student['EMBASSY ITW. DATE'], key="embassy_itw_date", on_change=update_student_data, args=("EMBASSY ITW. DATE", selected_student['EMBASSY ITW. DATE']))
-                    ds160_maker = st.text_input("DS-160 Maker", selected_student['DS-160 maker'], key="ds160_maker", on_change=update_student_data, args=("DS-160 maker", selected_student['DS-160 maker']))
-                    password_ds160 = st.text_input("Password DS-160", selected_student['Password DS-160'], key="password_ds160", on_change=update_student_data, args=("Password DS-160", selected_student['Password DS-160']))
-                    secret_q = st.text_input("Secret Question", selected_student['Secret Q.'], key="secret_q", on_change=update_student_data, args=("Secret Q.", selected_student['Secret Q.']))
+                    address_us = st.text_input("Address in the U.S", selected_student['ADDRESS in the U.S'], key="address_us", on_change=update_student_data)
+                    email_rdv = st.text_input("E-mail RDV", selected_student[' E-MAIL RDV'], key="email_rdv", on_change=update_student_data)
+                    password_rdv = st.text_input("Password RDV", selected_student['PASSWORD RDV'], key="password_rdv", on_change=update_student_data)
+                    embassy_itw_date = st.text_input("Embassy Interview Date", selected_student['EMBASSY ITW. DATE'], key="embassy_itw_date", on_change=update_student_data)
+                    ds160_maker = st.text_input("DS-160 Maker", selected_student['DS-160 maker'], key="ds160_maker", on_change=update_student_data)
+                    password_ds160 = st.text_input("Password DS-160", selected_student['Password DS-160'], key="password_ds160", on_change=update_student_data)
+                    secret_q = st.text_input("Secret Question", selected_student['Secret Q.'], key="secret_q", on_change=update_student_data)
                 else:
                     st.write(f"**Address in the U.S:** {selected_student['ADDRESS in the U.S']}")
                     st.write(f"**E-mail RDV:** {selected_student[' E-MAIL RDV']}")
@@ -641,10 +643,10 @@ def main():
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("💰 Payment Information")
                 if edit_mode:
-                    payment_date = st.text_input("Payment Date", selected_student['DATE'], key="payment_date", on_change=update_student_data, args=("DATE", selected_student['DATE']))
-                    payment_method = st.text_input("Payment Method", selected_student['Payment Method '], key="payment_method", on_change=update_student_data, args=("Payment Method ", selected_student['Payment Method ']))
-                    sevis_payment = st.text_input("Sevis Payment", selected_student['Sevis payment ? '], key="sevis_payment", on_change=update_student_data, args=("Sevis payment ? ", selected_student['Sevis payment ? ']))
-                    application_payment = st.text_input("Application Payment", selected_student['Application payment ?'], key="application_payment", on_change=update_student_data, args=("Application payment ?", selected_student['Application payment ?']))
+                    payment_date = st.text_input("Payment Date", selected_student['DATE'], key="payment_date", on_change=update_student_data)
+                    payment_method = st.text_input("Payment Method", selected_student['Payment Method '], key="payment_method", on_change=update_student_data)
+                    sevis_payment = st.text_input("Sevis Payment", selected_student['Sevis payment ? '], key="sevis_payment", on_change=update_student_data)
+                    application_payment = st.text_input("Application Payment", selected_student['Application payment ?'], key="application_payment", on_change=update_student_data)
                 else:
                     st.write(f"**Payment Date:** {selected_student['DATE']}")
                     st.write(f"**Payment Method:** {selected_student['Payment Method ']}")
@@ -674,10 +676,9 @@ def main():
 
             if edit_mode and st.button("Save Changes"):
                 if 'temp_student_data' in st.session_state:
-                    temp_data = st.session_state.temp_student_data
-                    for key, value in temp_data.items():
+                    for key, value in st.session_state.temp_student_data.items():
                         filtered_data.loc[filtered_data['Student Name'] == student_name, key] = value
-            
+                    
                     # Save the updated data back to Google Sheets
                     save_data(filtered_data, spreadsheet_id, selected_student['Current Step'])
                     
@@ -685,6 +686,7 @@ def main():
                     st.session_state.pop('temp_student_data', None)
                     st.session_state['reload_data'] = True
                     st.rerun()
+                st.success("Changes saved successfully!")
 
         else:
             st.info("No students found matching the search criteria.")
