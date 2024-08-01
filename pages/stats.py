@@ -149,26 +149,39 @@ def main():
 
         if not data.empty:
             # Data preprocessing
-            data['DATE'] = pd.to_datetime(data['DATE'], format='%d/%m/%Y', errors='coerce')
-            data = data[data['DATE'].notnull()]
-            data = data.drop_duplicates(subset=['First Name', 'Last Name'])
-            data['Year'] = data['DATE'].dt.year
-            data['Month'] = data['DATE'].dt.month_name()
+            data['DATE'] = pd.to_datetime(data['DATE'], format='%d/%m/%Y %H:%M:%S', errors='coerce')
+
+            # Separate data where date conversion did not work
+            invalid_date_data = data[data['DATE'].isnull()]
+            st.write("Students with invalid or missing dates:")
+            st.write(invalid_date_data[['First Name', 'Last Name', 'DATE']])
+
+            # Separate data where date conversion worked
+            valid_date_data = data[data['DATE'].notnull()]
+            st.write("Students with valid dates:")
+            st.write(valid_date_data[['First Name', 'Last Name', 'DATE']])
+
+            # Remove duplicate students by comparing names
+            valid_date_data = valid_date_data.drop_duplicates(subset=['First Name', 'Last Name'])
+
+            # Extract Year and Month
+            valid_date_data['Year'] = valid_date_data['DATE'].dt.year
+            valid_date_data['Month'] = valid_date_data['DATE'].dt.month_name()
 
             if page == 'Overview':
                 st.header('📈 Recruitment Overview')
-                
+
                 col1, col2, col3 = st.columns(3)
                 with col1:
-                    st.metric("Total Students", len(data))
+                    st.metric("Total Students", len(valid_date_data))
                 with col2:
-                    st.metric("This Year's Recruits", len(data[data['Year'] == datetime.now().year]))
+                    st.metric("This Year's Recruits", len(valid_date_data[valid_date_data['Year'] == datetime.now().year]))
                 with col3:
-                    st.metric("Visa Approval Rate", f"{(data['Visa Result'] == 'Visa Approved').mean():.2%}")
+                    st.metric("Visa Approval Rate", f"{(valid_date_data['Visa Result'] == 'Visa Approved').mean():.2%}")
 
                 # Monthly recruitment trend
                 st.subheader('Monthly Recruitment Trend')
-                monthly_trend = data.groupby(['Year', 'Month']).size().reset_index(name='Count')
+                monthly_trend = valid_date_data.groupby(['Year', 'Month']).size().reset_index(name='Count')
                 monthly_trend['Date'] = pd.to_datetime(monthly_trend['Year'].astype(str) + ' ' + monthly_trend['Month'], format='%Y %B')
                 monthly_trend = monthly_trend.sort_values('Date')
                 fig_trend = px.line(monthly_trend, x='Date', y='Count', title='Monthly Recruitment Trend')
@@ -176,23 +189,33 @@ def main():
 
                 # Top schools
                 st.subheader('Top Schools')
-                top_schools = data['Chosen School'].value_counts().reset_index()
+                top_schools = valid_date_data['Chosen School'].value_counts().reset_index()
                 top_schools.columns = ['School', 'Count']
-                top_schools = top_schools.head(5)  # Get top 5 schools
+                top_schools = top_schools.head(5)
                 fig_schools = px.bar(top_schools, x='School', y='Count', title='Top 5 Schools')
                 st.plotly_chart(fig_schools, use_container_width=True)
+
+                # Monthly Payments for 2024
+                st.subheader('Monthly Payments for 2024')
+                data_2024 = valid_date_data[valid_date_data['Year'] == 2024]
+                monthly_payments_2024 = data_2024.groupby('Month').size().reset_index(name='Number of Payments')
+                month_order = list(calendar.month_name)[1:]  # January to December
+                monthly_payments_2024['Month'] = pd.Categorical(monthly_payments_2024['Month'], categories=month_order, ordered=True)
+                monthly_payments_2024 = monthly_payments_2024.sort_values('Month')
+                fig_payments_2024 = px.bar(monthly_payments_2024, x='Month', y='Number of Payments', title='Monthly Payments Distribution for 2024')
+                st.plotly_chart(fig_payments_2024, use_container_width=True)
 
             # Student Details Page
             elif page == 'Student Details':
                 st.header('👨‍🎓 Student Details')
-                
+
                 # Search functionality
                 search_term = st.text_input('🔍 Search for a student (First Name or Last Name)')
                 if search_term:
-                    filtered_data = data[data['First Name'].str.contains(search_term, case=False) | 
-                                         data['Last Name'].str.contains(search_term, case=False)]
+                    filtered_data = valid_date_data[valid_date_data['First Name'].str.contains(search_term, case=False) | 
+                                                     valid_date_data['Last Name'].str.contains(search_term, case=False)]
                 else:
-                    filtered_data = data
+                    filtered_data = valid_date_data
 
                 # Display student details
                 for _, student in filtered_data.iterrows():
@@ -210,10 +233,10 @@ def main():
             # School Analytics Page
             elif page == 'School Analytics':
                 st.header('🏫 School Analytics')
-                
+
                 # School selection
-                selected_school = st.selectbox('Select a school', data['Chosen School'].unique())
-                school_data = data[data['Chosen School'] == selected_school]
+                selected_school = st.selectbox('Select a school', valid_date_data['Chosen School'].unique())
+                school_data = valid_date_data[valid_date_data['Chosen School'] == selected_school]
 
                 col1, col2 = st.columns(2)
                 with col1:
@@ -231,20 +254,20 @@ def main():
             # Visa Statistics Page
             elif page == 'Visa Statistics':
                 st.header('🛂 Visa Statistics')
-                
+
                 # Overall visa statistics
-                visa_stats = data['Visa Result'].value_counts()
+                visa_stats = valid_date_data['Visa Result'].value_counts()
                 fig_visa = px.pie(values=visa_stats.values, names=visa_stats.index, title='Overall Visa Results')
                 st.plotly_chart(fig_visa, use_container_width=True)
 
                 # Visa approval rate by school
-                visa_by_school = data.groupby('Chosen School')['Visa Result'].apply(lambda x: (x == 'Visa Approved').mean()).sort_values(ascending=False)
+                visa_by_school = valid_date_data.groupby('Chosen School')['Visa Result'].apply(lambda x: (x == 'Visa Approved').mean()).sort_values(ascending=False)
                 fig_visa_school = px.bar(visa_by_school, x=visa_by_school.index, y=visa_by_school.values, title='Visa Approval Rate by School')
                 fig_visa_school.update_layout(yaxis_title='Approval Rate', xaxis_title='School')
                 st.plotly_chart(fig_visa_school, use_container_width=True)
 
                 # Visa approval trend
-                visa_trend = data.groupby(['Year', 'Month'])['Visa Result'].apply(lambda x: (x == 'Visa Approved').mean()).reset_index(name='Approval Rate')
+                visa_trend = valid_date_data.groupby(['Year', 'Month'])['Visa Result'].apply(lambda x: (x == 'Visa Approved').mean()).reset_index(name='Approval Rate')
                 visa_trend['Date'] = pd.to_datetime(visa_trend['Year'].astype(str) + ' ' + visa_trend['Month'], format='%Y %B')
                 visa_trend = visa_trend.sort_values('Date')
                 fig_visa_trend = px.line(visa_trend, x='Date', y='Approval Rate', title='Visa Approval Rate Trend')
