@@ -18,6 +18,9 @@ import threading
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
+
+
 # Caching decorator
 def cache_with_timeout(timeout_minutes=60):
     def decorator(func):
@@ -301,16 +304,16 @@ def handle_file_upload(student_name, document_type, uploaded_file):
     
     return None
 
-async def fetch_document_status(session, document_type, student_folder_id):
-    document_folder_id = await check_folder_exists_async(document_type, student_folder_id)
+async def fetch_document_status(session, document_type, student_folder_id, service):
+    document_folder_id = await check_folder_exists_async(document_type, student_folder_id, service)
     if document_folder_id:
-        files = await list_files_in_folder_async(document_folder_id)
+        files = await list_files_in_folder_async(document_folder_id, service)
         return document_type, bool(files), files
     return document_type, False, []
 
-async def check_document_status_async(student_name):
+async def check_document_status_async(student_name, service):
     parent_folder_id = '1It91HqQDsYeSo1MuYgACtmkmcO82vzXp'
-    student_folder_id = await check_folder_exists_async(student_name, parent_folder_id)
+    student_folder_id = await check_folder_exists_async(student_name, parent_folder_id, service)
     
     document_types = ["Passport", "Bank Statement", "Financial Letter", 
                       "Transcripts", "Diplomas", "English Test", "Payment Receipt",
@@ -318,43 +321,43 @@ async def check_document_status_async(student_name):
     document_status = {doc_type: {'status': False, 'files': []} for doc_type in document_types}
 
     if not student_folder_id:
+        logger.info(f"Student folder not found for {student_name}")
         return document_status
 
     async with aiohttp.ClientSession() as session:
         tasks = [
-            fetch_document_status(session, document_type, student_folder_id)
+            fetch_document_status(session, document_type, student_folder_id, service)
             for document_type in document_types
         ]
         results = await asyncio.gather(*tasks)
         for doc_type, status, files in results:
             document_status[doc_type] = {'status': status, 'files': files}
+            logger.info(f"Document status for {doc_type}: {status}, Files: {files}")
     
     return document_status
 
-# Wrappers for asynchronous functions
-async def check_folder_exists_async(folder_name, parent_id=None):
+async def check_folder_exists_async(folder_name, parent_id, service):
     try:
-        service = get_google_drive_service()
         query = f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder'"
         if parent_id:
             query += f" and '{parent_id}' in parents"
 
-        results = await service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
+        results = service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
         folders = results.get('files', [])
         return folders[0].get('id') if folders else None
     except Exception as e:
         logger.error(f"An error occurred while checking if folder exists: {str(e)}")
         return None
 
-async def list_files_in_folder_async(folder_id):
+async def list_files_in_folder_async(folder_id, service):
     try:
-        service = get_google_drive_service()
         query = f"'{folder_id}' in parents and trashed=false"
-        results = await service.files().list(q=query, spaces='drive', fields='files(id, name, webViewLink)').execute()
+        results = service.files().list(q=query, spaces='drive', fields='files(id, name, webViewLink)').execute()
         return results.get('files', [])
     except Exception as e:
         logger.error(f"An error occurred while listing files in folder: {str(e)}")
         return []
+
 
 @st.cache_data(ttl=900)
 def get_document_status(student_name):
@@ -363,7 +366,8 @@ def get_document_status(student_name):
     if student_name in st.session_state['document_status_cache']:
         return st.session_state['document_status_cache'][student_name]
     else:
-        document_status = asyncio.run(check_document_status_async(student_name))
+        service = get_google_drive_service()
+        document_status = asyncio.run(check_document_status_async(student_name, service))
         st.session_state['document_status_cache'][student_name] = document_status
         return document_status
 
