@@ -157,6 +157,9 @@ def load_data(spreadsheet_id):
 # Function to save data to Google Sheets (batch update)
 import numpy as np
 
+import numpy as np
+from string import ascii_uppercase
+
 def save_data(df, spreadsheet_id, sheet_name):
     def replace_invalid_floats(val):
         if isinstance(val, float):
@@ -173,14 +176,26 @@ def save_data(df, spreadsheet_id, sheet_name):
     client = get_google_sheet_client()
     sheet = client.open_by_key(spreadsheet_id).worksheet(sheet_name)
     
+    # Get the number of columns in the sheet
+    sheet_columns = len(sheet.row_values(1))
+    
+    # Limit the DataFrame to the number of columns in the sheet
+    df = df.iloc[:, :sheet_columns]
+    
     # Prepare the data for batch update
     values = [df.columns.tolist()] + df.values.tolist()
     
+    # Calculate the last column letter
+    last_column = ascii_uppercase[sheet_columns - 1]
+    
     # Perform batch update
     sheet.batch_update([{
-        'range': f'A1:{chr(65 + len(df.columns) - 1)}{len(values)}',
+        'range': f'A1:{last_column}{len(values)}',
         'values': values
     }])
+
+    # Log the number of columns in the DataFrame and the sheet
+    print(f"DataFrame columns: {len(df.columns)}, Sheet columns: {sheet_columns}")
 
 # Function to calculate days until interview
 def calculate_days_until_interview(interview_date):
