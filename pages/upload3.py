@@ -400,7 +400,7 @@ async def list_files_in_folder_async(folder_id, service):
         logger.error(f"An error occurred while listing files in folder: {str(e)}")
         return []
 
-def trash_file_in_drive(file_id):
+def trash_file_in_drive(file_id, student_name):
     service = get_google_drive_service()
     try:
         # Move the file to the trash
@@ -408,12 +408,17 @@ def trash_file_in_drive(file_id):
             fileId=file_id,
             body={"trashed": True}
         ).execute()
+        
+        # Clear the document status cache for this student
+        if 'document_status_cache' in st.session_state:
+            st.session_state['document_status_cache'].pop(student_name, None)
+        
         return True
     
     except Exception as e:
         st.error(f"An error occurred while moving the file to trash: {str(e)}")
         return False
-    clear_cache_and_rerun() 
+
 def get_document_status(student_name):
     if 'document_status_cache' not in st.session_state:
         st.session_state['document_status_cache'] = {}
@@ -601,12 +606,14 @@ def main():
                     for file in status_info['files']:
                         st.markdown(f"- [{file['name']}]({file['webViewLink']})")
                 if status_info['status']:
-                    with col2:
-                        if st.button("🗑️", key=f"delete_{status_info['files'][0]['id']}", help="Delete file"):
-                            file_id = status_info['files'][0]['id']
-                            if trash_file_in_drive(file_id):  # Use trash_file_in_drive instead of delete_file_from_drive
-                                st.session_state['reload_data'] = True
-                                clear_cache_and_rerun() 
+                    if status_info['status']:
+                        with col2:
+                            if st.button("🗑️", key=f"delete_{status_info['files'][0]['id']}", help="Delete file"):
+                                file_id = status_info['files'][0]['id']
+                                if trash_file_in_drive(file_id, student_name):
+                                    st.session_state['reload_data'] = True
+                                    clear_cache_and_rerun()
+
                 else:
                     with col2:
                         st.markdown("")
