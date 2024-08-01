@@ -18,7 +18,6 @@ import threading
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
 def reload_data(spreadsheet_id):
     data = load_data(spreadsheet_id)
     st.session_state['data'] = data
@@ -301,7 +300,9 @@ def handle_file_upload(student_name, document_type, uploaded_file):
             os.remove(temp_file_path)
         if file_id:
             st.success(f"{file_name} uploaded successfully!")
-            st.session_state['document_status'] = get_document_status(student_name)  # Reload document status
+            if 'document_status_cache' in st.session_state:
+                st.session_state['document_status_cache'].pop(student_name, None)
+            st.rerun()
             return file_id
     else:
         st.warning(f"{file_name} already exists for this student.")
@@ -375,7 +376,6 @@ def trash_file_in_drive(file_id):
         st.error(f"An error occurred while moving the file to trash: {str(e)}")
         return False
 
-@st.cache_data(ttl=900)
 def get_document_status(student_name):
     if 'document_status_cache' not in st.session_state:
         st.session_state['document_status_cache'] = {}
@@ -405,7 +405,6 @@ def debounce(func, wait=0.5):
 def update_student_data(*args, **kwargs):
     pass
 
-# Main function
 # Main function
 def main():
     st.set_page_config(page_title="Student Application Tracker", layout="wide")
@@ -498,9 +497,10 @@ def main():
 
     spreadsheet_id = "1NPc-dQ7uts1c1JjNoABBou-uq2ixzUTiSBTB8qlTuOQ"
     
-    if 'data' not in st.session_state:
+    if 'data' not in st.session_state or st.session_state.get('reload_data', False):
         data = load_data(spreadsheet_id)
         st.session_state['data'] = data
+        st.session_state['reload_data'] = False
     else:
         data = st.session_state['data']
 
@@ -567,6 +567,7 @@ def main():
                         if st.button("🗑️", key=f"delete_{status_info['files'][0]['id']}", help="Delete file"):
                             file_id = status_info['files'][0]['id']
                             if trash_file_in_drive(file_id):  # Use trash_file_in_drive instead of delete_file_from_drive
+                                st.session_state['reload_data'] = True
                                 st.rerun()
                 else:
                     with col2:
@@ -667,50 +668,24 @@ def main():
                     file_id = handle_file_upload(student_name, document_type, uploaded_file)
                     if file_id:
                         st.success(f"{document_type} uploaded successfully!")
-                        st.session_state['document_status'] = get_document_status(student_name)  # Reload document status
+                        if 'document_status_cache' in st.session_state:
+                            st.session_state['document_status_cache'].pop(student_name, None)
                         st.rerun()  # Force a re-run of the entire app
                     else:
                         st.error("An error occurred while uploading the document.")
 
             if edit_mode and st.button("Save Changes"):
-                updated_student = {
-                    'First Name': first_name,
-                    'Last Name': last_name,
-                    'Phone N°': phone_number,
-                    'E-mail': email,
-                    'Emergency contact N°': emergency_contact,
-                    'Address': address,
-                    'Attempts': attempts,
-                    'Chosen School': chosen_school,
-                    'Duration': duration,
-                    'School Entry Date': school_entry_date,
-                    'Entry Date in the US': entry_date_in_us,
-                    'ADDRESS in the U.S': address_us,
-                    ' E-MAIL RDV': email_rdv,
-                    'PASSWORD RDV': password_rdv,
-                    'EMBASSY ITW. DATE': embassy_itw_date,
-                    'DS-160 maker': ds160_maker,
-                    'Password DS-160': password_ds160,
-                    'Secret Q.': secret_q,
-                    'Visa Result': visa_status,
-                    'Current Step': current_step,
-                    'DATE': payment_date,
-                    'Payment Method ': payment_method,
-                    'Sevis payment ? ': sevis_payment,
-                    'Application payment ?': application_payment,
-                }
-                
-                # Update the data in the DataFrame
-                for key, value in updated_student.items():
-                    filtered_data.loc[filtered_data['Student Name'] == student_name, key] = value
-
-                # Save the updated data back to Google Sheets
-                save_data(filtered_data, spreadsheet_id, selected_student['Current Step'])
-                
-                # Reload data to reflect changes
-                data = reload_data(spreadsheet_id)
-                st.session_state['data'] = data
-                
+                if 'temp_student_data' in st.session_state:
+                    for key, value in st.session_state.temp_student_data.items():
+                        filtered_data.loc[filtered_data['Student Name'] == student_name, key] = value
+                    
+                    # Save the updated data back to Google Sheets
+                    save_data(filtered_data, spreadsheet_id, selected_student['Current Step'])
+                    
+                    # Clear temporary data and reload
+                    st.session_state.pop('temp_student_data', None)
+                    st.session_state['reload_data'] = True
+                    st.rerun()
                 st.success("Changes saved successfully!")
 
         else:
