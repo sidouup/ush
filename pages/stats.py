@@ -102,6 +102,7 @@ def load_data(spreadsheet_id):
         st.error(f"An error occurred: {str(e)}")
         return pd.DataFrame()
 
+# Main app logic
 def main():
     st.title('Student Payments Analysis')
     st.sidebar.title('Settings')
@@ -121,26 +122,26 @@ def main():
 
             # Extract Year and Month
             data['Year'] = data['DATE'].dt.year
-            data['Month'] = data['DATE'].dt.month
+            data['Month'] = data['DATE'].dt.strftime('%B')  # Convert month number to month name
 
             # Group by Year and Month to get payment counts
             monthly_payments = data.groupby(['Year', 'Month']).size().reset_index(name='Number of Payments')
 
             # Adjust the count for payments made on the same day
             daily_payments = data.groupby(['Year', 'Month', 'DATE']).size().reset_index(name='Daily Count')
-            daily_payments['Adjusted Count'] = daily_payments['Daily Count'] * 4  # Assuming 3 times or 4 times rule applies
+            daily_payments['Adjusted Count'] = daily_payments['Daily Count']  # Count each payment individually
 
             # Aggregate back to monthly payments with adjusted count
             adjusted_monthly_payments = daily_payments.groupby(['Year', 'Month'])['Adjusted Count'].sum().reset_index()
 
-            st.write("Monthly Payments Data:")
-            st.write(adjusted_monthly_payments)
-
-            # Plotting the data
-            fig = px.bar(adjusted_monthly_payments, x='Month', y='Adjusted Count', color='Year', barmode='group',
-                         labels={'Month': 'Month', 'Adjusted Count': 'Number of Payments'},
-                         title="Monthly Payments Distribution")
-            st.plotly_chart(fig)
+            # Plotting the data for each year
+            for year in adjusted_monthly_payments['Year'].unique():
+                yearly_data = adjusted_monthly_payments[adjusted_monthly_payments['Year'] == year]
+                fig = px.bar(yearly_data, x='Month', y='Adjusted Count',
+                             title=f"Monthly Payments Distribution for {year}",
+                             labels={'Month': 'Month', 'Adjusted Count': 'Number of Payments'})
+                fig.update_layout(xaxis_title='Month', yaxis_title='Number of Payments')
+                st.plotly_chart(fig)
         else:
             st.write("No data found. Please check the Google Sheets ID and try again.")
 
