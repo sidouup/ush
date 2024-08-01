@@ -318,9 +318,13 @@ def list_files_in_folder(folder_id):
     
 def delete_file_from_drive(file_id):
     service = get_google_drive_service()
-
-    body_value = {'trashed': True}
-    service.files().delete(fileId=file_id, body=body_value).execute()
+    try:
+        response = service.files().delete(fileId=file_id).execute()
+        st.write(f"File ID {file_id} deletion response: {response}")
+        return True
+    except Exception as e:
+        st.error(f"An error occurred while deleting the file: {str(e)}")
+        return False
 
         
 @cache_with_timeout(timeout_minutes=5)
