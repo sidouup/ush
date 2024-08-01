@@ -41,6 +41,7 @@ def upload_file_to_drive(file_path, mime_type, folder_id=None):
         body=file_metadata,
         media_body=media,
         fields='id').execute()
+    file_id=file.get('id')
     if file_id:
         st.session_state.upload_success = True
         return file_id
