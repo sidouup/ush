@@ -10,6 +10,9 @@ from googleapiclient.http import MediaFileUpload
 import plotly.express as px
 import functools
 import logging
+import asyncio
+import aiohttp
+import threading
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -298,56 +301,16 @@ def handle_file_upload(student_name, document_type, uploaded_file):
     
     return None
 
-@cache_with_timeout(timeout_minutes=5)
-def check_document_status(student_name):
-    try:
-        parent_folder_id = '1It91HqQDsYeSo1MuYgACtmkmcO82vzXp'
-        student_folder_id = check_folder_exists(student_name, parent_folder_id)
-        
-        document_types = ["Passport", "Bank Statement", "Financial Letter", 
-                          "Transcripts", "Diplomas", "English Test", "Payment Receipt",
-                          "SEVIS Receipt", "SEVIS"]
-        document_status = {doc_type: {'status': False, 'files': []} for doc_type in document_types}
+async def fetch_document_status(session, document_type, student_folder_id):
+    document_folder_id = await check_folder_exists_async(document_type, student_folder_id)
+    if document_folder_id:
+        files = await list_files_in_folder_async(document_folder_id)
+        return document_type, bool(files), files
+    return document_type, False, []
 
-        if not student_folder_id:
-            return document_status
-
-        for document_type in document_types:
-            document_folder_id = check_folder_exists(document_type, student_folder_id)
-            if document_folder_id:
-                files = list_files_in_folder(document_folder_id)
-                document_status[document_type]['status'] = bool(files)
-                document_status[document_type]['files'] = files
-
-        return document_status
-    except Exception as e:
-        logger.error(f"An error occurred while checking document status: {str(e)}")
-        return {}
-
-@cache_with_timeout(timeout_minutes=5)
-def list_files_in_folder(folder_id):
-    service = get_google_drive_service()
-    query = f"'{folder_id}' in parents and trashed=false"
-    results = service.files().list(q=query, spaces='drive', fields='files(id, name, webViewLink)').execute()
-    return results.get('files', [])
-    
-def trash_file_in_drive(file_id):
-    service = get_google_drive_service()
-    try:
-        # Move the file to the trash
-        file = service.files().update(
-            fileId=file_id,
-            body={"trashed": True}
-        ).execute()
-        return True
-    except Exception as e:
-        st.error(f"An error occurred while moving the file to trash: {str(e)}")
-        return False
-
-@cache_with_timeout(timeout_minutes=5)
-def check_document_status(student_name):
+async def check_document_status_async(student_name):
     parent_folder_id = '1It91HqQDsYeSo1MuYgACtmkmcO82vzXp'
-    student_folder_id = check_folder_exists(student_name, parent_folder_id)
+    student_folder_id = await check_folder_exists_async(student_name, parent_folder_id)
     
     document_types = ["Passport", "Bank Statement", "Financial Letter", 
                       "Transcripts", "Diplomas", "English Test", "Payment Receipt",
@@ -357,15 +320,70 @@ def check_document_status(student_name):
     if not student_folder_id:
         return document_status
 
-    for document_type in document_types:
-        document_folder_id = check_folder_exists(document_type, student_folder_id)
-        if document_folder_id:
-            files = list_files_in_folder(document_folder_id)
-            document_status[document_type]['status'] = bool(files)
-            document_status[document_type]['files'] = files
+    async with aiohttp.ClientSession() as session:
+        tasks = [
+            fetch_document_status(session, document_type, student_folder_id)
+            for document_type in document_types
+        ]
+        results = await asyncio.gather(*tasks)
+        for doc_type, status, files in results:
+            document_status[doc_type] = {'status': status, 'files': files}
     
     return document_status
 
+# Wrappers for asynchronous functions
+async def check_folder_exists_async(folder_name, parent_id=None):
+    try:
+        service = get_google_drive_service()
+        query = f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder'"
+        if parent_id:
+            query += f" and '{parent_id}' in parents"
+
+        results = await service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
+        folders = results.get('files', [])
+        return folders[0].get('id') if folders else None
+    except Exception as e:
+        logger.error(f"An error occurred while checking if folder exists: {str(e)}")
+        return None
+
+async def list_files_in_folder_async(folder_id):
+    try:
+        service = get_google_drive_service()
+        query = f"'{folder_id}' in parents and trashed=false"
+        results = await service.files().list(q=query, spaces='drive', fields='files(id, name, webViewLink)').execute()
+        return results.get('files', [])
+    except Exception as e:
+        logger.error(f"An error occurred while listing files in folder: {str(e)}")
+        return []
+
+@st.cache_data(ttl=900)
+def get_document_status(student_name):
+    if 'document_status_cache' not in st.session_state:
+        st.session_state['document_status_cache'] = {}
+    if student_name in st.session_state['document_status_cache']:
+        return st.session_state['document_status_cache'][student_name]
+    else:
+        document_status = asyncio.run(check_document_status_async(student_name))
+        st.session_state['document_status_cache'][student_name] = document_status
+        return document_status
+
+# Debouncing inputs for edit mode
+debounce_lock = threading.Lock()
+
+def debounce(func, wait=0.5):
+    def debounced(*args, **kwargs):
+        def call_it():
+            with debounce_lock:
+                func(*args, **kwargs)
+        if hasattr(debounced, '_timer'):
+            debounced._timer.cancel()
+        debounced._timer = threading.Timer(wait, call_it)
+        debounced._timer.start()
+    return debounced
+
+@debounce
+def update_student_data(*args, **kwargs):
+    pass
 
 # Main function
 def main():
@@ -508,7 +526,7 @@ def main():
             selected_student = filtered_data[filtered_data['Student Name'] == search_query].iloc[0]
             student_name = selected_student['Student Name']
         
-            document_status = check_document_status(student_name)
+            document_status = get_document_status(student_name)
             st.subheader("Document Status")
         
             for doc_type, status_info in document_status.items():
@@ -541,13 +559,13 @@ def main():
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("📋 Personal Information")
                 if edit_mode:
-                    first_name = st.text_input("First Name", selected_student['First Name'], key="first_name")
-                    last_name = st.text_input("Last Name", selected_student['Last Name'], key="last_name")
-                    phone_number = st.text_input("Phone Number", selected_student['Phone N°'], key="phone_number")
-                    email = st.text_input("Email", selected_student['E-mail'], key="email")
-                    emergency_contact = st.text_input("Emergency Contact Number", selected_student['Emergency contact N°'], key="emergency_contact")
-                    address = st.text_input("Address", selected_student['Address'], key="address")
-                    attempts = st.text_input("Attempts", selected_student['Attempts'], key="attempts")
+                    first_name = st.text_input("First Name", selected_student['First Name'], key="first_name", on_change=update_student_data)
+                    last_name = st.text_input("Last Name", selected_student['Last Name'], key="last_name", on_change=update_student_data)
+                    phone_number = st.text_input("Phone Number", selected_student['Phone N°'], key="phone_number", on_change=update_student_data)
+                    email = st.text_input("Email", selected_student['E-mail'], key="email", on_change=update_student_data)
+                    emergency_contact = st.text_input("Emergency Contact Number", selected_student['Emergency contact N°'], key="emergency_contact", on_change=update_student_data)
+                    address = st.text_input("Address", selected_student['Address'], key="address", on_change=update_student_data)
+                    attempts = st.text_input("Attempts", selected_student['Attempts'], key="attempts", on_change=update_student_data)
                 else:
                     st.write(f"**First Name:** {selected_student['First Name']}")
                     st.write(f"**Last Name:** {selected_student['Last Name']}")
@@ -562,10 +580,10 @@ def main():
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("🏫 School Information")
                 if edit_mode:
-                    chosen_school = st.text_input("Chosen School", selected_student['Chosen School'], key="chosen_school")
-                    duration = st.text_input("Duration", selected_student['Duration'], key="duration")
-                    school_entry_date = st.text_input("School Entry Date", selected_student['School Entry Date'], key="school_entry_date")
-                    entry_date_in_us = st.text_input("Entry Date in the US", selected_student['Entry Date in the US'], key="entry_date_in_us")
+                    chosen_school = st.text_input("Chosen School", selected_student['Chosen School'], key="chosen_school", on_change=update_student_data)
+                    duration = st.text_input("Duration", selected_student['Duration'], key="duration", on_change=update_student_data)
+                    school_entry_date = st.text_input("School Entry Date", selected_student['School Entry Date'], key="school_entry_date", on_change=update_student_data)
+                    entry_date_in_us = st.text_input("Entry Date in the US", selected_student['Entry Date in the US'], key="entry_date_in_us", on_change=update_student_data)
                 else:
                     st.write(f"**Chosen School:** {selected_student['Chosen School']}")
                     st.write(f"**Duration:** {selected_student['Duration']}")
@@ -577,13 +595,13 @@ def main():
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("🏛️ Embassy Information")
                 if edit_mode:
-                    address_us = st.text_input("Address in the U.S", selected_student['ADDRESS in the U.S'], key="address_us")
-                    email_rdv = st.text_input("E-mail RDV", selected_student[' E-MAIL RDV'], key="email_rdv")
-                    password_rdv = st.text_input("Password RDV", selected_student['PASSWORD RDV'], key="password_rdv")
-                    embassy_itw_date = st.text_input("Embassy Interview Date", selected_student['EMBASSY ITW. DATE'], key="embassy_itw_date")
-                    ds160_maker = st.text_input("DS-160 Maker", selected_student['DS-160 maker'], key="ds160_maker")
-                    password_ds160 = st.text_input("Password DS-160", selected_student['Password DS-160'], key="password_ds160")
-                    secret_q = st.text_input("Secret Question", selected_student['Secret Q.'], key="secret_q")
+                    address_us = st.text_input("Address in the U.S", selected_student['ADDRESS in the U.S'], key="address_us", on_change=update_student_data)
+                    email_rdv = st.text_input("E-mail RDV", selected_student[' E-MAIL RDV'], key="email_rdv", on_change=update_student_data)
+                    password_rdv = st.text_input("Password RDV", selected_student['PASSWORD RDV'], key="password_rdv", on_change=update_student_data)
+                    embassy_itw_date = st.text_input("Embassy Interview Date", selected_student['EMBASSY ITW. DATE'], key="embassy_itw_date", on_change=update_student_data)
+                    ds160_maker = st.text_input("DS-160 Maker", selected_student['DS-160 maker'], key="ds160_maker", on_change=update_student_data)
+                    password_ds160 = st.text_input("Password DS-160", selected_student['Password DS-160'], key="password_ds160", on_change=update_student_data)
+                    secret_q = st.text_input("Secret Question", selected_student['Secret Q.'], key="secret_q", on_change=update_student_data)
                 else:
                     st.write(f"**Address in the U.S:** {selected_student['ADDRESS in the U.S']}")
                     st.write(f"**E-mail RDV:** {selected_student[' E-MAIL RDV']}")
@@ -598,10 +616,10 @@ def main():
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("💰 Payment Information")
                 if edit_mode:
-                    payment_date = st.text_input("Payment Date", selected_student['DATE'], key="payment_date")
-                    payment_method = st.text_input("Payment Method", selected_student['Payment Method '], key="payment_method")
-                    sevis_payment = st.text_input("Sevis Payment", selected_student['Sevis payment ? '], key="sevis_payment")
-                    application_payment = st.text_input("Application Payment", selected_student['Application payment ?'], key="application_payment")
+                    payment_date = st.text_input("Payment Date", selected_student['DATE'], key="payment_date", on_change=update_student_data)
+                    payment_method = st.text_input("Payment Method", selected_student['Payment Method '], key="payment_method", on_change=update_student_data)
+                    sevis_payment = st.text_input("Sevis Payment", selected_student['Sevis payment ? '], key="sevis_payment", on_change=update_student_data)
+                    application_payment = st.text_input("Application Payment", selected_student['Application payment ?'], key="application_payment", on_change=update_student_data)
                 else:
                     st.write(f"**Payment Date:** {selected_student['DATE']}")
                     st.write(f"**Payment Method:** {selected_student['Payment Method ']}")
