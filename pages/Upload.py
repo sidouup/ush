@@ -403,6 +403,7 @@ def main():
 
         with col3:
             if not filtered_data.empty:
+                
                 student_name = selected_student['Student Name']
                 document_status = check_document_status(student_name)
                 st.subheader("Document Status")
@@ -508,7 +509,8 @@ def main():
             with col1:
                 document_type = st.selectbox("Select Document Type", 
                                              ["Passport", "Bank Statement", "Financial Letter", 
-                                              "Transcripts", "Diplomas", "English Test", "Payment Receipt"], 
+                                              "Transcripts", "Diplomas", "English Test", "Payment Receipt",
+                                              "SEVIS Receipt", "SEVIS"], 
                                              key="document_type")
                 uploaded_file = st.file_uploader("Upload Document", type=["jpg", "jpeg", "png", "pdf"], key="uploaded_file")
                 
@@ -518,7 +520,6 @@ def main():
                         st.success(f"{document_type} uploaded successfully!")
                     else:
                         st.error("An error occurred while uploading the document.")
-
             with col2:
                 document_status = check_document_status(student_name)
                 st.subheader("Document Status")
@@ -528,9 +529,31 @@ def main():
                     <div class='document-item'>
                         <span class='status-icon'>{icon}</span>
                         <span class='document-name'>{doc_type}</span>
-                        {"".join([f"<a href='{file['webViewLink']}' target='_blank' class='file-link'>{file['name']}</a><span class='delete-button' onclick='deleteFile(&quot;{file['id']}&quot;)'>🗑️</span>" for file in status_info['files']])}
+                        {"".join([f"<a href='{file['webViewLink']}' target='_blank' class='file-link'>{file['name']}</a><button onclick=\"deleteFile('{file['id']}', '{doc_type}')\">🗑️</button>" for file in status_info['files']])}
                     </div>
                     """, unsafe_allow_html=True)
+
+            # Add JavaScript for delete functionality
+            st.markdown("""
+            <script>
+            function deleteFile(fileId, docType) {
+                fetch(`/delete_file?file_id=${fileId}&doc_type=${docType}`, { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Remove the file from the DOM
+                            const fileElement = document.querySelector(`[onclick="deleteFile('${fileId}', '${docType}')"]`).parentNode;
+                            fileElement.remove();
+                            // Show success message
+                            alert('File deleted successfully!');
+                        } else {
+                            alert('Failed to delete file. Please try again.');
+                        }
+                    });
+            }
+            </script>
+            """, unsafe_allow_html=True)
+
             st.markdown('</div>', unsafe_allow_html=True)
 
             if edit_mode and st.button("Save Changes"):
