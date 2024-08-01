@@ -119,16 +119,24 @@ def main():
 
             # Convert DATE column to datetime
             data['DATE'] = pd.to_datetime(data['DATE'], errors='coerce')
+            st.write("Data with DATE column converted to datetime:")
+            st.write(data.head())
 
             # Extract Year and Month
             data['Year'] = data['DATE'].dt.year
             data['Month'] = data['DATE'].dt.month_name()  # Convert month number to month name
+            st.write("Data with Year and Month extracted:")
+            st.write(data.head())
 
             # Filter data for the year 2024
             data_2024 = data[data['Year'] == 2024]
+            st.write("Filtered data for 2024:")
+            st.write(data_2024.head())
 
             # Group by Month to get payment counts
             monthly_payments_2024 = data_2024.groupby('Month').size().reset_index(name='Number of Payments')
+            st.write("Monthly payment counts before sorting:")
+            st.write(monthly_payments_2024)
 
             # Ensure months are in the correct order
             month_order = [
@@ -137,6 +145,8 @@ def main():
             ]
             monthly_payments_2024['Month'] = pd.Categorical(monthly_payments_2024['Month'], categories=month_order, ordered=True)
             monthly_payments_2024 = monthly_payments_2024.sort_values('Month')
+            st.write("Monthly payment counts after sorting:")
+            st.write(monthly_payments_2024)
 
             st.write("Monthly Payments for 2024:")
             st.write(monthly_payments_2024)
