@@ -41,8 +41,10 @@ def upload_file_to_drive(file_path, mime_type, folder_id=None):
         body=file_metadata,
         media_body=media,
         fields='id').execute()
-    
-    return file.get('id')
+    if file_id:
+        st.session_state.upload_success = True
+        return file_id
+    return None
 
 # Function to load data from Google Sheets
 def load_data(spreadsheet_id):
@@ -272,6 +274,14 @@ def check_file_exists_in_folder(folder_id):
 # Main function
 def main():
     st.set_page_config(page_title="Student Application Tracker", layout="wide")
+    
+    if 'upload_success' not in st.session_state:
+        st.session_state.upload_success = False
+
+    # Check if we need to refresh the page
+    if st.session_state.upload_success:
+        st.session_state.upload_success = False
+        st.experimental_rerun()
 
     st.markdown("""
     <style>
@@ -433,7 +443,7 @@ def main():
 
 
             # Tabs for student information
-            tab1, tab2, tab3, tab4 = st.tabs(["Personal", "School", "Embassy", "Payment"])
+            tab1, tab2, tab3, tab4,tab5 = st.tabs(["Personal", "School", "Embassy", "Payment","Documents"])
             
             with tab1:
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
@@ -506,11 +516,11 @@ def main():
                     st.write(f"**Sevis Payment:** {selected_student['Sevis payment ? ']}")
                     st.write(f"**Application Payment:** {selected_student['Application payment ?']}")
                 st.markdown('</div>', unsafe_allow_html=True)
+                
+            with tab5:
 
-            st.markdown('<div class="stCard">', unsafe_allow_html=True)
-            st.subheader("📂 Document Upload and Status")
-            col1, col2 = st.columns(2)
-            with col1:
+                st.markdown('<div class="stCard">', unsafe_allow_html=True)
+                st.subheader("📂 Document Upload and Status")
                 document_type = st.selectbox("Select Document Type", 
                                              ["Passport", "Bank Statement", "Financial Letter", 
                                               "Transcripts", "Diplomas", "English Test", "Payment Receipt",
@@ -526,26 +536,6 @@ def main():
                     else:
                         st.error("An error occurred while uploading the document.")
     
-            with col2:
-                document_status = check_document_status(student_name)
-                st.subheader("Document Status")
-                for doc_type, status_info in document_status.items():
-                    icon = "✅" if status_info['status'] else "❌"
-                    with st.expander(f"{icon} {doc_type}"):
-                        if status_info['status']:
-                            for file in status_info['files']:
-                                col1, col2 = st.columns([4, 1])
-                                with col1:
-                                    st.markdown(f"[{file['name']}]({file['webViewLink']})")
-                                with col2:
-                                    if st.button("🗑️", key=f"delete_{file['id']}", help="Delete file"):
-                                        if delete_file_from_drive(file['id']):
-                                            st.success("Deleted!")
-                                            st.experimental_rerun()  # Force a re-run of the entire app
-                                        else:
-                                            st.error("Delete failed")
-                        else:
-                            st.write("No documents uploaded")
 
 
             if edit_mode and st.button("Save Changes"):
