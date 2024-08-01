@@ -155,7 +155,6 @@ def main():
             data['Year'] = data['DATE'].dt.year
             data['Month'] = data['DATE'].dt.month_name()
 
-            # Overview Page
             if page == 'Overview':
                 st.header('📈 Recruitment Overview')
                 
@@ -177,8 +176,10 @@ def main():
 
                 # Top schools
                 st.subheader('Top Schools')
-                top_schools = data['Chosen School'].value_counts().head(5)
-                fig_schools = px.bar(top_schools, x=top_schools.index, y=top_schools.values, title='Top 5 Schools')
+                top_schools = data['Chosen School'].value_counts().reset_index()
+                top_schools.columns = ['School', 'Count']
+                top_schools = top_schools.head(5)  # Get top 5 schools
+                fig_schools = px.bar(top_schools, x='School', y='Count', title='Top 5 Schools')
                 st.plotly_chart(fig_schools, use_container_width=True)
 
             # Student Details Page
