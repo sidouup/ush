@@ -9,6 +9,11 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 import plotly.express as px
 import functools
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Caching decorator
 def cache_with_timeout(timeout_minutes=60):
@@ -219,17 +224,23 @@ def get_visa_status(result):
     }
     return result_mapping.get(result, 'Unknown')
 
-# Function to check if a folder exists in Google Drive
 @cache_with_timeout(timeout_minutes=5)
 def check_folder_exists(folder_name, parent_id=None):
-    service = get_google_drive_service()
-    query = f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder'"
-    if parent_id:
-        query += f" and '{parent_id}' in parents"
-    
-    results = service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
-    folders = results.get('files', [])
-    return folders[0].get('id') if folders else None
+    try:
+        service = get_google_drive_service()
+        query = f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder'"
+        if parent_id:
+            query += f" and '{parent_id}' in parents"
+
+        results = service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
+        folders = results.get('files', [])
+        if folders:
+            return folders[0].get('id')
+        else:
+            return None
+    except Exception as e:
+        logger.error(f"An error occurred while checking if folder exists: {str(e)}")
+        return None
 
 # Function to create a new folder in Google Drive
 def create_folder_in_drive(folder_name, parent_id=None):
@@ -289,25 +300,29 @@ def handle_file_upload(student_name, document_type, uploaded_file):
 
 @cache_with_timeout(timeout_minutes=5)
 def check_document_status(student_name):
-    parent_folder_id = '1It91HqQDsYeSo1MuYgACtmkmcO82vzXp'
-    student_folder_id = check_folder_exists(student_name, parent_folder_id)
-    
-    document_types = ["Passport", "Bank Statement", "Financial Letter", 
-                      "Transcripts", "Diplomas", "English Test", "Payment Receipt",
-                      "SEVIS Receipt", "SEVIS"]
-    document_status = {doc_type: {'status': False, 'files': []} for doc_type in document_types}
+    try:
+        parent_folder_id = '1It91HqQDsYeSo1MuYgACtmkmcO82vzXp'
+        student_folder_id = check_folder_exists(student_name, parent_folder_id)
+        
+        document_types = ["Passport", "Bank Statement", "Financial Letter", 
+                          "Transcripts", "Diplomas", "English Test", "Payment Receipt",
+                          "SEVIS Receipt", "SEVIS"]
+        document_status = {doc_type: {'status': False, 'files': []} for doc_type in document_types}
 
-    if not student_folder_id:
+        if not student_folder_id:
+            return document_status
+
+        for document_type in document_types:
+            document_folder_id = check_folder_exists(document_type, student_folder_id)
+            if document_folder_id:
+                files = list_files_in_folder(document_folder_id)
+                document_status[document_type]['status'] = bool(files)
+                document_status[document_type]['files'] = files
+
         return document_status
-
-    for document_type in document_types:
-        document_folder_id = check_folder_exists(document_type, student_folder_id)
-        if document_folder_id:
-            files = list_files_in_folder(document_folder_id)
-            document_status[document_type]['status'] = bool(files)
-            document_status[document_type]['files'] = files
-    
-    return document_status
+    except Exception as e:
+        logger.error(f"An error occurred while checking document status: {str(e)}")
+        return {}
 
 @cache_with_timeout(timeout_minutes=5)
 def list_files_in_folder(folder_id):
