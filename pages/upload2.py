@@ -319,8 +319,8 @@ def list_files_in_folder(folder_id):
 def delete_file_from_drive(file_id):
     service = get_google_drive_service()
     try:
-        response = service.files().delete(fileId=file_id).execute()
-        st.write(f"File ID {file_id} deletion response: {response}")
+        body_value = {'trashed': True}
+        response = drive_service.files().update(fileId=file_id, body=body_value).execute()
         return True
     except Exception as e:
         st.error(f"An error occurred while deleting the file: {str(e)}")
@@ -483,8 +483,7 @@ def main():
                         if st.button("🗑️", key=f"delete_{status_info['files'][0]['id']}", help="Delete file"):
                             file_id = status_info['files'][0]['id']
                             if delete_file_from_drive(file_id):
-                                st.success(f"{doc_type} deleted successfully!")
-                                st.ererun()
+                                st.rerun()
                 else:
                     with col2:
                         st.markdown("")
