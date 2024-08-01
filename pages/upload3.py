@@ -210,6 +210,43 @@ def save_data(df, spreadsheet_id, sheet_name):
 
     # Log the number of columns in the DataFrame and the sheet
     print(f"DataFrame columns: {len(df.columns)}, Sheet columns: {sheet_columns}")
+def clear_cache_and_rerun():
+    st.cache_data.clear()
+    st.cache_resource.clear()
+    st.experimental_rerun()
+
+    # Replace NaN and inf values with None
+    df = df.applymap(replace_invalid_floats)
+
+    # Replace [pd.NA, pd.NaT, float('inf'), float('-inf')] with None
+    df = df.replace([pd.NA, pd.NaT, float('inf'), float('-inf')], None)
+
+    client = get_google_sheet_client()
+    sheet = client.open_by_key(spreadsheet_id).worksheet(sheet_name)
+    
+    # Get the number of columns in the sheet
+    sheet_columns = len(sheet.row_values(1))
+    
+    # Limit the DataFrame to the number of columns in the sheet
+    df = df.iloc[:, :sheet_columns]
+    
+    # Prepare the data for batch update
+    values = [df.columns.tolist()] + df.values.tolist()
+    
+    # Calculate the last column letter
+    if sheet_columns <= 26:
+        last_column = string.ascii_uppercase[sheet_columns - 1]
+    else:
+        last_column = string.ascii_uppercase[(sheet_columns - 1) // 26 - 1] + string.ascii_uppercase[(sheet_columns - 1) % 26]
+
+    # Perform batch update
+    sheet.batch_update([{
+        'range': f'A1:{last_column}{len(values)}',
+        'values': values
+    }])
+
+    # Log the number of columns in the DataFrame and the sheet
+    print(f"DataFrame columns: {len(df.columns)}, Sheet columns: {sheet_columns}")
 
 # Function to calculate days until interview
 def calculate_days_until_interview(interview_date):
@@ -418,7 +455,7 @@ def main():
     # Check if we need to refresh the page
     if st.session_state.upload_success:
         st.session_state.upload_success = False
-        st.rerun()
+        st.experimental_rerun()
 
     st.markdown("""
     <style>
@@ -568,7 +605,7 @@ def main():
                             file_id = status_info['files'][0]['id']
                             if trash_file_in_drive(file_id):  # Use trash_file_in_drive instead of delete_file_from_drive
                                 st.session_state['reload_data'] = True
-                                st.rerun()
+                                st.experimental_rerun()
                 else:
                     with col2:
                         st.markdown("")
@@ -670,7 +707,7 @@ def main():
                         st.success(f"{document_type} uploaded successfully!")
                         if 'document_status_cache' in st.session_state:
                             st.session_state['document_status_cache'].pop(student_name, None)
-                        st.rerun()  # Force a re-run of the entire app
+                        clear_cache_and_rerun()  # Clear cache and rerun the app
                     else:
                         st.error("An error occurred while uploading the document.")
 
@@ -709,6 +746,10 @@ def main():
                 # Save the updated data back to Google Sheets
                 save_data(filtered_data, spreadsheet_id, selected_student['Current Step'])
                 st.success("Changes saved successfully!")
+                clear_cache_and_rerun()  # Clear cache and rerun the app
+
+        else:
+            st.info("No students found matching the search criteria.")
 
         else:
             st.info("No students found matching the search criteria.")
