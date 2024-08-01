@@ -232,7 +232,9 @@ def check_document_status(student_name):
     parent_folder_id = '1It91HqQDsYeSo1MuYgACtmkmcO82vzXp'
     student_folder_id = check_folder_exists(student_name, parent_folder_id)
     
-    document_types = ["Passport", "Bank Statement", "Financial Letter", "Transcripts", "Diplomas", "English Test", "Payment Receipts"]
+    document_types = ["Passport", "Bank Statement", "Financial Letter", 
+                                              "Transcripts", "Diplomas", "English Test", "Payment Receipt",
+                                              "SEVIS Receipt", "SEVIS"]
     document_status = {doc_type: {'status': False, 'files': []} for doc_type in document_types}
 
     if not student_folder_id:
