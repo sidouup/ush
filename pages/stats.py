@@ -102,13 +102,12 @@ def load_data(spreadsheet_id):
         st.error(f"An error occurred: {str(e)}")
         return pd.DataFrame()
 
-# Main app logic
 def main():
     st.title('Student Payments Analysis')
     st.sidebar.title('Settings')
 
     # Google Sheets ID
-    spreadsheet_id = "1NPc-dQ7uts1c1JjNoABBou-uq2ixzUTiSBTB8qlTuOQ"
+    spreadsheet_id = st.sidebar.text_input("Enter Google Sheets ID:", "")
 
     if spreadsheet_id:
         data = load_data(spreadsheet_id)
@@ -127,12 +126,19 @@ def main():
             # Group by Year and Month to get payment counts
             monthly_payments = data.groupby(['Year', 'Month']).size().reset_index(name='Number of Payments')
 
+            # Adjust the count for payments made on the same day
+            daily_payments = data.groupby(['Year', 'Month', 'DATE']).size().reset_index(name='Daily Count')
+            daily_payments['Adjusted Count'] = daily_payments['Daily Count'] * 4  # Assuming 3 times or 4 times rule applies
+
+            # Aggregate back to monthly payments with adjusted count
+            adjusted_monthly_payments = daily_payments.groupby(['Year', 'Month'])['Adjusted Count'].sum().reset_index()
+
             st.write("Monthly Payments Data:")
-            st.write(monthly_payments)
+            st.write(adjusted_monthly_payments)
 
             # Plotting the data
-            fig = px.bar(monthly_payments, x='Month', y='Number of Payments', color='Year', barmode='group',
-                         labels={'Month': 'Month', 'Number of Payments': 'Number of Payments'},
+            fig = px.bar(adjusted_monthly_payments, x='Month', y='Adjusted Count', color='Year', barmode='group',
+                         labels={'Month': 'Month', 'Adjusted Count': 'Number of Payments'},
                          title="Monthly Payments Distribution")
             st.plotly_chart(fig)
         else:
