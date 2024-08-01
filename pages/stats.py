@@ -107,7 +107,7 @@ def main():
     st.sidebar.title('Settings')
 
     # Google Sheets ID
-    spreadsheet_id = st.sidebar.text_input("Enter Google Sheets ID:", "")
+    spreadsheet_id = "1NPc-dQ7uts1c1JjNoABBou-uq2ixzUTiSBTB8qlTuOQ"
 
     if spreadsheet_id:
         data = load_data(spreadsheet_id)
