@@ -19,8 +19,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def on_student_select():
-    st.session_state.selected_student = st.session_state.search_query
-    st.rerun()
+    st.session_state.student_changed = True
 
 
 def reload_data(spreadsheet_id):
@@ -457,6 +456,9 @@ def update_student_data(*args, **kwargs):
 def main():
     st.set_page_config(page_title="Student Application Tracker", layout="wide")
     
+    if 'student_changed' not in st.session_state:
+    st.session_state.student_changed = False
+
     if 'upload_success' not in st.session_state:
         st.session_state.upload_success = False
 
@@ -569,6 +571,12 @@ def main():
                 index=student_names.index(st.session_state.selected_student) if st.session_state.selected_student in student_names else 0,
                 on_change=on_student_select
             )
+            # After the selectbox:
+            if st.session_state.student_changed or st.session_state.selected_student != search_query:
+                st.session_state.selected_student = search_query
+                st.session_state.student_changed = False
+                st.rerun()
+
 
         with col1:
             st.subheader("Application Status")
