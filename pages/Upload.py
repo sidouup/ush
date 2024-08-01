@@ -532,12 +532,12 @@ def main():
                             for file in status_info['files']:
                                 col1, col2 = st.columns([4, 1])
                                 with col1:
-                                    st.markdown(f"[{file['name']}]({file['webViewLink']})")
+                                    st.markdown(f"✅ [{file['name']}]({file['webViewLink']})")
                                 with col2:
                                     if st.button("🗑️", key=f"delete_{file['id']}", help="Delete file"):
                                         if delete_file_from_drive(file['id']):
                                             st.success("Deleted!")
-                                            st.rerun()
+                                            st.experimental_rerun()
                                         else:
                                             st.error("Delete failed")
                         else:
