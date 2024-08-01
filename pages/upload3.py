@@ -674,9 +674,10 @@ def main():
 
             if edit_mode and st.button("Save Changes"):
                 if 'temp_student_data' in st.session_state:
-                    for key, value in st.session_state.temp_student_data.items():
+                    temp_data = st.session_state.temp_student_data
+                    for key, value in temp_data.items():
                         filtered_data.loc[filtered_data['Student Name'] == student_name, key] = value
-
+            
                     # Save the updated data back to Google Sheets
                     save_data(filtered_data, spreadsheet_id, selected_student['Current Step'])
                     
