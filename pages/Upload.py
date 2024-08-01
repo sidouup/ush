@@ -527,22 +527,22 @@ def main():
                 document_status = check_document_status(student_name)
                 st.subheader("Document Status")
                 for doc_type, status_info in document_status.items():
-                    st.write(f"**{doc_type}:**")
-                    if status_info['status']:
-                        for file in status_info['files']:
-                            col1, col2 = st.columns([3, 1])
-                            with col1:
-                                st.markdown(f"[{file['name']}]({file['webViewLink']})")
-                            with col2:
-                                if st.button("Delete", key=f"delete_{file['id']}"):
-                                    if delete_file_from_drive(file['id']):
-                                        st.success("File deleted successfully!")
-                                        st.rerun()
-                                    else:
-                                        st.error("Failed to delete file. Please try again.")
-                    else:
-                        st.write("No documents uploaded yet.")
-                    st.write("---")
+                    with st.expander(f"{doc_type}"):
+                        if status_info['status']:
+                            for file in status_info['files']:
+                                col1, col2 = st.columns([4, 1])
+                                with col1:
+                                    st.markdown(f"[{file['name']}]({file['webViewLink']})")
+                                with col2:
+                                    if st.button("🗑️", key=f"delete_{file['id']}", help="Delete file"):
+                                        if delete_file_from_drive(file['id']):
+                                            st.success("Deleted!")
+                                            st.rerun()
+                                        else:
+                                            st.error("Delete failed")
+                        else:
+                            st.write("No documents uploaded")
+
 
             if edit_mode and st.button("Save Changes"):
                 updated_student = {
