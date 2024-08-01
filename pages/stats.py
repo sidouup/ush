@@ -131,6 +131,9 @@ def main():
             st.write("Students with valid dates:")
             st.write(valid_date_data[['First Name', 'Last Name', 'DATE']])
 
+            # Remove duplicate students by comparing names
+            valid_date_data = valid_date_data.drop_duplicates(subset=['First Name', 'Last Name'])
+
             # Extract Year and Month
             valid_date_data['Year'] = valid_date_data['DATE'].dt.year
             valid_date_data['Month'] = valid_date_data['DATE'].dt.month_name()  # Convert month number to month name
@@ -165,4 +168,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
