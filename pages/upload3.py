@@ -19,6 +19,10 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+def reload_data(spreadsheet_id):
+    data = load_data(spreadsheet_id)
+    st.session_state['data'] = data
+    return data
 
 
 # Caching decorator
@@ -683,6 +687,11 @@ def main():
 
                 # Save the updated data back to Google Sheets
                 save_data(filtered_data, spreadsheet_id, selected_student['Current Step'])
+                
+                # Reload data to reflect changes
+                data = reload_data(spreadsheet_id)
+                st.session_state['data'] = data
+                
                 st.success("Changes saved successfully!")
 
         else:
