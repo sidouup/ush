@@ -455,7 +455,7 @@ def main():
     # Check if we need to refresh the page
     if st.session_state.upload_success:
         st.session_state.upload_success = False
-        st.=rerun()
+        st.rerun()
 
     st.markdown("""
     <style>
