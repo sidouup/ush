@@ -262,6 +262,7 @@ def delete_file_from_drive(file_id):
     except Exception as e:
         st.error(f"An error occurred while deleting the file: {str(e)}")
         return False
+        
 def check_file_exists_in_folder(folder_id):
     service = get_google_drive_service()
     query = f"'{folder_id}' in parents"
@@ -526,48 +527,22 @@ def main():
                 document_status = check_document_status(student_name)
                 st.subheader("Document Status")
                 for doc_type, status_info in document_status.items():
-                    icon = "✅" if status_info['status'] else "❌"
-                    files_links = "".join(
-                        [
-                            f"<a href='{file['webViewLink']}' target='_blank' class='file-link'>{file['name']}</a>"
-                            f"<button onclick=\"deleteFile('{file['id']}', '{doc_type}')\">🗑️</button>"
-                            for file in status_info['files']
-                        ]
-                    )
-                    
-                    st.markdown(
-                        f"""
-                        <div class='document-item'>
-                            <span class='status-icon'>{icon}</span>
-                            <span class='document-name'>{doc_type}</span>
-                            {files_links}
-                        </div>
-                        """, 
-                        unsafe_allow_html=True
-                    )
-
-            # Add JavaScript for delete functionality
-            st.markdown("""
-            <script>
-            function deleteFile(fileId, docType) {
-                fetch(`/delete_file?file_id=${fileId}&doc_type=${docType}`, { method: 'POST' })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Remove the file from the DOM
-                            const fileElement = document.querySelector(`[onclick="deleteFile('${fileId}', '${docType}')"]`).parentNode;
-                            fileElement.remove();
-                            // Show success message
-                            alert('File deleted successfully!');
-                        } else {
-                            alert('Failed to delete file. Please try again.');
-                        }
-                    });
-            }
-            </script>
-            """, unsafe_allow_html=True)
-
-            st.markdown('</div>', unsafe_allow_html=True)
+                    st.write(f"**{doc_type}:**")
+                    if status_info['status']:
+                        for file in status_info['files']:
+                            col1, col2 = st.columns([3, 1])
+                            with col1:
+                                st.markdown(f"[{file['name']}]({file['webViewLink']})")
+                            with col2:
+                                if st.button("Delete", key=f"delete_{file['id']}"):
+                                    if delete_file_from_drive(file['id']):
+                                        st.success("File deleted successfully!")
+                                        st.rerun()
+                                    else:
+                                        st.error("Failed to delete file. Please try again.")
+                    else:
+                        st.write("No documents uploaded yet.")
+                    st.write("---")
 
             if edit_mode and st.button("Save Changes"):
                 updated_student = {
