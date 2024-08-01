@@ -213,7 +213,7 @@ def save_data(df, spreadsheet_id, sheet_name):
 def clear_cache_and_rerun():
     st.cache_data.clear()
     st.cache_resource.clear()
-    st.experimental_rerun()
+    st.rerun()
 
     # Replace NaN and inf values with None
     df = df.applymap(replace_invalid_floats)
