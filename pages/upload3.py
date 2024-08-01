@@ -24,7 +24,6 @@ def reload_data(spreadsheet_id):
     st.session_state['data'] = data
     return data
 
-
 # Caching decorator
 def cache_with_timeout(timeout_minutes=60):
     def decorator(func):
@@ -575,7 +574,7 @@ def main():
             selected_student = filtered_data[filtered_data['Student Name'] == search_query].iloc[0]
             student_name = selected_student['Student Name']
 
-            edit_mode = st.toggle("Edit Mode", value=False)
+            edit_mode = st.checkbox("Edit Mode", value=False)
 
             # Tabs for student information
             tab1, tab2, tab3, tab4, tab5 = st.tabs(["Personal", "School", "Embassy", "Payment", "Documents"])
