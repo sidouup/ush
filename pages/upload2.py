@@ -345,6 +345,9 @@ def main():
     if 'upload_success' not in st.session_state:
         st.session_state.upload_success = False
 
+    if 'selected_student' not in st.session_state:
+        st.session_state.selected_student = ""
+
     # Check if we need to refresh the page
     if st.session_state.upload_success:
         st.session_state.upload_success = False
@@ -438,7 +441,8 @@ def main():
         col2, col1, col3 = st.columns([3, 2, 3])
 
         with col2:
-            search_query = st.selectbox("🔍 Search for a student (First or Last Name)", options=student_names, key="search_query")
+            search_query = st.selectbox("🔍 Search for a student (First or Last Name)", options=student_names, key="search_query", index=student_names.index(st.session_state.selected_student) if st.session_state.selected_student in student_names else 0)
+            st.session_state.selected_student = search_query
 
         with col1:
             st.subheader("Application Status")
@@ -488,7 +492,6 @@ def main():
                         if st.button("🗑️", key=f"delete_{status_info['files'][0]['id']}", help="Delete file"):
                             file_id = status_info['files'][0]['id']
                             if trash_file_in_drive(file_id):  # Use trash_file_in_drive instead of delete_file_from_drive
-                              
                                 st.rerun()
                 else:
                     with col2:
