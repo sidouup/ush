@@ -407,7 +407,7 @@ def main():
         with col3:
             selected_student = filtered_data[filtered_data['Student Name'] == search_query].iloc[0]
             student_name = selected_student['Student Name']
-
+            
             document_status = check_document_status(student_name)
             st.subheader("Document Status")
             
@@ -415,7 +415,7 @@ def main():
                 icon = "✅" if status_info['status'] else "❌"
                 if status_info['status']:
                     for file in status_info['files']:
-                        col1, col2, col3 = st.columns([1, 3, 1])
+                        col1, col2, col3 = st.columns([1, 4, 1])
                         with col1:
                             st.markdown(f"**{icon} {doc_type}**")
                         with col2:
@@ -428,7 +428,7 @@ def main():
                                 else:
                                     st.error("Delete failed")
                 else:
-                    col1, col2, col3 = st.columns([1, 3, 1])
+                    col1, col2, col3 = st.columns([1, 4, 1])
                     with col1:
                         st.markdown(f"**{icon} {doc_type}**")
                     with col2:
