@@ -481,8 +481,7 @@ def main():
                     with col2:
                         if st.button("🗑️", key=f"delete_{status_info['files'][0]['id']}", help="Delete file"):
                             if delete_file_from_drive(status_info['files'][0]['id']):
-                                st.success(f"{doc_type} deleted successfully!")
-                                st.experimental_rerun()
+                                st.rerun()
                 else:
                     with col2:
                         st.markdown("")
