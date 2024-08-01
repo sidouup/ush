@@ -18,6 +18,11 @@ import threading
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+def on_student_select():
+    st.session_state.selected_student = st.session_state.search_query
+    st.experimental_rerun()
+
+
 def reload_data(spreadsheet_id):
     data = load_data(spreadsheet_id)
     st.session_state['data'] = data
@@ -557,8 +562,13 @@ def main():
         col2, col1, col3 = st.columns([3, 2, 3])
 
         with col2:
-            search_query = st.selectbox("🔍 Search for a student (First or Last Name)", options=student_names, key="search_query", index=student_names.index(st.session_state.selected_student) if st.session_state.selected_student in student_names else 0)
-            st.session_state.selected_student = search_query
+            search_query = st.selectbox(
+                "🔍 Search for a student (First or Last Name)",
+                options=student_names,
+                key="search_query",
+                index=student_names.index(st.session_state.selected_student) if st.session_state.selected_student in student_names else 0,
+                on_change=on_student_select
+            )
 
         with col1:
             st.subheader("Application Status")
