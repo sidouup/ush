@@ -585,41 +585,41 @@ def main():
                     else:
                         st.error("An error occurred while uploading the document.")
 
-                if edit_mode and st.button("Save Changes"):
-                    updated_student = {
-                        'First Name': first_name,
-                        'Last Name': last_name,
-                        'Phone N°': phone_number,
-                        'E-mail': email,
-                        'Emergency contact N°': emergency_contact,
-                        'Address': address,
-                        'Attempts': attempts,
-                        'Chosen School': chosen_school,
-                        'Duration': duration,
-                        'School Entry Date': school_entry_date,
-                        'Entry Date in the US': entry_date_in_us,
-                        'ADDRESS in the U.S': address_us,
-                        ' E-MAIL RDV': email_rdv,
-                        'PASSWORD RDV': password_rdv,
-                        'EMBASSY ITW. DATE': embassy_itw_date,
-                        'DS-160 maker': ds160_maker,
-                        'Password DS-160': password_ds160,
-                        'Secret Q.': secret_q,
-                        'Visa Result': visa_status,
-                        'Current Step': current_step,
-                        'DATE': payment_date,
-                        'Payment Method ': payment_method,
-                        'Sevis payment ? ': sevis_payment,
-                        'Application payment ?': application_payment,
-                    }
-                    
-                    # Update the data in the DataFrame
-                    for key, value in updated_student.items():
-                        filtered_data.loc[filtered_data['Student Name'] == student_name, key] = value
+            if edit_mode and st.button("Save Changes"):
+                updated_student = {
+                    'First Name': first_name,
+                    'Last Name': last_name,
+                    'Phone N°': phone_number,
+                    'E-mail': email,
+                    'Emergency contact N°': emergency_contact,
+                    'Address': address,
+                    'Attempts': attempts,
+                    'Chosen School': chosen_school,
+                    'Duration': duration,
+                    'School Entry Date': school_entry_date,
+                    'Entry Date in the US': entry_date_in_us,
+                    'ADDRESS in the U.S': address_us,
+                    ' E-MAIL RDV': email_rdv,
+                    'PASSWORD RDV': password_rdv,
+                    'EMBASSY ITW. DATE': embassy_itw_date,
+                    'DS-160 maker': ds160_maker,
+                    'Password DS-160': password_ds160,
+                    'Secret Q.': secret_q,
+                    'Visa Result': visa_status,
+                    'Current Step': current_step,
+                    'DATE': payment_date,
+                    'Payment Method ': payment_method,
+                    'Sevis payment ? ': sevis_payment,
+                    'Application payment ?': application_payment,
+                }
                 
-                    # Save the updated data back to Google Sheets
-                    save_data(filtered_data, spreadsheet_id, selected_student['Current Step'])
-                    st.success("Changes saved successfully!")
+                # Update the data in the DataFrame
+                for key, value in updated_student.items():
+                    filtered_data.loc[filtered_data['Student Name'] == student_name, key] = value
+
+                # Save the updated data back to Google Sheets
+                save_data(filtered_data, spreadsheet_id, selected_student['Current Step'])
+                st.success("Changes saved successfully!")
 
         else:
             st.info("No students found matching the search criteria.")
