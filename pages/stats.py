@@ -102,103 +102,41 @@ def load_data(spreadsheet_id):
         st.error(f"An error occurred: {str(e)}")
         return pd.DataFrame()
 
-def plot_insights(data):
-    # Ensure the DATE column is datetime type
-    total_records_before = len(data)
-    data['DATE'] = pd.to_datetime(data['DATE'], errors='coerce')
-    total_records_after = data['DATE'].notna().sum()
-    dropped_records = total_records_before - total_records_after
-
-    st.title("Student Application Insights")
-
-    # Overview of the data
-    st.header("Data Overview")
-    st.write(data.describe(include='all'))
-
-    # Display the number of dropped records due to date format issues
-    st.header("Dropped Records Due to Date Format Issues")
-    st.write(f"Total records before date parsing: {total_records_before}")
-    st.write(f"Total records after date parsing: {total_records_after}")
-    st.write(f"Number of records dropped due to invalid date format: {dropped_records}")
-
-    # Distribution of students by chosen school
-    st.header("Distribution by Chosen School")
-    school_count = data['Chosen School'].value_counts()
-    fig1 = px.bar(school_count, x=school_count.index, y=school_count.values, labels={'x': 'Chosen School', 'y': 'Count'})
-    st.plotly_chart(fig1)
-
-    # Payment methods distribution
-    st.header("Distribution of Payment Methods")
-    payment_method_count = data['Payment Method '].value_counts()
-    fig2 = px.pie(payment_method_count, values=payment_method_count.values, names=payment_method_count.index, title='Payment Methods Distribution')
-    st.plotly_chart(fig2)
-
-    # Visa result over time
-    st.header("Visa Results Over Time")
-    visa_results = data.dropna(subset=['Visa Result'])
-    fig3 = px.histogram(visa_results, x='DATE', color='Visa Result', title='Visa Results Over Time')
-    st.plotly_chart(fig3)
-
-    # Applications by agent
-    st.header("Applications by Agent")
-    agent_count = data['Agent'].value_counts()
-    fig4 = px.bar(agent_count, x=agent_count.index, y=agent_count.values, labels={'x': 'Agent', 'y': 'Applications Count'})
-    st.plotly_chart(fig4)
-
-    # School entry dates
-    st.header("School Entry Dates")
-    school_entry_dates = data.dropna(subset=['School Entry Date'])
-    fig5 = px.histogram(school_entry_dates, x='School Entry Date', title='School Entry Dates')
-    st.plotly_chart(fig5)
-
-    # Distribution of durations
-    st.header("Duration of Study Programs")
-    duration_count = data['Duration'].value_counts()
-    fig6 = px.bar(duration_count, x=duration_count.index, y=duration_count.values, labels={'x': 'Duration', 'y': 'Count'})
-    st.plotly_chart(fig6)
-
-    # Emergency contacts overview
-    st.header("Emergency Contacts Overview")
-    emergency_contact_count = data['Emergency contact N°'].nunique()
-    st.write(f"Number of unique emergency contacts: {emergency_contact_count}")
-
-    # Entry dates in the US
-    st.header("Entry Dates in the US")
-    entry_dates_us = data.dropna(subset=['Entry Date in the US'])
-    fig7 = px.histogram(entry_dates_us, x='Entry Date in the US', title='Entry Dates in the US')
-    st.plotly_chart(fig7)
-
-    # Payment trends by month
-    st.header("Payment Trends by Month")
-    if 'DATE' in data.columns:
-        data['Month'] = data['DATE'].dt.to_period('M').astype(str)  # Convert Period to string
-        monthly_payment_trends = data.groupby('Month').size().reset_index(name='Payments')
-        fig8 = px.bar(monthly_payment_trends, x='Month', y='Payments', title='Payment Trends by Month')
-        st.plotly_chart(fig8)
-
-# Main function to run the Streamlit app
+# Main app logic
 def main():
-    st.title("Google Sheets Data Insights")
-    spreadsheet_id = "1NPc-dQ7uts1c1JjNoABBou-uq2ixzUTiSBTB8qlTuOQ"
-    
+    st.title('Student Payments Analysis')
+    st.sidebar.title('Settings')
+
+    # Google Sheets ID
+    spreadsheet_id = st.sidebar.text_input("Enter Google Sheets ID:", "")
+
     if spreadsheet_id:
         data = load_data(spreadsheet_id)
+
         if not data.empty:
-            plot_insights(data)
+            st.write("Loaded data from Google Sheets:")
+            st.write(data.head())
 
-if __name__ == "__main__":
-    main()
+            # Convert DATE column to datetime
+            data['DATE'] = pd.to_datetime(data['DATE'], errors='coerce')
 
+            # Extract Year and Month
+            data['Year'] = data['DATE'].dt.year
+            data['Month'] = data['DATE'].dt.month
 
-# Main function to run the Streamlit app
-def main():
-    st.title("Google Sheets Data Insights")
-    spreadsheet_id = "1NPc-dQ7uts1c1JjNoABBou-uq2ixzUTiSBTB8qlTuOQ"
-    
-    if spreadsheet_id:
-        data = load_data(spreadsheet_id)
-        if not data.empty:
-            plot_insights(data)
+            # Group by Year and Month to get payment counts
+            monthly_payments = data.groupby(['Year', 'Month']).size().reset_index(name='Number of Payments')
+
+            st.write("Monthly Payments Data:")
+            st.write(monthly_payments)
+
+            # Plotting the data
+            fig = px.bar(monthly_payments, x='Month', y='Number of Payments', color='Year', barmode='group',
+                         labels={'Month': 'Month', 'Number of Payments': 'Number of Payments'},
+                         title="Monthly Payments Distribution")
+            st.plotly_chart(fig)
+        else:
+            st.write("No data found. Please check the Google Sheets ID and try again.")
 
 if __name__ == "__main__":
     main()
