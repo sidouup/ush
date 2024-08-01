@@ -316,9 +316,10 @@ def list_files_in_folder(folder_id):
     results = service.files().list(q=query, spaces='drive', fields='files(id, name, webViewLink)').execute()
     return results.get('files', [])
     
-def delete_file_from_drive(file_id):
+def trash_file_in_drive(file_id):
     service = get_google_drive_service()
     try:
+        # Move the file to the trash
         file = service.files().update(
             fileId=file_id,
             body={"trashed": True}
@@ -486,7 +487,8 @@ def main():
                     with col2:
                         if st.button("🗑️", key=f"delete_{status_info['files'][0]['id']}", help="Delete file"):
                             file_id = status_info['files'][0]['id']
-                            if delete_file_from_drive(file_id):
+                            if trash_file_in_drive(file_id):  # Use trash_file_in_drive instead of delete_file_from_drive
+                              
                                 st.rerun()
                 else:
                     with col2:
