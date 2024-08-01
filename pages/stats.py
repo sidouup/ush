@@ -102,7 +102,6 @@ def load_data(spreadsheet_id):
         st.error(f"An error occurred: {str(e)}")
         return pd.DataFrame()
 
-# Main app logic
 def main():
     st.title('Student Payments Analysis')
     st.sidebar.title('Settings')
@@ -122,7 +121,7 @@ def main():
 
             # Extract Year and Month
             data['Year'] = data['DATE'].dt.year
-            data['Month'] = data['DATE'].dt.strftime('%B')  # Convert month number to month name
+            data['Month'] = data['DATE'].dt.month_name()  # Convert month number to month name
 
             # Group by Year and Month to get payment counts
             monthly_payments = data.groupby(['Year', 'Month']).size().reset_index(name='Number of Payments')
@@ -133,6 +132,14 @@ def main():
 
             # Aggregate back to monthly payments with adjusted count
             adjusted_monthly_payments = daily_payments.groupby(['Year', 'Month'])['Adjusted Count'].sum().reset_index()
+
+            # Ensure months are in the correct order
+            month_order = [
+                'January', 'February', 'March', 'April', 'May', 'June', 
+                'July', 'August', 'September', 'October', 'November', 'December'
+            ]
+            adjusted_monthly_payments['Month'] = pd.Categorical(adjusted_monthly_payments['Month'], categories=month_order, ordered=True)
+            adjusted_monthly_payments = adjusted_monthly_payments.sort_values(['Year', 'Month'])
 
             # Plotting the data for each year
             for year in adjusted_monthly_payments['Year'].unique():
