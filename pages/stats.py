@@ -102,11 +102,42 @@ def load_data(spreadsheet_id):
         st.error(f"An error occurred: {str(e)}")
         return pd.DataFrame()
 
-# Main app logic
-# Main app logic
+# Set page config
+st.set_page_config(page_title="Student Recruitment CRM", layout="wide")
+
+# Custom CSS
+st.markdown("""
+<style>
+    .reportview-container {
+        background: #f0f2f6;
+    }
+    .main {
+        background-color: #ffffff;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .stplot {
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 1rem;
+    }
+    h1, h2, h3 {
+        color: #2c3e50;
+    }
+    .stSelectbox label, .stMultiSelect label {
+        color: #2c3e50;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 def main():
-    st.title('Student Payments Analysis')
-    st.sidebar.title('Settings')
+    st.title('📊 Student Recruitment CRM Dashboard')
+
+    # Sidebar
+    st.sidebar.title('📌 Navigation')
+    page = st.sidebar.radio('Go to', ['Overview', 'Student Details', 'School Analytics', 'Visa Statistics'])
 
     # Google Sheets ID
     spreadsheet_id = "1NPc-dQ7uts1c1JjNoABBou-uq2ixzUTiSBTB8qlTuOQ"
@@ -115,56 +146,106 @@ def main():
         data = load_data(spreadsheet_id)
 
         if not data.empty:
-            st.write("Loaded data from Google Sheets:")
-            st.write(data.head())
+            # Data preprocessing
+            data['DATE'] = pd.to_datetime(data['DATE'], format='%d/%m/%Y', errors='coerce')
+            data = data[data['DATE'].notnull()]
+            data = data.drop_duplicates(subset=['First Name', 'Last Name'])
+            data['Year'] = data['DATE'].dt.year
+            data['Month'] = data['DATE'].dt.month_name()
 
-            # Convert DATE column to datetime with the specified format
-            data['DATE'] = pd.to_datetime(data['DATE'], format='%d/%m/%Y %H:%M:%S', errors='coerce')
+            # Overview Page
+            if page == 'Overview':
+                st.header('📈 Recruitment Overview')
+                
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("Total Students", len(data))
+                with col2:
+                    st.metric("This Year's Recruits", len(data[data['Year'] == datetime.now().year]))
+                with col3:
+                    st.metric("Visa Approval Rate", f"{(data['Visa Result'] == 'Visa Approved').mean():.2%}")
 
-            # Separate data where date conversion did not work
-            invalid_date_data = data[data['DATE'].isnull()]
-            st.write("Students with invalid or missing dates:")
-            st.write(invalid_date_data[['First Name', 'Last Name', 'DATE']])
+                # Monthly recruitment trend
+                st.subheader('Monthly Recruitment Trend')
+                monthly_trend = data.groupby(['Year', 'Month']).size().reset_index(name='Count')
+                monthly_trend['Date'] = pd.to_datetime(monthly_trend['Year'].astype(str) + ' ' + monthly_trend['Month'], format='%Y %B')
+                monthly_trend = monthly_trend.sort_values('Date')
+                fig_trend = px.line(monthly_trend, x='Date', y='Count', title='Monthly Recruitment Trend')
+                st.plotly_chart(fig_trend, use_container_width=True)
 
-            # Separate data where date conversion worked
-            valid_date_data = data[data['DATE'].notnull()]
-            st.write("Students with valid dates:")
-            st.write(valid_date_data[['First Name', 'Last Name', 'DATE']])
+                # Top schools
+                st.subheader('Top Schools')
+                top_schools = data['Chosen School'].value_counts().head(5)
+                fig_schools = px.bar(top_schools, x=top_schools.index, y=top_schools.values, title='Top 5 Schools')
+                st.plotly_chart(fig_schools, use_container_width=True)
 
-            # Remove duplicate students by comparing names
-            valid_date_data = valid_date_data.drop_duplicates(subset=['First Name', 'Last Name'])
+            # Student Details Page
+            elif page == 'Student Details':
+                st.header('👨‍🎓 Student Details')
+                
+                # Search functionality
+                search_term = st.text_input('🔍 Search for a student (First Name or Last Name)')
+                if search_term:
+                    filtered_data = data[data['First Name'].str.contains(search_term, case=False) | 
+                                         data['Last Name'].str.contains(search_term, case=False)]
+                else:
+                    filtered_data = data
 
-            # Extract Year and Month
-            valid_date_data['Year'] = valid_date_data['DATE'].dt.year
-            valid_date_data['Month'] = valid_date_data['DATE'].dt.month_name()  # Convert month number to month name
+                # Display student details
+                for _, student in filtered_data.iterrows():
+                    with st.expander(f"{student['First Name']} {student['Last Name']}"):
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            st.write(f"**Email:** {student['E-mail']}")
+                            st.write(f"**Phone:** {student['Phone N°']}")
+                            st.write(f"**School:** {student['Chosen School']}")
+                        with col2:
+                            st.write(f"**Visa Result:** {student['Visa Result']}")
+                            st.write(f"**Current Step:** {student['Current Step']}")
+                            st.write(f"**Agent:** {student['Agent']}")
 
-            # Filter data for the year 2024
-            data_2024 = valid_date_data[valid_date_data['Year'] == 2024]
-            st.write("Filtered data for 2024:")
-            st.write(data_2024[['First Name', 'Last Name', 'DATE', 'Month', 'Year']])
+            # School Analytics Page
+            elif page == 'School Analytics':
+                st.header('🏫 School Analytics')
+                
+                # School selection
+                selected_school = st.selectbox('Select a school', data['Chosen School'].unique())
+                school_data = data[data['Chosen School'] == selected_school]
 
-            # Group by Month to get payment counts
-            monthly_payments_2024 = data_2024.groupby('Month').size().reset_index(name='Number of Payments')
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.metric("Total Students", len(school_data))
+                with col2:
+                    st.metric("Visa Approval Rate", f"{(school_data['Visa Result'] == 'Visa Approved').mean():.2%}")
 
-            # Ensure months are in the correct order
-            month_order = [
-                'January', 'February', 'March', 'April', 'May', 'June', 
-                'July', 'August', 'September', 'October', 'November', 'December'
-            ]
-            monthly_payments_2024['Month'] = pd.Categorical(monthly_payments_2024['Month'], categories=month_order, ordered=True)
-            monthly_payments_2024 = monthly_payments_2024.sort_values('Month')
-            st.write("Monthly payment counts after sorting:")
-            st.write(monthly_payments_2024)
+                # Monthly trend for the selected school
+                monthly_school_trend = school_data.groupby(['Year', 'Month']).size().reset_index(name='Count')
+                monthly_school_trend['Date'] = pd.to_datetime(monthly_school_trend['Year'].astype(str) + ' ' + monthly_school_trend['Month'], format='%Y %B')
+                monthly_school_trend = monthly_school_trend.sort_values('Date')
+                fig_school_trend = px.line(monthly_school_trend, x='Date', y='Count', title=f'Monthly Trend for {selected_school}')
+                st.plotly_chart(fig_school_trend, use_container_width=True)
 
-            st.write("Monthly Payments for 2024:")
-            st.write(monthly_payments_2024)
+            # Visa Statistics Page
+            elif page == 'Visa Statistics':
+                st.header('🛂 Visa Statistics')
+                
+                # Overall visa statistics
+                visa_stats = data['Visa Result'].value_counts()
+                fig_visa = px.pie(values=visa_stats.values, names=visa_stats.index, title='Overall Visa Results')
+                st.plotly_chart(fig_visa, use_container_width=True)
 
-            # Plotting the data for 2024
-            fig = px.bar(monthly_payments_2024, x='Month', y='Number of Payments',
-                         title="Monthly Payments Distribution for 2024",
-                         labels={'Month': 'Month', 'Number of Payments': 'Number of Payments'})
-            fig.update_layout(xaxis_title='Month', yaxis_title='Number of Payments')
-            st.plotly_chart(fig)
+                # Visa approval rate by school
+                visa_by_school = data.groupby('Chosen School')['Visa Result'].apply(lambda x: (x == 'Visa Approved').mean()).sort_values(ascending=False)
+                fig_visa_school = px.bar(visa_by_school, x=visa_by_school.index, y=visa_by_school.values, title='Visa Approval Rate by School')
+                fig_visa_school.update_layout(yaxis_title='Approval Rate', xaxis_title='School')
+                st.plotly_chart(fig_visa_school, use_container_width=True)
+
+                # Visa approval trend
+                visa_trend = data.groupby(['Year', 'Month'])['Visa Result'].apply(lambda x: (x == 'Visa Approved').mean()).reset_index(name='Approval Rate')
+                visa_trend['Date'] = pd.to_datetime(visa_trend['Year'].astype(str) + ' ' + visa_trend['Month'], format='%Y %B')
+                visa_trend = visa_trend.sort_values('Date')
+                fig_visa_trend = px.line(visa_trend, x='Date', y='Approval Rate', title='Visa Approval Rate Trend')
+                st.plotly_chart(fig_visa_trend, use_container_width=True)
 
 if __name__ == "__main__":
     main()
