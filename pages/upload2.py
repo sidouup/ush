@@ -155,15 +155,26 @@ def load_data(spreadsheet_id):
         return pd.DataFrame()
 
 # Function to save data to Google Sheets (batch update)
+import numpy as np
+
 def save_data(df, spreadsheet_id, sheet_name):
+    def replace_invalid_floats(val):
+        if isinstance(val, float):
+            if np.isnan(val) or np.isinf(val):
+                return None
+        return val
+
+    # Replace NaN and inf values with None
+    df = df.applymap(replace_invalid_floats)
+
+    # Replace [pd.NA, pd.NaT, float('inf'), float('-inf')] with None
+    df = df.replace([pd.NA, pd.NaT, float('inf'), float('-inf')], None)
+
     client = get_google_sheet_client()
     sheet = client.open_by_key(spreadsheet_id).worksheet(sheet_name)
     
     # Prepare the data for batch update
     values = [df.columns.tolist()] + df.values.tolist()
-    body = {
-        'values': values
-    }
     
     # Perform batch update
     sheet.batch_update([{
