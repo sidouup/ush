@@ -412,20 +412,20 @@ def main():
             st.subheader("Document Status")
             for doc_type, status_info in document_status.items():
                 icon = "✅" if status_info['status'] else "❌"
+                st.markdown(f"**{icon} {doc_type}**")
                 if status_info['status']:
                     for file in status_info['files']:
                         col1, col2 = st.columns([4, 1])
                         with col1:
-                            st.markdown(f"{icon} [{file['name']}]({file['webViewLink']})")
+                            st.markdown(f"[{file['name']}]({file['webViewLink']})")
                         with col2:
                             if st.button("🗑️", key=f"delete_{file['id']}", help="Delete file"):
                                 if delete_file_from_drive(file['id']):
                                     st.success("Deleted!")
-                                    st.rerun()
+                                    st.experimental_rerun()
                                 else:
                                     st.error("Delete failed")
-                else:
-                    st.markdown(f"{icon} {doc_type}")
+
 
         if not filtered_data.empty:
             selected_student = filtered_data[filtered_data['Student Name'] == search_query].iloc[0]
