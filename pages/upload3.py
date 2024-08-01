@@ -301,6 +301,7 @@ def handle_file_upload(student_name, document_type, uploaded_file):
             os.remove(temp_file_path)
         if file_id:
             st.success(f"{file_name} uploaded successfully!")
+            st.session_state['document_status'] = get_document_status(student_name)  # Reload document status
             return file_id
     else:
         st.warning(f"{file_name} already exists for this student.")
@@ -665,6 +666,7 @@ def main():
                     file_id = handle_file_upload(student_name, document_type, uploaded_file)
                     if file_id:
                         st.success(f"{document_type} uploaded successfully!")
+                        st.session_state['document_status'] = get_document_status(student_name)  # Reload document status
                         st.rerun()  # Force a re-run of the entire app
                     else:
                         st.error("An error occurred while uploading the document.")
