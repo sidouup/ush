@@ -405,24 +405,25 @@ def main():
                 st.write("No data available for the current filters.")
 
         with col3:
-            if not filtered_data.empty:
-                
-                student_name = selected_student['Student Name']
-                document_status = check_document_status(student_name)
-                st.subheader("Document Status")
-                for doc_type, status_info in document_status.items():
-                    icon = "✅" if status_info['status'] else "❌"
-                    st.markdown(f"""
-                    <div class='document-item'>
-                        <span class='status-icon'>{icon}</span>
-                        <span class='document-name'>{doc_type}</span>
-                        {"".join([f"<a href='{file['webViewLink']}' target='_blank' class='file-link'>{file['name']}</a><span class='delete-button' onclick='deleteFile(&quot;{file['id']}&quot;)'>🗑️</span>" for file in status_info['files']])}
-                    </div>
-                    """, unsafe_allow_html=True)
-            else:
-                st.write("No data available for the current filters.")
-
-        st.markdown('</div>', unsafe_allow_html=True)
+            document_status = check_document_status(student_name)
+            st.subheader("Document Status")
+            for doc_type, status_info in document_status.items():
+                icon = "✅" if status_info['status'] else "❌"
+                with st.expander(f"{icon} {doc_type}"):
+                    if status_info['status']:
+                        for file in status_info['files']:
+                            col1, col2 = st.columns([4, 1])
+                            with col1:
+                                st.markdown(f"[{file['name']}]({file['webViewLink']})")
+                            with col2:
+                                if st.button("🗑️", key=f"delete_{file['id']}", help="Delete file"):
+                                    if delete_file_from_drive(file['id']):
+                                        st.success("Deleted!")
+                                        st.rerun()
+                                    else:
+                                        st.error("Delete failed")
+                    else:
+                        st.write("No documents uploaded")
 
         if not filtered_data.empty:
             selected_student = filtered_data[filtered_data['Student Name'] == search_query].iloc[0]
