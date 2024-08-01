@@ -406,6 +406,7 @@ def update_student_data(*args, **kwargs):
     pass
 
 # Main function
+# Main function
 def main():
     st.set_page_config(page_title="Student Application Tracker", layout="wide")
     
@@ -705,6 +706,11 @@ def main():
 
                 # Save the updated data back to Google Sheets
                 save_data(filtered_data, spreadsheet_id, selected_student['Current Step'])
+                
+                # Reload data to reflect changes
+                data = reload_data(spreadsheet_id)
+                st.session_state['data'] = data
+                
                 st.success("Changes saved successfully!")
 
         else:
