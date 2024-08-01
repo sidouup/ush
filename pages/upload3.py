@@ -605,7 +605,7 @@ def main():
                             file_id = status_info['files'][0]['id']
                             if trash_file_in_drive(file_id):  # Use trash_file_in_drive instead of delete_file_from_drive
                                 st.session_state['reload_data'] = True
-                                st.rerun()
+                                clear_cache_and_rerun() 
                 else:
                     with col2:
                         st.markdown("")
