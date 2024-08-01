@@ -18,8 +18,6 @@ import threading
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
-
 def reload_data(spreadsheet_id):
     data = load_data(spreadsheet_id)
     st.session_state['data'] = data
@@ -674,19 +672,19 @@ def main():
                     else:
                         st.error("An error occurred while uploading the document.")
 
-        if edit_mode and st.button("Save Changes"):
-            if 'temp_student_data' in st.session_state:
-                for key, value in st.session_state.temp_student_data.items():
-                    filtered_data.loc[filtered_data['Student Name'] == student_name, key] = value
-        
-                # Save the updated data back to Google Sheets
-                save_data(filtered_data, spreadsheet_id, selected_student['Current Step'])
-        
-                # Clear temporary data and reload
-                st.session_state.pop('temp_student_data', None)
-                st.session_state['reload_data'] = True
-                st.rerun()
-        
+            if edit_mode and st.button("Save Changes"):
+                if 'temp_student_data' in st.session_state:
+                    for key, value in st.session_state.temp_student_data.items():
+                        filtered_data.loc[filtered_data['Student Name'] == student_name, key] = value
+
+                    # Save the updated data back to Google Sheets
+                    save_data(filtered_data, spreadsheet_id, selected_student['Current Step'])
+                    
+                    # Clear temporary data and reload
+                    st.session_state.pop('temp_student_data', None)
+                    st.session_state['reload_data'] = True
+                    st.rerun()
+
         else:
             st.info("No students found matching the search criteria.")
 
