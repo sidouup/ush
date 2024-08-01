@@ -320,7 +320,7 @@ def delete_file_from_drive(file_id):
     service = get_google_drive_service()
     try:
         body_value = {'trashed': True}
-        response = drive_service.files().update(fileId=file_id, body=body_value).execute()
+        response = drive_service.files().delete(fileId=file_id, body=body_value).execute()
         return True
     except Exception as e:
         st.error(f"An error occurred while deleting the file: {str(e)}")
