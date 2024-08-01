@@ -408,13 +408,12 @@ def trash_file_in_drive(file_id):
             fileId=file_id,
             body={"trashed": True}
         ).execute()
-        clear_cache_and_rerun() 
         return True
     
     except Exception as e:
         st.error(f"An error occurred while moving the file to trash: {str(e)}")
         return False
-
+    clear_cache_and_rerun() 
 def get_document_status(student_name):
     if 'document_status_cache' not in st.session_state:
         st.session_state['document_status_cache'] = {}
