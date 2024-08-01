@@ -310,6 +310,7 @@ def check_document_status(student_name):
     return document_status
 
 @cache_with_timeout(timeout_minutes=5)
+@cache_with_timeout(timeout_minutes=5)
 def list_files_in_folder(folder_id):
     service = get_google_drive_service()
     query = f"'{folder_id}' in parents and trashed=false"
@@ -324,7 +325,6 @@ def trash_file_in_drive(file_id):
             fileId=file_id,
             body={"trashed": True}
         ).execute()
-        st.write(f"File ID {file_id} moved to trash: {file}")
         return True
     except Exception as e:
         st.error(f"An error occurred while moving the file to trash: {str(e)}")
@@ -332,11 +332,27 @@ def trash_file_in_drive(file_id):
 
         
 @cache_with_timeout(timeout_minutes=5)
-def check_file_exists_in_folder(folder_id):
-    service = get_google_drive_service()
-    query = f"'{folder_id}' in parents"
-    results = service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
-    return bool(results.get('files', []))
+def check_document_status(student_name):
+    parent_folder_id = '1It91HqQDsYeSo1MuYgACtmkmcO82vzXp'
+    student_folder_id = check_folder_exists(student_name, parent_folder_id)
+    
+    document_types = ["Passport", "Bank Statement", "Financial Letter", 
+                      "Transcripts", "Diplomas", "English Test", "Payment Receipt",
+                      "SEVIS Receipt", "SEVIS"]
+    document_status = {doc_type: {'status': False, 'files': []} for doc_type in document_types}
+
+    if not student_folder_id:
+        return document_status
+
+    for document_type in document_types:
+        document_folder_id = check_folder_exists(document_type, student_folder_id)
+        if document_folder_id:
+            files = list_files_in_folder(document_folder_id)
+            document_status[document_type]['status'] = bool(files)
+            document_status[document_type]['files'] = files
+    
+    return document_status
+
 
 # Main function
 def main():
@@ -487,6 +503,8 @@ def main():
                 col1, col2 = st.columns([9, 1])
                 with col1:
                     st.markdown(f"**{icon} {doc_type}**")
+                    for file in status_info['files']:
+                        st.markdown(f"- [{file['name']}]({file['webViewLink']})")
                 if status_info['status']:
                     with col2:
                         if st.button("🗑️", key=f"delete_{status_info['files'][0]['id']}", help="Delete file"):
