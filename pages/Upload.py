@@ -282,7 +282,7 @@ def main():
     # Check if we need to refresh the page
     if st.session_state.upload_success:
         st.session_state.upload_success = False
-        st.experimental_rerun()
+        st.rerun()
 
     st.markdown("""
     <style>
@@ -431,7 +431,7 @@ def main():
                     with col2:
                         if st.button("🗑️", key=f"delete_{status_info['files'][0]['id']}", help="Delete file"):
                             delete_file_from_drive(status_info['files'][0]['id'])
-                            st.experimental_rerun()
+                            st.rerun()
                 else:
                     with col2:
                         st.markdown("")
@@ -533,7 +533,7 @@ def main():
                     file_id = handle_file_upload(student_name, document_type, uploaded_file)
                     if file_id:
                         st.success(f"{document_type} uploaded successfully!")
-                        st.experimental_rerun()  # Force a re-run of the entire app
+                        st.rerun()  # Force a re-run of the entire app
                     else:
                         st.error("An error occurred while uploading the document.")
     
