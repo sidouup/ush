@@ -405,6 +405,8 @@ def main():
                 st.write("No data available for the current filters.")
 
         with col3:
+            selected_student = filtered_data[filtered_data['Student Name'] == search_query].iloc[0]
+            student_name = selected_student['Student Name']
             document_status = check_document_status(student_name)
             st.subheader("Document Status")
             for doc_type, status_info in document_status.items():
