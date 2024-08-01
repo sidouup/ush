@@ -484,7 +484,12 @@ def main():
     """, unsafe_allow_html=True)
 
     spreadsheet_id = "1NPc-dQ7uts1c1JjNoABBou-uq2ixzUTiSBTB8qlTuOQ"
-    data = load_data(spreadsheet_id)
+    
+    if 'data' not in st.session_state:
+        data = load_data(spreadsheet_id)
+        st.session_state['data'] = data
+    else:
+        data = st.session_state['data']
 
     if not data.empty:
         current_steps = ["All"] + list(data['Current Step'].unique())
