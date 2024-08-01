@@ -102,6 +102,7 @@ def load_data(spreadsheet_id):
         st.error(f"An error occurred: {str(e)}")
         return pd.DataFrame()
 
+# Main app logic
 def main():
     st.title('Student Payments Analysis')
     st.sidebar.title('Settings')
@@ -123,34 +124,29 @@ def main():
             data['Year'] = data['DATE'].dt.year
             data['Month'] = data['DATE'].dt.month_name()  # Convert month number to month name
 
-            # Group by Year and Month to get payment counts
-            monthly_payments = data.groupby(['Year', 'Month']).size().reset_index(name='Number of Payments')
+            # Filter data for the year 2024
+            data_2024 = data[data['Year'] == 2024]
 
-            # Adjust the count for payments made on the same day
-            daily_payments = data.groupby(['Year', 'Month', 'DATE']).size().reset_index(name='Daily Count')
-            daily_payments['Adjusted Count'] = daily_payments['Daily Count']  # Count each payment individually
-
-            # Aggregate back to monthly payments with adjusted count
-            adjusted_monthly_payments = daily_payments.groupby(['Year', 'Month'])['Adjusted Count'].sum().reset_index()
+            # Group by Month to get payment counts
+            monthly_payments_2024 = data_2024.groupby('Month').size().reset_index(name='Number of Payments')
 
             # Ensure months are in the correct order
             month_order = [
                 'January', 'February', 'March', 'April', 'May', 'June', 
                 'July', 'August', 'September', 'October', 'November', 'December'
             ]
-            adjusted_monthly_payments['Month'] = pd.Categorical(adjusted_monthly_payments['Month'], categories=month_order, ordered=True)
-            adjusted_monthly_payments = adjusted_monthly_payments.sort_values(['Year', 'Month'])
+            monthly_payments_2024['Month'] = pd.Categorical(monthly_payments_2024['Month'], categories=month_order, ordered=True)
+            monthly_payments_2024 = monthly_payments_2024.sort_values('Month')
 
-            # Plotting the data for each year
-            for year in adjusted_monthly_payments['Year'].unique():
-                yearly_data = adjusted_monthly_payments[adjusted_monthly_payments['Year'] == year]
-                fig = px.bar(yearly_data, x='Month', y='Adjusted Count',
-                             title=f"Monthly Payments Distribution for {year}",
-                             labels={'Month': 'Month', 'Adjusted Count': 'Number of Payments'})
-                fig.update_layout(xaxis_title='Month', yaxis_title='Number of Payments')
-                st.plotly_chart(fig)
-        else:
-            st.write("No data found. Please check the Google Sheets ID and try again.")
+            st.write("Monthly Payments for 2024:")
+            st.write(monthly_payments_2024)
+
+            # Plotting the data for 2024
+            fig = px.bar(monthly_payments_2024, x='Month', y='Number of Payments',
+                         title="Monthly Payments Distribution for 2024",
+                         labels={'Month': 'Month', 'Number of Payments': 'Number of Payments'})
+            fig.update_layout(xaxis_title='Month', yaxis_title='Number of Payments')
+            st.plotly_chart(fig)
 
 if __name__ == "__main__":
     main()
