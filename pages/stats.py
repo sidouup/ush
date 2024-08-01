@@ -119,24 +119,28 @@ def main():
 
             # Convert DATE column to datetime
             data['DATE'] = pd.to_datetime(data['DATE'], errors='coerce')
-            st.write("Data with DATE column converted to datetime:")
-            st.write(data.head())
+
+            # Separate data where date conversion did not work
+            invalid_date_data = data[data['DATE'].isnull()]
+            st.write("Students with invalid or missing dates:")
+            st.write(invalid_date_data[['First Name', 'Last Name', 'DATE']])
+
+            # Separate data where date conversion worked
+            valid_date_data = data[data['DATE'].notnull()]
+            st.write("Students with valid dates:")
+            st.write(valid_date_data[['First Name', 'Last Name', 'DATE']])
 
             # Extract Year and Month
-            data['Year'] = data['DATE'].dt.year
-            data['Month'] = data['DATE'].dt.month_name()  # Convert month number to month name
-            st.write("Data with Year and Month extracted:")
-            st.write(data.head())
+            valid_date_data['Year'] = valid_date_data['DATE'].dt.year
+            valid_date_data['Month'] = valid_date_data['DATE'].dt.month_name()  # Convert month number to month name
 
             # Filter data for the year 2024
-            data_2024 = data[data['Year'] == 2024]
+            data_2024 = valid_date_data[valid_date_data['Year'] == 2024]
             st.write("Filtered data for 2024:")
-            st.write(data_2024.head())
+            st.write(data_2024[['First Name', 'Last Name', 'DATE', 'Month', 'Year']])
 
             # Group by Month to get payment counts
             monthly_payments_2024 = data_2024.groupby('Month').size().reset_index(name='Number of Payments')
-            st.write("Monthly payment counts before sorting:")
-            st.write(monthly_payments_2024)
 
             # Ensure months are in the correct order
             month_order = [
