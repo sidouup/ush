@@ -748,8 +748,6 @@ def main():
                 st.success("Changes saved successfully!")
                 clear_cache_and_rerun()  # Clear cache and rerun the app
 
-        else:
-            st.info("No students found matching the search criteria.")
 
         else:
             st.info("No students found matching the search criteria.")
