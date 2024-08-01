@@ -525,13 +525,24 @@ def main():
                 st.subheader("Document Status")
                 for doc_type, status_info in document_status.items():
                     icon = "✅" if status_info['status'] else "❌"
-                    st.markdown(f"""
-                    <div class='document-item'>
-                        <span class='status-icon'>{icon}</span>
-                        <span class='document-name'>{doc_type}</span>
-                        {"".join([f"<a href='{file['webViewLink']}' target='_blank' class='file-link'>{file['name']}</a><button onclick=\"deleteFile('{file['id']}', '{doc_type}')\">🗑️</button>" for file in status_info['files']])}
-                    </div>
-                    """, unsafe_allow_html=True)
+                    files_links = "".join(
+                        [
+                            f"<a href='{file['webViewLink']}' target='_blank' class='file-link'>{file['name']}</a>"
+                            f"<button onclick=\"deleteFile('{file['id']}', '{doc_type}')\">🗑️</button>"
+                            for file in status_info['files']
+                        ]
+                    )
+                    
+                    st.markdown(
+                        f"""
+                        <div class='document-item'>
+                            <span class='status-icon'>{icon}</span>
+                            <span class='document-name'>{doc_type}</span>
+                            {files_links}
+                        </div>
+                        """, 
+                        unsafe_allow_html=True
+                    )
 
             # Add JavaScript for delete functionality
             st.markdown("""
