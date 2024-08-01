@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 def on_student_select():
     st.session_state.selected_student = st.session_state.search_query
-    st.experimental_rerun()
+    st.rerun()
 
 
 def reload_data(spreadsheet_id):
