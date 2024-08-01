@@ -455,7 +455,7 @@ def main():
     # Check if we need to refresh the page
     if st.session_state.upload_success:
         st.session_state.upload_success = False
-        st.experimental_rerun()
+        st.=rerun()
 
     st.markdown("""
     <style>
@@ -605,7 +605,7 @@ def main():
                             file_id = status_info['files'][0]['id']
                             if trash_file_in_drive(file_id):  # Use trash_file_in_drive instead of delete_file_from_drive
                                 st.session_state['reload_data'] = True
-                                st.experimental_rerun()
+                                st.rerun()
                 else:
                     with col2:
                         st.markdown("")
