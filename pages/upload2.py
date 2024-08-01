@@ -319,11 +319,14 @@ def list_files_in_folder(folder_id):
 def delete_file_from_drive(file_id):
     service = get_google_drive_service()
     try:
-        response = service.files().delete(fileId=file_id).execute()
-        st.write(f"File ID {file_id} deletion response: {response}")
+        file = service.files().update(
+            fileId=file_id,
+            body={"trashed": True}
+        ).execute()
+        st.write(f"File ID {file_id} moved to trash: {file}")
         return True
     except Exception as e:
-        st.error(f"An error occurred while deleting the file: {str(e)}")
+        st.error(f"An error occurred while moving the file to trash: {str(e)}")
         return False
 
         
