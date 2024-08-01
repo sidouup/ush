@@ -413,29 +413,21 @@ def main():
             
             for doc_type, status_info in document_status.items():
                 icon = "✅" if status_info['status'] else "❌"
+                col1, col2 = st.columns([9, 1])
+                with col1:
+                    st.markdown(f"**{icon} {doc_type}**")
                 if status_info['status']:
-                    for file in status_info['files']:
-                        col1, col2, col3 = st.columns([1, 4, 1])
-                        with col1:
-                            st.markdown(f"**{icon} {doc_type}**")
-                        with col2:
-                            st.markdown(f"[{file['name']}]({file['webViewLink']})")
-                        with col3:
-                            if st.button("🗑️", key=f"delete_{file['id']}", help="Delete file"):
-                                if delete_file_from_drive(file['id']):
-                                    st.success("Deleted!")
-                                    st.experimental_rerun()
-                                else:
-                                    st.error("Delete failed")
-                else:
-                    col1, col2, col3 = st.columns([1, 4, 1])
-                    with col1:
-                        st.markdown(f"**{icon} {doc_type}**")
                     with col2:
-                        st.markdown("No file uploaded")
-                    with col3:
+                        if st.button("🗑️", key=f"delete_{status_info['files'][0]['id']}", help="Delete file"):
+                            if delete_file_from_drive(status_info['files'][0]['id']):
+                                st.success("Deleted!")
+                                st.experimental_rerun()
+                            else:
+                                st.error("Delete failed")
+                else:
+                    with col2:
                         st.markdown("")
-                        
+                                    
         if not filtered_data.empty:
             selected_student = filtered_data[filtered_data['Student Name'] == search_query].iloc[0]
             student_name = selected_student['Student Name']
