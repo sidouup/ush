@@ -320,7 +320,7 @@ def delete_file_from_drive(file_id):
     service = get_google_drive_service()
 
     body_value = {'trashed': True}
-    response = drive_service.files().delete(fileId=file_id, body=body_value).execute()
+    response = service.files().delete(fileId=file_id, body=body_value).execute()
 
         
 @cache_with_timeout(timeout_minutes=5)
