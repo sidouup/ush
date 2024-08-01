@@ -362,6 +362,18 @@ async def list_files_in_folder_async(folder_id, service):
         logger.error(f"An error occurred while listing files in folder: {str(e)}")
         return []
 
+def trash_file_in_drive(file_id):
+    service = get_google_drive_service()
+    try:
+        # Move the file to the trash
+        file = service.files().update(
+            fileId=file_id,
+            body={"trashed": True}
+        ).execute()
+        return True
+    except Exception as e:
+        st.error(f"An error occurred while moving the file to trash: {str(e)}")
+        return False
 
 @st.cache_data(ttl=900)
 def get_document_status(student_name):
