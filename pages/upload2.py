@@ -349,7 +349,7 @@ def main():
             st.subheader("Application Status")
             if not filtered_data.empty:
                 selected_student = filtered_data[filtered_data['Student Name'] == search_query].iloc[0]
-    steps = ['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'SEVIS', 'CLIENTS ']
+                steps = ['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'SEVIS', 'CLIENTS ']
                 current_step = selected_student['Current Step'] if not filtered_data.empty else "Unknown"
                 step_index = steps.index(current_step) if current_step in steps else 0
                 progress = ((step_index + 1) / len(steps)) * 100
