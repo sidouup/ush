@@ -103,6 +103,7 @@ def load_data(spreadsheet_id):
         return pd.DataFrame()
 
 # Main app logic
+# Main app logic
 def main():
     st.title('Student Payments Analysis')
     st.sidebar.title('Settings')
@@ -117,8 +118,8 @@ def main():
             st.write("Loaded data from Google Sheets:")
             st.write(data.head())
 
-            # Convert DATE column to datetime
-            data['DATE'] = pd.to_datetime(data['DATE'], errors='coerce')
+            # Convert DATE column to datetime with the specified format
+            data['DATE'] = pd.to_datetime(data['DATE'], format='%d/%m/%Y %H:%M:%S', errors='coerce')
 
             # Separate data where date conversion did not work
             invalid_date_data = data[data['DATE'].isnull()]
@@ -164,3 +165,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
