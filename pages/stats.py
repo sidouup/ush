@@ -4,15 +4,26 @@ import plotly.express as px
 import plotly.graph_objects as go
 from collections import Counter
 
+# Use Streamlit secrets for service account info
+SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
+
+# Define the scopes
+SCOPES = ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/spreadsheets']
+
+# Authenticate and build the Google Sheets service
+@st.cache_resource
 def get_google_sheet_client():
     creds = Credentials.from_service_account_info(SERVICE_ACCOUNT_INFO, scopes=SCOPES)
     return gspread.authorize(creds)
 
-def load_data():
+# Function to load data from Google Sheets
+def load_data(spreadsheet_id, sheet_name):
     client = get_google_sheet_client()
-    sheet = client.open_by_key("1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI").worksheet('ALL')
+    sheet = client.open_by_key(spreadsheet_id).worksheet(sheet_name)
     data = sheet.get_all_records()
-    return pd.DataFrame(data)
+    df = pd.DataFrame(data)
+    df = df.astype(str)  # Convert all columns to strings
+    return df
 
 
 def statistics_page():
