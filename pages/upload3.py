@@ -804,7 +804,9 @@ def main():
                 save_data(filtered_data, spreadsheet_id, selected_student['Current Step'])
                 st.success("Changes saved successfully!")
                 st.session_state.edit_mode = False
-                clear_cache_and_rerun_2()  # Clear cache and rerun the app
+            
+                # Use a timer to delay rerun
+                threading.Timer(2, clear_cache_and_rerun).start()  # Delay to allow state update
                 
 
 
