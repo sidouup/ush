@@ -10,3 +10,4 @@ gspread-dataframe
 xlsxwriter
 openpyxl
 aiohttp
+streamlit_toggle
