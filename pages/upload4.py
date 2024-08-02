@@ -697,13 +697,13 @@ def main():
                 st.subheader("💰 Payment Information")
                 if edit_mode:
                     payment_date = st.text_input("Payment Date", selected_student['DATE'], key="payment_date", on_change=update_student_data)
-                    payment_method = st.text_input("Payment Method", selected_student['Payment Method '], key="payment_method", on_change=update_student_data)
-                    sevis_payment = st.text_input("Sevis Payment", selected_student['Sevis payment ? '], key="sevis_payment", on_change=update_student_data)
+                    payment_method = st.text_input("Payment Method", selected_student['Payment Amount'], key="payment_method", on_change=update_student_data)
+                    sevis_payment = st.text_input("Sevis Payment", selected_student['Sevis payment ?'], key="sevis_payment", on_change=update_student_data)
                     application_payment = st.text_input("Application Payment", selected_student['Application payment ?'], key="application_payment", on_change=update_student_data)
                 else:
                     st.write(f"**Payment Date:** {selected_student['DATE']}")
-                    st.write(f"**Payment Method:** {selected_student['Payment Method ']}")
-                    st.write(f"**Sevis Payment:** {selected_student['Sevis payment ? ']}")
+                    st.write(f"**Payment Method:** {selected_student['Payment Amount']}")
+                    st.write(f"**Sevis Payment:** {selected_student['Sevis payment ?']}")
                     st.write(f"**Application Payment:** {selected_student['Application payment ?']}")
                 st.markdown('</div>', unsafe_allow_html=True)
                 
@@ -751,8 +751,8 @@ def main():
                     'Visa Result': visa_status,
                     'Current Step': current_step,
                     'DATE': payment_date,
-                    'Payment Method ': payment_method,
-                    'Sevis payment ? ': sevis_payment,
+                    'Payment Amount': payment_method,
+                    'Sevis payment ?': sevis_payment,
                     'Application payment ?': application_payment,
                 }
                 
