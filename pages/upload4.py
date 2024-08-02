@@ -598,7 +598,31 @@ def main():
                     st.session_state.selected_student = search_query
                     st.session_state.student_changed = False
                     st.rerun()
+                    st.subheader("📝 Student Notes")
+                    
+                    # Get the current note for the selected student
+                    selected_student = filtered_data[filtered_data['Student Name'] == search_query].iloc[0]
+                    current_note = selected_student['Note'] if 'Note' in selected_student else ""
                 
+                    # Create a text area for note input
+                    new_note = st.text_area("Enter/Edit Note:", value=current_note, height=150, key="note_input")
+                
+                    # Save button for the note
+                    if st.button("Save Note"):
+                        # Update the note in the DataFrame
+                        filtered_data.loc[filtered_data['Student Name'] == search_query, 'Note'] = new_note
+                        
+                        # Save the updated data back to Google Sheets
+                        save_data(filtered_data, spreadsheet_id, 'ALL', search_query)
+                        
+                        st.success("Note saved successfully!")
+                        
+                        # Set a flag to reload data on next run
+                        st.session_state['reload_data'] = True
+                        
+                        # Rerun the app to show updated data
+                        st.rerun()
+              
 
             
             with col1:
