@@ -175,7 +175,7 @@ def format_date(date_string):
     if pd.isna(date_string):
         return "Not set"
     try:
-        date = pd.to_datetime(date_string)
+        date = pd.to_datetime(date_string, dayfirst=True)
         return date.strftime('%d %B %Y')
     except:
         return "Invalid Date"
@@ -191,7 +191,7 @@ def clear_cache_and_rerun():
 # Function to calculate days until interview
 def calculate_days_until_interview(interview_date):
     try:
-        interview_date = pd.to_datetime(interview_date, format='%d/%m/%Y %H:%M:%S', errors='coerce')
+        interview_date = pd.to_datetime(interview_date, format='%d/%m/%Y %H:%M:%S', dayfirst=True, errors='coerce')
         if pd.isnull(interview_date):
             return None
         today = pd.to_datetime(datetime.today().strftime('%Y-%m-%d'))
@@ -678,6 +678,41 @@ def main():
                     st.write(f"**Entry Date in the US:** {format_date(selected_student['Entry Date in the US'])}")
                 st.markdown('</div>', unsafe_allow_html=True)
             
+with tab2:
+    st.markdown('<div class="stCard">', unsafe_allow_html=True)
+    st.subheader("🏫 School Information")
+    if edit_mode:
+        chosen_school = st.selectbox("Chosen School", school_options, index=school_options.index(selected_student['Chosen School']) if selected_student['Chosen School'] in school_options else 0, key="chosen_school", on_change=update_student_data)
+        specialite = st.text_input("Specialite", selected_student['Specialite'], key="specialite", on_change=update_student_data)
+        duration = st.text_input("Duration", selected_student['Duration'], key="duration", on_change=update_student_data)
+        school_entry_date_str = selected_student['School Entry Date']
+        school_entry_date = pd.to_datetime(school_entry_date_str, dayfirst=True, errors='coerce')
+        school_entry_date = st.date_input(
+            "School Entry Date",
+            value=school_entry_date.date() if not pd.isna(school_entry_date) else None,
+            key="school_entry_date",
+            on_change=update_student_data
+        )
+        entry_date_in_us_str = selected_student['Entry Date in the US']
+        entry_date_in_us = pd.to_datetime(entry_date_in_us_str, dayfirst=True, errors='coerce')
+        entry_date_in_us = st.date_input(
+            "Entry Date in the US",
+            value=entry_date_in_us.date() if not pd.isna(entry_date_in_us) else None,
+            key="entry_date_in_us",
+            on_change=update_student_data
+        )
+    else:
+        st.write(f"**Chosen School:** {selected_student['Chosen School']}")
+        st.write(f"**Specialite:** {selected_student['Specialite']}")
+        st.write(f"**Duration:** {selected_student['Duration']}")
+        st.write(f"**School Entry Date:** {format_date(selected_student['School Entry Date'])}")
+        st.write(f"**Entry Date in the US:** {format_date(selected_student['Entry Date in the US'])}")
+    st.markdown('</div>', unsafe_allow_html=True)
+Tab 3: Embassy Information
+Update date parsing for Embassy Interview Date:
+
+python
+Copier le code
             with tab3:
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("🏛️ Embassy Information")
@@ -685,7 +720,7 @@ def main():
                     address_us = st.text_input("Address in the U.S", selected_student['ADDRESS in the U.S'], key="address_us", on_change=update_student_data)
                     email_rdv = st.text_input("E-mail RDV", selected_student['E-MAIL RDV'], key="email_rdv", on_change=update_student_data)
                     password_rdv = st.text_input("Password RDV", selected_student['PASSWORD RDV'], key="password_rdv", on_change=update_student_data)
-                    embassy_itw_date = st.date_input("Embassy Interview Date", pd.to_datetime(selected_student['EMBASSY ITW. DATE'], errors='coerce'), key="embassy_itw_date", on_change=update_student_data)
+                    embassy_itw_date = st.date_input("Embassy Interview Date", pd.to_datetime(selected_student['EMBASSY ITW. DATE'], dayfirst=True, errors='coerce'), key="embassy_itw_date", on_change=update_student_data)
                     ds160_maker = st.text_input("DS-160 Maker", selected_student['DS-160 maker'], key="ds160_maker", on_change=update_student_data)
                     password_ds160 = st.text_input("Password DS-160", selected_student['Password DS-160'], key="password_ds160", on_change=update_student_data)
                     secret_q = st.text_input("Secret Question", selected_student['Secret Q.'], key="secret_q", on_change=update_student_data)
@@ -703,7 +738,7 @@ def main():
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("💰 Payment Information")
                 if edit_mode:
-                    payment_date = st.date_input("Payment Date", pd.to_datetime(selected_student['DATE'], errors='coerce'), key="payment_date", on_change=update_student_data)
+                    payment_date = st.date_input("Payment Date", pd.to_datetime(selected_student['DATE'], dayfirst=True, errors='coerce'), key="payment_date", on_change=update_student_data)
                     payment_method = st.selectbox("Payment Method", payment_amount_options, index=payment_amount_options.index(selected_student['Payment Amount']) if selected_student['Payment Amount'] in payment_amount_options else 0, key="payment_method", on_change=update_student_data)
                     payment_type = st.selectbox("Payment Type", payment_type_options, key="payment_type", on_change=update_student_data)
                     compte = st.selectbox("Compte", compte_options, key="compte", on_change=update_student_data)
