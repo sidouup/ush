@@ -665,6 +665,8 @@ def main():
             payment_type_options = ["Cash", "CCP", "Baridimob", "Bank"]
             compte_options = ["Mohamed", "Sid Ali"]
             yes_no_options = ["Yes", "No"]
+            attempts_options = ["1st Try", "2nd Try", "3rd Try"]
+
             
             with tab1:
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
@@ -676,7 +678,13 @@ def main():
                     email = st.text_input("Email", selected_student['E-mail'], key="email", on_change=update_student_data)
                     emergency_contact = st.text_input("Emergency Contact Number", selected_student['Emergency contact N°'], key="emergency_contact", on_change=update_student_data)
                     address = st.text_input("Address", selected_student['Address'], key="address", on_change=update_student_data)
-                    attempts = st.text_input("Attempts", selected_student['Attempts'], key="attempts", on_change=update_student_data)
+                    attempts = st.selectbox(
+                        "Attempts", 
+                        attempts_options, 
+                        index=attempts_options.index(selected_student['Attempts']) if selected_student['Attempts'] in attempts_options else 0,
+                        key="attempts", 
+                        on_change=update_student_data
+                    )
                 else:
                     st.write(f"**First Name:** {selected_student['First Name']}")
                     st.write(f"**Last Name:** {selected_student['Last Name']}")
