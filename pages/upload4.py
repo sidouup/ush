@@ -171,6 +171,15 @@ def save_data(df, spreadsheet_id, sheet_name):
     # Log the number of columns in the DataFrame and the sheet
     print(f"DataFrame columns: {len(df.columns)}, Sheet columns: {sheet_columns}")
 
+def format_date(date_string):
+    try:
+        date = pd.to_datetime(date_string)
+        return date.strftime('%d %B %Y')
+    except:
+        return "Unknown"
+
+
+
 def clear_cache_and_rerun():
     st.cache_data.clear()
     st.cache_resource.clear()
@@ -553,8 +562,10 @@ def main():
                 visa_status = selected_student['Visa Result'] if not filtered_data.empty else "Unknown"
                 st.write(f"**🛂 Visa Status:** {visa_status}")
 
-                entry_date = selected_student['School Entry Date'] if not filtered_data.empty else "Unknown"
+                # Find the section where we display the school entry date
+                entry_date = format_date(selected_student['School Entry Date']) if not filtered_data.empty else "Unknown"
                 st.write(f"**🏫 School Entry Date:** {entry_date}")
+
 
                 # Days until Interview
                 interview_date = selected_student['EMBASSY ITW. DATE'] if not filtered_data.empty else None
@@ -630,13 +641,16 @@ def main():
                     chosen_school = st.text_input("Chosen School", selected_student['Chosen School'], key="chosen_school", on_change=update_student_data)
                     specialite = st.text_input("Specialite", selected_student['Specialite'], key="specialite", on_change=update_student_data)
                     duration = st.text_input("Duration", selected_student['Duration'], key="duration", on_change=update_student_data)
-                    school_entry_date = st.text_input("School Entry Date", selected_student['School Entry Date'], key="school_entry_date", on_change=update_student_data)
+                    school_entry_date = st.date_input("School Entry Date", 
+                                                      pd.to_datetime(selected_student['School Entry Date']) if pd.notna(selected_student['School Entry Date']) else None, 
+                                                      key="school_entry_date", 
+                                                      on_change=update_student_data)
                     entry_date_in_us = st.text_input("Entry Date in the US", selected_student['Entry Date in the US'], key="entry_date_in_us", on_change=update_student_data)
                 else:
                     st.write(f"**Chosen School:** {selected_student['Chosen School']}")
                     st.write(f"**Specialite:** {selected_student['Specialite']}")
                     st.write(f"**Duration:** {selected_student['Duration']}")
-                    st.write(f"**School Entry Date:** {selected_student['School Entry Date']}")
+                    st.write(f"**School Entry Date:** {format_date(selected_student['School Entry Date'])}")
                     st.write(f"**Entry Date in the US:** {selected_student['Entry Date in the US']}")
                 st.markdown('</div>', unsafe_allow_html=True)
             
@@ -710,7 +724,7 @@ def main():
                     'Chosen School': chosen_school,
                     'Specialite': specialite,
                     'Duration': duration,
-                    'School Entry Date': school_entry_date,
+                    'School Entry Date': school_entry_date.strftime('%d/%m/%Y') if school_entry_date else '',
                     'Entry Date in the US': entry_date_in_us,
                     'ADDRESS in the U.S': address_us,
                     'E-MAIL RDV': email_rdv,
