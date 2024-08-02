@@ -40,6 +40,10 @@ def save_data(df, spreadsheet_id, sheet_name, student_name):
     sheet.clear()
     sheet.update([headers] + rows)
 
+# Function to handle student selection
+def on_student_select():
+    st.session_state.student_changed = True
+
 # Main function for the new page
 def main():
     st.set_page_config(page_title="Student List", layout="wide")
