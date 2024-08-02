@@ -457,7 +457,7 @@ def main():
     st.set_page_config(page_title="Student Application Tracker", layout="wide")
     
     if 'student_changed' not in st.session_state:
-    st.session_state.student_changed = False
+        st.session_state.student_changed = False
 
     if 'upload_success' not in st.session_state:
         st.session_state.upload_success = False
