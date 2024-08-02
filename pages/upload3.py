@@ -806,7 +806,7 @@ def main():
                 st.session_state.edit_mode = False
             
                 # Use a timer to delay rerun
-                threading.Timer(2, clear_cache_and_rerun).start()  # Delay to allow state update
+                threading.Timer(10, clear_cache_and_rerun).start()  # Delay to allow state update
                 
 
 
