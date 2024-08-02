@@ -133,52 +133,52 @@ def load_data(spreadsheet_id):
         return pd.DataFrame()
 
 # Function to save data to Google Sheets (batch up)
-def save_data(df, spreadsheet_id, sheet_name):
+def save_data(df, spreadsheet_id, sheet_name, student_name):
     def replace_invalid_floats(val):
         if isinstance(val, float):
             if pd.isna(val) or np.isinf(val):
                 return None
         return val
 
-    # Replace NaN and inf values with None
-    df = df.applymap(replace_invalid_floats)
+    # Get the row of the specific student
+    student_row = df[df['Student Name'] == student_name].iloc[0]
+
+    # Replace NaN and inf values with None for this student's data
+    student_row = student_row.apply(replace_invalid_floats)
 
     # Replace [pd.NA, pd.NaT, float('inf'), float('-inf')] with None
-    df = df.replace([pd.NA, pd.NaT, float('inf'), float('-inf')], None)
+    student_row = student_row.replace([pd.NA, pd.NaT, float('inf'), float('-inf')], None)
 
     # Format the date columns to ensure consistency
     date_columns = ['DATE', 'School Entry Date', 'Entry Date in the US', 'EMBASSY ITW. DATE']
     for col in date_columns:
-        if col in df.columns:
-            df[col] = pd.to_datetime(df[col], errors='coerce')
-            df[col] = df[col].apply(lambda x: x.strftime('%d/%m/%Y %H:%M:%S') if pd.notna(x) else "")
+        if col in student_row.index:
+            value = student_row[col]
+            if pd.notna(value):
+                try:
+                    formatted_date = pd.to_datetime(value).strftime('%d/%m/%Y %H:%M:%S')
+                    student_row[col] = formatted_date
+                except:
+                    student_row[col] = ""
 
     client = get_google_sheet_client()
     sheet = client.open_by_key(spreadsheet_id).worksheet(sheet_name)
     
-    # Get the number of columns in the sheet
-    sheet_columns = len(sheet.row_values(1))
-    
-    # Limit the DataFrame to the number of columns in the sheet
-    df = df.iloc[:, :sheet_columns]
-    
-    # Prepare the data for batch update
-    values = [df.columns.tolist()] + df.values.tolist()
-    
-    # Calculate the last column letter
-    if sheet_columns <= 26:
-        last_column = string.ascii_uppercase[sheet_columns - 1]
-    else:
-        last_column = string.ascii_uppercase[(sheet_columns - 1) // 26 - 1] + string.ascii_uppercase[(sheet_columns - 1) % 26]
+    # Find the row of the student in the sheet
+    cell = sheet.find(student_name)
+    if cell is None:
+        logger.error(f"Student {student_name} not found in the sheet.")
+        return
 
-    # Perform batch update
-    sheet.batch_update([{
-        'range': f'A1:{last_column}{len(values)}',
-        'values': values
-    }])
+    row_number = cell.row
 
-    # Log the number of columns in the DataFrame and the sheet
-    print(f"DataFrame columns: {len(df.columns)}, Sheet columns: {sheet_columns}")
+    # Prepare the data for update
+    values = [student_row.tolist()]
+    
+    # Update only the specific student's row
+    sheet.update(f'A{row_number}:{string.ascii_uppercase[len(student_row)-1]}{row_number}', values)
+
+    logger.info(f"Updated data for student: {student_name}")
 
 def format_date(date_string):
     if pd.isna(date_string) or date_string == 'NaT':
@@ -833,31 +833,31 @@ def main():
                     'Chosen School': st.session_state.get('chosen_school', ''),
                     'Specialite': st.session_state.get('specialite', ''),
                     'Duration': st.session_state.get('duration', ''),
-                    'School Entry Date': st.session_state.get('school_entry_date', '').strftime('%d/%m/%Y %H:%M:%S') if st.session_state.get('school_entry_date') else '',
-                    'Entry Date in the US': st.session_state.get('entry_date_in_us', '').strftime('%d/%m/%Y %H:%M:%S') if st.session_state.get('entry_date_in_us') else '',
+                    'School Entry Date': st.session_state.get('school_entry_date', ''),
+                    'Entry Date in the US': st.session_state.get('entry_date_in_us', ''),
                     'ADDRESS in the U.S': st.session_state.get('address_us', ''),
                     'E-MAIL RDV': st.session_state.get('email_rdv', ''),
                     'PASSWORD RDV': st.session_state.get('password_rdv', ''),
-                    'EMBASSY ITW. DATE': st.session_state.get('embassy_itw_date', '').strftime('%d/%m/%Y %H:%M:%S') if st.session_state.get('embassy_itw_date') else '',
+                    'EMBASSY ITW. DATE': st.session_state.get('embassy_itw_date', ''),
                     'DS-160 maker': st.session_state.get('ds160_maker', ''),
                     'Password DS-160': st.session_state.get('password_ds160', ''),
                     'Secret Q.': st.session_state.get('secret_q', ''),
                     'Visa Result': st.session_state.get('visa_status', ''),
                     'Stage': st.session_state.get('current_step', ''),
-                    'DATE': st.session_state.get('payment_date', '').strftime('%d/%m/%Y %H:%M:%S') if st.session_state.get('payment_date') else '',
+                    'DATE': st.session_state.get('payment_date', ''),
                     'Payment Amount': st.session_state.get('payment_method', ''),
                     'Payment Type': st.session_state.get('payment_type', ''),
                     'Compte': st.session_state.get('compte', ''),
                     'Sevis payment ?': st.session_state.get('sevis_payment', ''),
                     'Application payment ?': st.session_state.get('application_payment', ''),
                 }
-        
+            
                 # Update the data in the DataFrame
                 for key, value in updated_student.items():
                     filtered_data.loc[filtered_data['Student Name'] == student_name, key] = value
-        
+            
                 # Save the updated data back to Google Sheets
-                save_data(filtered_data, spreadsheet_id, 'ALL')
+                save_data(filtered_data, spreadsheet_id, 'ALL', student_name)
                 st.success("Changes saved successfully!")
                 clear_cache_and_rerun()  # Clear cache and rerun the app
     
