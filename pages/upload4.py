@@ -162,6 +162,7 @@ def save_data(df, spreadsheet_id, sheet_name, student_name):
             value = student_row[col]
             if pd.notna(value):
                 try:
+                    # Convert to datetime and format as string
                     formatted_date = pd.to_datetime(value).strftime('%d/%m/%Y %H:%M:%S')
                     student_row[col] = formatted_date
                 except:
