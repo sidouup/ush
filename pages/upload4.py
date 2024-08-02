@@ -729,7 +729,7 @@ def main():
             compte_options = ["Mohamed", "Sid Ali"]
             yes_no_options = ["YES", "NO"]
             attempts_options = ["1st Try", "2nd Try", "3rd Try"]
-            Gender_options = ["Male", "Female"]
+            Gender_options = ["Male", "Female",'']
 
             
             with tab1:
