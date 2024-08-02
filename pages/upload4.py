@@ -742,7 +742,7 @@ def main():
                         "Gender", 
                         Gender_options, 
                         index=attempts_options.index(selected_student['Gender']) if selected_student['Gender'] in Gender_options else 0,
-                        key="attempts", 
+                        key="Gender", 
                         on_change=update_student_data
                     )
 
