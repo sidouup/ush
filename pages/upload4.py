@@ -829,7 +829,7 @@ def main():
                 st.markdown('</div>', unsafe_allow_html=True)
     
                 
-            with tab5:
+            with tab6:
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("📂 Document Upload and Status")
                 document_type = st.selectbox("Select Document Type", 
@@ -848,7 +848,7 @@ def main():
                         clear_cache_and_rerun()  # Clear cache and rerun the app
                     else:
                         st.error("An error occurred while uploading the document.")
-            with tab6:
+            with tab5:
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("🚩 Current Stage")
                 
