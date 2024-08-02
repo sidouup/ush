@@ -216,7 +216,7 @@ def save_data(df, spreadsheet_id, sheet_name):
 
     # Log the number of columns in the DataFrame and the sheet
     print(f"DataFrame columns: {len(df.columns)}, Sheet columns: {sheet_columns}")
-def clear_cache_and_rerun(delay=4):
+def clear_cache_and_rerun(delay=12):
     time.sleep(delay)
     st.cache_data.clear()
     st.cache_resource.clear()
