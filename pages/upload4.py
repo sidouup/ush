@@ -353,7 +353,7 @@ async def check_document_status_async(student_name, service):
     
     document_types = ["Passport", "Bank Statement", "Financial Letter", 
                       "Transcripts", "Diplomas", "English Test", "Payment Receipt",
-                      "SEVIS Receipt", "SEVIS"]
+                      "SEVIS Receipt", "I20"]
     document_status = {doc_type: {'status': False, 'files': []} for doc_type in document_types}
 
     if not student_folder_id:
@@ -814,7 +814,7 @@ def main():
                 document_type = st.selectbox("Select Document Type", 
                                              ["Passport", "Bank Statement", "Financial Letter", 
                                               "Transcripts", "Diplomas", "English Test", "Payment Receipt",
-                                              "SEVIS Receipt", "SEVIS"], 
+                                              "SEVIS Receipt", "I20"], 
                                              key="document_type")
                 uploaded_file = st.file_uploader("Upload Document", type=["jpg", "jpeg", "png", "pdf"], key="uploaded_file")
                 
