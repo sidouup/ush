@@ -31,7 +31,7 @@ def load_css():
     h1, h2, h3 {
         color: #1E3A8A;
     }
-    .stTextInput, .stSelectbox, .stDateInput {
+    .stTextInput, .stSelectbox, .stDateInput, .stTextArea {
         background-color: white;
         color: #2c3e50;
         border-radius: 5px;
@@ -83,7 +83,7 @@ def main():
             last_name = st.text_input("👤 Last Name")
             gender = st.selectbox("⚧ Gender", ["Male", "Female"])
             phone = st.text_input("📞 Phone Number")
-            address = st.text_area("🏠 Address")
+            address = st.text_input("🏠 Address")  # Changed from text_area to text_input
             email = st.text_input("📧 Email")
             emergency_contact = st.text_input("🆘 Emergency Contact Number")
 
@@ -98,8 +98,8 @@ def main():
             payment_amount = st.selectbox("💰 Payment Amount", payment_amount_options)
             payment_type = st.selectbox("💳 Payment Type", ["Cash", "CCP", "Baridimob", "Bank"])
             compte = st.selectbox("🏦 Compte", ["Mohamed", "Sid Ali"])
-            sevis_payment = st.selectbox("💲 Sevis Payment", ["YES", "NO"])
-            application_payment = st.selectbox("💸 Application Payment", ["YES", "NO"])
+            agent_options = ["Nesrine", "Hamza", "Djazila"]  # Added agent options
+            agent = st.selectbox("👨‍💼 Agent", agent_options)
 
         submit_button = st.form_submit_button("Add Student")
 
@@ -122,9 +122,8 @@ def main():
                 "Payment Amount": payment_amount,
                 "Payment Type": payment_type,
                 "Compte": compte,
-                "Sevis payment ?": sevis_payment,
-                "Application payment ?": application_payment,
-                # Add default values for other fields
+                "Sevis payment ?": "NO",  # Default value
+                "Application payment ?": "NO",  # Default value
                 "DS-160 maker": "",
                 "Password DS-160": "",
                 "Secret Q.": "",
@@ -136,9 +135,9 @@ def main():
                 "EMBASSY ITW. DATE": "",
                 "Attempts": "1st Try",
                 "Visa Result": "",
-                "Agent": "",
+                "Agent": agent,
                 "Note": "",
-                "Stage": "PAYMENT & MAIL",
+                "Stage": "PAYMENT & MAIL",  # Auto-filled
                 "BANK": "",
                 "Student Name": f"{first_name} {last_name}"
             }
