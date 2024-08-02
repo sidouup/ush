@@ -550,8 +550,35 @@ def main():
 
     if not data.empty:
         current_steps = ["All"] + list(data['Stage'].unique())
-        status_filter = st.selectbox("Filter by Stage", current_steps, key="status_filter")
-        filtered_data = data if status_filter == "All" else data[data['Stage'] == status_filter]
+        agents = ["All", "Nesrine", "Hamza", "Djazila"]
+        school_options = ["All", "University", "Community College", "CCLS Miami", "CCLS NY NJ", "Connect English",
+                          "CONVERSE SCHOOL", "ELI San Francisco", "F2 Visa", "GT Chicago", "BEA Huston", "BIA Huston",
+                          "OHLA Miami", "UCDEA", "HAWAII", "Not Partner", "Not yet"]
+        attempts_options = ["All", "1st Try", "2nd Try", "3rd Try"]
+
+        st.markdown('<div class="stCard" style="display: flex; justify-content: space-between;">', unsafe_allow_html=True)
+        col1, col2, col3, col4 = st.columns(4)
+
+        with col1:
+            status_filter = st.selectbox("Filter by Stage", current_steps, key="status_filter")
+        with col2:
+            agent_filter = st.selectbox("Filter by Agent", agents, key="agent_filter")
+        with col3:
+            school_filter = st.selectbox("Filter by School", school_options, key="school_filter")
+        with col4:
+            attempts_filter = st.selectbox("Filter by Attempts", attempts_options, key="attempts_filter")
+
+        # Apply filters
+        filtered_data = data
+        if status_filter != "All":
+            filtered_data = filtered_data[filtered_data['Stage'] == status_filter]
+        if agent_filter != "All":
+            filtered_data = filtered_data[filtered_data['Agent'] == agent_filter]
+        if school_filter != "All":
+            filtered_data = filtered_data[filtered_data['Chosen School'] == school_filter]
+        if attempts_filter != "All":
+            filtered_data = filtered_data[filtered_data['Attempts'] == attempts_filter]
+
         student_names = filtered_data['Student Name'].tolist()
 
         st.markdown('<div class="stCard" style="display: flex; justify-content: space-between;">', unsafe_allow_html=True)
