@@ -15,16 +15,15 @@ def get_google_sheet_client():
     creds = Credentials.from_service_account_info(SERVICE_ACCOUNT_INFO, scopes=SCOPES)
     return gspread.authorize(creds)
 
-def load_data(file_path):
+def load_data(spreadsheet_id):
     try:
-        # Load data from the provided Excel file
-        df = pd.read_excel(file_path, sheet_name='ALL')
+        client = get_google_sheet_client()
+        sheet = client.open_by_key(spreadsheet_id).worksheet('ALL')
+        data = sheet.get_all_records()
+        df = pd.DataFrame(data)
         
         # Create Student Name column
         df['Student Name'] = df['First Name'] + " " + df['Last Name']
-        
-        # Print column names to debug
-        st.write(df.columns.tolist())
         
         # Standardize column names (assuming the column names may have extra spaces or different casing)
         df.columns = df.columns.str.strip().str.upper().str.replace('.', '').str.replace(' ', '_')
@@ -133,7 +132,7 @@ def tasks_and_emergencies_page(df):
             st.markdown('<div class="dashboard-item">', unsafe_allow_html=True)
             st.markdown('<p class="medium-font">🏁 Students in Final Stages Without Visa Results</p>', unsafe_allow_html=True)
             final_stages = df[
-                (df['STAGE'].isin(['ITW PREP.', 'SEVIS'])) &
+                (df['STAGE'].isin(['ITW_PREP', 'SEVIS'])) &
                 (df['VISA_RESULT'].isna() | (df['VISA_RESULT'] == ''))
             ]
             st.dataframe(final_stages[['STUDENT_NAME', 'STAGE', 'EMBASSY_ITW_DATE']], height=200)
@@ -180,13 +179,13 @@ def main():
     page = st.sidebar.selectbox("Choose a page", ["Student Tracker", "Tasks and Emergencies"])
     
     # Load the data once and pass it to both pages
-    data = load_data('/mnt/data/Updated sheet 3 (2).xlsx')
+    spreadsheet_id = "1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI"
+    data = load_data(spreadsheet_id)
     
     if page == "Student Tracker":
         student_tracker_page(data)  # Your existing main page function
     elif page == "Tasks and Emergencies":
         tasks_and_emergencies_page(data)
-
 def student_tracker_page(data):
     # Placeholder
     # Placeholder for the student tracker page
