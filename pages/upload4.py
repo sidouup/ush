@@ -929,8 +929,8 @@ def main():
             else:
                 st.info("No students found matching the search criteria.")
     
-        else:
-            st.error("No data available. Please check your Google Sheets connection and data.")
+    else:
+        st.error("No data available. Please check your Google Sheets connection and data.")
 
     st.markdown("---")
     st.markdown("© 2024 The Us House. All rights reserved.")
