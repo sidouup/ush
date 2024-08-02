@@ -866,7 +866,16 @@ def main():
                 # Save the updated data back to Google Sheets
                 save_data(filtered_data, spreadsheet_id, 'ALL', student_name)
                 st.success("Changes saved successfully!")
-                clear_cache_and_rerun()  # Clear cache and rerun the app
+                
+                # Set a flag to reload data on next run
+                st.session_state['reload_data'] = True
+                
+                # Exit edit mode
+                st.session_state['edit_mode'] = False
+                
+                # Rerun the app to show updated data
+                st.rerun()
+            
     
         else:
             st.info("No students found matching the search criteria.")
