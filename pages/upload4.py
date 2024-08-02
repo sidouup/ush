@@ -136,7 +136,7 @@ def load_data(spreadsheet_id):
 def save_data(df, spreadsheet_id, sheet_name):
     def replace_invalid_floats(val):
         if isinstance(val, float):
-            if pd.isna(val) or pd.isinf(val):
+            if pd.isna(val) or np.isinf(val):
                 return None
         return val
 
