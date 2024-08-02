@@ -3,6 +3,8 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from collections import Counter
+from google.oauth2.service_account import Credentials
+import gspread
 
 # Use Streamlit secrets for service account info
 SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
@@ -24,7 +26,6 @@ def load_data(spreadsheet_id, sheet_name):
     df = pd.DataFrame(data)
     df = df.astype(str)  # Convert all columns to strings
     return df
-
 
 def statistics_page():
     st.set_page_config(page_title="Student Recruitment Statistics", layout="wide")
@@ -52,7 +53,10 @@ def statistics_page():
 
     st.title("📊 Student Recruitment Statistics")
 
-    data = load_data()
+    # Load data from Google Sheets
+    spreadsheet_id = "1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI"
+    sheet_name = "ALL"
+    data = load_data(spreadsheet_id, sheet_name)
 
     col1, col2, col3 = st.columns(3)
 
@@ -82,13 +86,11 @@ def statistics_page():
 
     with col2:
         st.subheader("🌎 Student Distribution by Country")
-        # Assuming you have a 'Country' column. If not, you might need to extract it from another column
-        if 'Country' in data.columns:
-            country_counts = data['Country'].value_counts()
-        else:
-            country_counts = pd.Series({'United States': len(data)})  # Placeholder if no country data
+        # Since we don't have a 'Country' column, we'll use 'Address' as a proxy
+        # This is a simplification and may not be entirely accurate
+        country_counts = data['Address'].value_counts().head(10)
         fig = px.pie(values=country_counts.values, names=country_counts.index,
-                     title="Student Distribution by Country")
+                     title="Top 10 Student Locations (based on Address)")
         st.plotly_chart(fig, use_container_width=True)
 
     st.markdown("---")
@@ -97,10 +99,11 @@ def statistics_page():
 
     with col1:
         st.subheader("📅 Applications Over Time")
-        data['DATE'] = pd.to_datetime(data['DATE'])
-        monthly_apps = data.resample('M', on='DATE').size()
-        fig = px.line(monthly_apps, x=monthly_apps.index, y=monthly_apps.values,
-                      labels={'y': 'Number of Applications', 'x': 'Date'},
+        data['DATE'] = pd.to_datetime(data['DATE'], errors='coerce')
+        monthly_apps = data.groupby(data['DATE'].dt.to_period("M")).size().reset_index(name='count')
+        monthly_apps['DATE'] = monthly_apps['DATE'].dt.to_timestamp()
+        fig = px.line(monthly_apps, x='DATE', y='count',
+                      labels={'count': 'Number of Applications', 'DATE': 'Date'},
                       title="Monthly Application Trend")
         st.plotly_chart(fig, use_container_width=True)
 
