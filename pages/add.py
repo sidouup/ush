@@ -8,8 +8,10 @@ import gspread
 import time
 from streamlit.server.server import Server
 
+
 def refresh():
     Server.get_current()._reloader.reload()
+    
 # Set up Google Sheets authentication
 def get_google_sheet_client():
     creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive'])
