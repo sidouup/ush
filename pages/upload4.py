@@ -678,41 +678,6 @@ def main():
                     st.write(f"**Entry Date in the US:** {format_date(selected_student['Entry Date in the US'])}")
                 st.markdown('</div>', unsafe_allow_html=True)
             
-with tab2:
-    st.markdown('<div class="stCard">', unsafe_allow_html=True)
-    st.subheader("🏫 School Information")
-    if edit_mode:
-        chosen_school = st.selectbox("Chosen School", school_options, index=school_options.index(selected_student['Chosen School']) if selected_student['Chosen School'] in school_options else 0, key="chosen_school", on_change=update_student_data)
-        specialite = st.text_input("Specialite", selected_student['Specialite'], key="specialite", on_change=update_student_data)
-        duration = st.text_input("Duration", selected_student['Duration'], key="duration", on_change=update_student_data)
-        school_entry_date_str = selected_student['School Entry Date']
-        school_entry_date = pd.to_datetime(school_entry_date_str, dayfirst=True, errors='coerce')
-        school_entry_date = st.date_input(
-            "School Entry Date",
-            value=school_entry_date.date() if not pd.isna(school_entry_date) else None,
-            key="school_entry_date",
-            on_change=update_student_data
-        )
-        entry_date_in_us_str = selected_student['Entry Date in the US']
-        entry_date_in_us = pd.to_datetime(entry_date_in_us_str, dayfirst=True, errors='coerce')
-        entry_date_in_us = st.date_input(
-            "Entry Date in the US",
-            value=entry_date_in_us.date() if not pd.isna(entry_date_in_us) else None,
-            key="entry_date_in_us",
-            on_change=update_student_data
-        )
-    else:
-        st.write(f"**Chosen School:** {selected_student['Chosen School']}")
-        st.write(f"**Specialite:** {selected_student['Specialite']}")
-        st.write(f"**Duration:** {selected_student['Duration']}")
-        st.write(f"**School Entry Date:** {format_date(selected_student['School Entry Date'])}")
-        st.write(f"**Entry Date in the US:** {format_date(selected_student['Entry Date in the US'])}")
-    st.markdown('</div>', unsafe_allow_html=True)
-Tab 3: Embassy Information
-Update date parsing for Embassy Interview Date:
-
-python
-Copier le code
             with tab3:
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("🏛️ Embassy Information")
