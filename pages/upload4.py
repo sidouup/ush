@@ -599,9 +599,6 @@ def main():
                     st.session_state.student_changed = False
                     st.rerun()
                 
-                # Add the image here
-                image_url = "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=297,h=404,fit=crop/YBgonz9JJqHRMK43/blue-red-minimalist-high-school-logo-9-AVLN0K6MPGFK2QbL.png"
-                st.image(image_url, width=150)
 
             
             with col1:
