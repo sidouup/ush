@@ -16,7 +16,6 @@ import threading
 import numpy as np
 import string
 import time
-from streamlit_toggle import st_toggle_switch
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
