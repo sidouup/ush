@@ -113,9 +113,10 @@ def statistics_page():
 
     with col1:
         st.subheader("🏫 Top Chosen Schools")
-        school_counts = filtered_data['Chosen School'].value_counts().head(10)
-        fig = px.bar(school_counts, x=school_counts.index, y=school_counts.values,
-                     labels={'y': 'Number of Students', 'x': 'School'},
+        school_counts = filtered_data['Chosen School'].value_counts().head(10).reset_index()
+        school_counts.columns = ['School', 'Number of Students']
+        fig = px.bar(school_counts, x='School', y='Number of Students',
+                     labels={'Number of Students': 'Number of Students', 'School': 'School'},
                      title="Top 10 Chosen Schools")
         st.plotly_chart(fig, use_container_width=True)
 
@@ -161,18 +162,20 @@ def statistics_page():
 
     with col2:
         st.subheader("🔄 Application Attempts")
-        attempts_counts = filtered_data['Attempts'].value_counts()
-        fig = px.bar(attempts_counts, x=attempts_counts.index, y=attempts_counts.values,
-                     labels={'y': 'Number of Students', 'x': 'Attempt'},
+        attempts_counts = filtered_data['Attempts'].value_counts().reset_index()
+        attempts_counts.columns = ['Attempt', 'Number of Students']
+        fig = px.bar(attempts_counts, x='Attempt', y='Number of Students',
+                     labels={'Number of Students': 'Number of Students', 'Attempt': 'Attempt'},
                      title="Application Attempts Distribution")
         st.plotly_chart(fig, use_container_width=True)
 
     st.markdown("---")
 
     st.subheader("🏆 Top Performing Agents")
-    agent_performance = filtered_data['Agent'].value_counts().head(5)
-    fig = px.bar(agent_performance, x=agent_performance.index, y=agent_performance.values,
-                 labels={'y': 'Number of Students', 'x': 'Agent'},
+    agent_performance = filtered_data['Agent'].value_counts().head(5).reset_index()
+    agent_performance.columns = ['Agent', 'Number of Students']
+    fig = px.bar(agent_performance, x='Agent', y='Number of Students',
+                 labels={'Number of Students': 'Number of Students', 'Agent': 'Agent'},
                  title="Top 5 Agents by Number of Students")
     st.plotly_chart(fig, use_container_width=True)
 
