@@ -465,6 +465,10 @@ def main():
     if 'selected_student' not in st.session_state:
         st.session_state.selected_student = ""
 
+    if 'active_tab' not in st.session_state:
+        st.session_state.active_tab = "Personal"
+
+
     # Check if we need to refresh the page
     if st.session_state.upload_success:
         st.session_state.upload_success = False
