@@ -247,37 +247,56 @@ def create_folder_in_drive(folder_name, parent_id=None):
     return folder.get('id')
 
 # Function to check if a file exists in a folder
+from googleapiclient.errors import HttpError
+
 @cache_with_timeout(timeout_minutes=5)
-def check_file_exists(file_name, folder_id):
+def check_file_exists(file_name, student_folder_id, document_type):
     service = get_google_drive_service()
-    query = f"name='{file_name}' and '{folder_id}' in parents"
+    
+    # First, find the document type folder within the student folder
+    document_folder_query = f"name = '{document_type}' and '{student_folder_id}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+    document_folder_results = service.files().list(q=document_folder_query, spaces='drive', fields='files(id)').execute()
+    document_folders = document_folder_results.get('files', [])
+    
+    if not document_folders:
+        logger.info(f"Document folder '{document_type}' not found in student folder.")
+        return False
+    
+    document_folder_id = document_folders[0]['id']
+    
+    # Now check for the file within the document type folder
+    file_query = f"name = '{file_name}' and '{document_folder_id}' in parents and trashed = false"
     try:
         results = service.files().list(
-            q=query,
+            q=file_query,
             spaces='drive',
-            fields='files(id, name)'
+            fields='files(id, name)',
+            pageSize=1
         ).execute()
         files = results.get('files', [])
-        return bool(files)
+        file_exists = len(files) > 0
+        logger.info(f"File '{file_name}' exists: {file_exists}")
+        return file_exists
     except HttpError as error:
-        logger.error(f"An error occurred: {error}")
+        logger.error(f"An error occurred while checking if file exists: {error}")
         return False
-
-# Update the import statement at the top of your file
-from googleapiclient.errors import HttpError
 
 
 # Function to handle file upload and folder creation
 def handle_file_upload(student_name, document_type, uploaded_file):
     parent_folder_id = '1It91HqQDsYeSo1MuYgACtmkmcO82vzXp'  # Use the provided parent folder ID
     
+    # Check if student folder exists, if not create it
     student_folder_id = check_folder_exists(student_name, parent_folder_id)
     if not student_folder_id:
         student_folder_id = create_folder_in_drive(student_name, parent_folder_id)
+        logger.info(f"Created new folder for student: {student_name}")
     
+    # Check if document type folder exists within student folder, if not create it
     document_folder_id = check_folder_exists(document_type, student_folder_id)
     if not document_folder_id:
         document_folder_id = create_folder_in_drive(document_type, student_folder_id)
+        logger.info(f"Created new folder for document type: {document_type}")
     
     file_name = uploaded_file.name
     
@@ -285,7 +304,8 @@ def handle_file_upload(student_name, document_type, uploaded_file):
     if file_name.lower().endswith('.pdf.pdf'):
         file_name = file_name[:-4]
     
-    if not check_file_exists(file_name, document_folder_id):
+    file_exists = check_file_exists(file_name, student_folder_id, document_type)
+    if not file_exists:
         with st.spinner(f"Uploading {file_name}..."):
             temp_file_path = f"/tmp/{file_name}"
             with open(temp_file_path, "wb") as f:
@@ -300,9 +320,11 @@ def handle_file_upload(student_name, document_type, uploaded_file):
             st.rerun()
             return file_id
     else:
-        st.warning(f"{file_name} already exists for this student.")
+        st.warning(f"{file_name} already exists for this student in the {document_type} folder.")
     
     return None
+
+
 
 async def fetch_document_status(session, document_type, student_folder_id, service):
     document_folder_id = await check_folder_exists_async(document_type, student_folder_id, service)
