@@ -23,10 +23,17 @@ def load_data(file_path):
         # Create Student Name column
         df['Student Name'] = df['First Name'] + " " + df['Last Name']
         
+        # Print column names to debug
+        st.write(df.columns.tolist())
+        
+        # Standardize column names (assuming the column names may have extra spaces or different casing)
+        df.columns = df.columns.str.strip().str.upper().str.replace('.', '').str.replace(' ', '_')
+        
         # Parse dates
-        date_columns = ['DATE', 'School Entry Date', 'Entry Date in the US', 'EMBASSY ITW. DATE']
+        date_columns = ['DATE', 'SCHOOL_ENTRY_DATE', 'ENTRY_DATE_IN_THE_US', 'EMBASSY_ITW_DATE']
         for col in date_columns:
-            df[col] = pd.to_datetime(df[col], errors='coerce', dayfirst=True)
+            if col in df.columns:
+                df[col] = pd.to_datetime(df[col], errors='coerce', dayfirst=True)
         
         return df
     except Exception as e:
@@ -89,11 +96,11 @@ def tasks_and_emergencies_page(df):
             st.markdown('<p class="small-font">Appointment in 30 days, DS-160 Not Completed</p>', unsafe_allow_html=True)
             thirty_days = today + timedelta(days=30)
             urgent_ds160 = df[
-                (df['EMBASSY ITW. DATE'] <= thirty_days) &
-                (df['EMBASSY ITW. DATE'] >= today) &
-                (df['Stage'].isin(['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV']))
+                (df['EMBASSY_ITW_DATE'] <= thirty_days) &
+                (df['EMBASSY_ITW_DATE'] >= today) &
+                (df['STAGE'].isin(['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV']))
             ]
-            st.dataframe(urgent_ds160[['Student Name', 'EMBASSY ITW. DATE', 'Stage']], height=200)
+            st.dataframe(urgent_ds160[['STUDENT_NAME', 'EMBASSY_ITW_DATE', 'STAGE']], height=200)
             st.markdown('</div>', unsafe_allow_html=True)
 
         # Upcoming Interviews
@@ -102,10 +109,10 @@ def tasks_and_emergencies_page(df):
             st.markdown('<p class="medium-font">🗓️ Upcoming Embassy Interviews (Next 15 Days)</p>', unsafe_allow_html=True)
             fifteen_days = today + timedelta(days=15)
             upcoming_interviews = df[
-                (df['EMBASSY ITW. DATE'] <= fifteen_days) &
-                (df['EMBASSY ITW. DATE'] >= today)
+                (df['EMBASSY_ITW_DATE'] <= fifteen_days) &
+                (df['EMBASSY_ITW_DATE'] >= today)
             ]
-            st.dataframe(upcoming_interviews[['Student Name', 'EMBASSY ITW. DATE', 'Stage']], height=200)
+            st.dataframe(upcoming_interviews[['STUDENT_NAME', 'EMBASSY_ITW_DATE', 'STAGE']], height=200)
             st.markdown('</div>', unsafe_allow_html=True)
 
     with col2:
@@ -115,10 +122,10 @@ def tasks_and_emergencies_page(df):
             st.markdown('<p class="medium-font">🏫 Students with School Entry Date in the Next 40 Days</p>', unsafe_allow_html=True)
             forty_days = today + timedelta(days=40)
             upcoming_entry = df[
-                (df['School Entry Date'] > today) &
-                (df['School Entry Date'] <= forty_days)
-            ].sort_values('School Entry Date')
-            st.dataframe(upcoming_entry[['Student Name', 'School Entry Date', 'Chosen School', 'Stage']], height=200)
+                (df['SCHOOL_ENTRY_DATE'] > today) &
+                (df['SCHOOL_ENTRY_DATE'] <= forty_days)
+            ].sort_values('SCHOOL_ENTRY_DATE')
+            st.dataframe(upcoming_entry[['STUDENT_NAME', 'SCHOOL_ENTRY_DATE', 'CHOSEN_SCHOOL', 'STAGE']], height=200)
             st.markdown('</div>', unsafe_allow_html=True)
 
         # Students in final stages without visa results
@@ -126,10 +133,10 @@ def tasks_and_emergencies_page(df):
             st.markdown('<div class="dashboard-item">', unsafe_allow_html=True)
             st.markdown('<p class="medium-font">🏁 Students in Final Stages Without Visa Results</p>', unsafe_allow_html=True)
             final_stages = df[
-                (df['Stage'].isin(['ITW Prep.', 'SEVIS'])) &
-                (df['Visa Result'].isna() | (df['Visa Result'] == ''))
+                (df['STAGE'].isin(['ITW PREP.', 'SEVIS'])) &
+                (df['VISA_RESULT'].isna() | (df['VISA_RESULT'] == ''))
             ]
-            st.dataframe(final_stages[['Student Name', 'Stage', 'EMBASSY ITW. DATE']], height=200)
+            st.dataframe(final_stages[['STUDENT_NAME', 'STAGE', 'EMBASSY_ITW_DATE']], height=200)
             st.markdown('</div>', unsafe_allow_html=True)
 
     # Full-width sections
@@ -140,27 +147,27 @@ def tasks_and_emergencies_page(df):
     
     with tab1:
         st.markdown('<p class="small-font">Students Sorted by Upcoming Embassy Appointment Date</p>', unsafe_allow_html=True)
-        embassy_sorted = df[df['EMBASSY ITW. DATE'] > today].sort_values('EMBASSY ITW. DATE')
-        st.dataframe(embassy_sorted[['Student Name', 'EMBASSY ITW. DATE', 'Stage']], height=300)
+        embassy_sorted = df[df['EMBASSY_ITW_DATE'] > today].sort_values('EMBASSY_ITW_DATE')
+        st.dataframe(embassy_sorted[['STUDENT_NAME', 'EMBASSY_ITW_DATE', 'STAGE']], height=300)
     
     with tab2:
         st.markdown('<p class="small-font">Students Sorted by Upcoming School Entry Date</p>', unsafe_allow_html=True)
-        school_sorted = df[df['School Entry Date'] > today].sort_values('School Entry Date')
-        st.dataframe(school_sorted[['Student Name', 'School Entry Date', 'Chosen School']], height=300)
+        school_sorted = df[df['SCHOOL_ENTRY_DATE'] > today].sort_values('SCHOOL_ENTRY_DATE')
+        st.dataframe(school_sorted[['STUDENT_NAME', 'SCHOOL_ENTRY_DATE', 'CHOSEN_SCHOOL']], height=300)
     
     with tab3:
         st.markdown('<p class="small-font">Applicants Without School Entry Date</p>', unsafe_allow_html=True)
-        no_entry_date = df[df['School Entry Date'].isna()]
-        st.dataframe(no_entry_date[['Student Name', 'Chosen School', 'Stage']], height=300)
+        no_entry_date = df[df['SCHOOL_ENTRY_DATE'].isna()]
+        st.dataframe(no_entry_date[['STUDENT_NAME', 'CHOSEN_SCHOOL', 'STAGE']], height=300)
     
     st.markdown('</div>', unsafe_allow_html=True)
 
     # Duplicate Students
     st.markdown('<div class="dashboard-item">', unsafe_allow_html=True)
     st.markdown('<p class="medium-font">👥 Duplicate Students</p>', unsafe_allow_html=True)
-    duplicates = df[df.duplicated(subset=['Student Name'], keep=False)]
+    duplicates = df[df.duplicated(subset=['STUDENT_NAME'], keep=False)]
     if not duplicates.empty:
-        st.dataframe(duplicates[['Student Name', 'DATE', 'Stage']], height=200)
+        st.dataframe(duplicates[['STUDENT_NAME', 'DATE', 'STAGE']], height=200)
         st.markdown('<p class="small-font highlight">⚠️ Please review and resolve these duplicate entries in the "ALL" sheet.</p>', unsafe_allow_html=True)
     else:
         st.markdown('<p class="small-font">✅ No duplicate students found.</p>')
@@ -181,6 +188,7 @@ def main():
         tasks_and_emergencies_page(data)
 
 def student_tracker_page(data):
+    # Placeholder
     # Placeholder for the student tracker page
     st.title("Student Tracker")
     st.write("This page is under construction.")
