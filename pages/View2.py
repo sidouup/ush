@@ -47,15 +47,6 @@ import pandas as pd
 from google.oauth2.service_account import Credentials
 import gspread
 
-# ... (previous functions remain the same)
-
-import streamlit as st
-import pandas as pd
-from google.oauth2.service_account import Credentials
-import gspread
-
-# ... (previous functions remain the same)
-
 def main():
     st.set_page_config(page_title="Student List", layout="wide")
     st.title("Student List")
@@ -73,10 +64,15 @@ def main():
 
     # Standardize colors for agents
     agent_colors = {
-        "Nesrine": "background-color: purple",
+        "Nesrine": "background-color: #E6E6FA",  # Light lavender
         "Hamza": "background-color: yellow",
         "Djazila": "background-color: red"
     }
+
+    # Sidebar for agent color reference
+    st.sidebar.header("Agent Color Reference")
+    for agent, color in agent_colors.items():
+        st.sidebar.markdown(f"<div style='{color};padding: 10px;'>{agent}</div>", unsafe_allow_html=True)
 
     # Filter buttons for stages
     st.markdown('<div class="stCard" style="display: flex; justify-content: space-between;">', unsafe_allow_html=True)
