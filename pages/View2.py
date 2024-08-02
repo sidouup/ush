@@ -71,12 +71,12 @@ def main():
     school_options = ["All", "University", "Community College", "CCLS Miami", "CCLS NY NJ", "Connect English", "CONVERSE SCHOOL", "ELI San Francisco", "F2 Visa", "GT Chicago", "BEA Huston", "BIA Huston", "OHLA Miami", "UCDEA", "HAWAII", "Not Partner", "Not yet"]
     attempts_options = ["All", "1st Try", "2nd Try", "3rd Try"]
 
-    # Color selection for agents
-    st.sidebar.header("Agent Color Selection")
-    agent_colors = {}
-    for agent in agents[1:]:  # Skip "All"
-        color = st.sidebar.color_picker(f"Choose color for {agent}", "#FFFFFF")
-        agent_colors[agent] = f"background-color: {color}"
+    # Standardize colors for agents
+    agent_colors = {
+        "Nesrine": "background-color: purple",
+        "Hamza": "background-color: yellow",
+        "Djazila": "background-color: red"
+    }
 
     # Filter buttons for stages
     st.markdown('<div class="stCard" style="display: flex; justify-content: space-between;">', unsafe_allow_html=True)
