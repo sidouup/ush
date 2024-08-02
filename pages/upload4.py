@@ -677,7 +677,7 @@ def main():
             
             payment_type_options = ["Cash", "CCP", "Baridimob", "Bank"]
             compte_options = ["Mohamed", "Sid Ali"]
-            yes_no_options = ["Yes", "No"]
+            yes_no_options = ["YES", "NO"]
             attempts_options = ["1st Try", "2nd Try", "3rd Try"]
 
             
