@@ -155,6 +155,12 @@ def save_data(df, spreadsheet_id, sheet_name):
     # Limit the DataFrame to the number of columns in the sheet
     df = df.iloc[:, :sheet_columns]
     
+    # Format the date columns to ensure consistency
+    date_columns = ['DATE', 'School Entry Date', 'Entry Date in the US', 'EMBASSY ITW. DATE']
+    for col in date_columns:
+        if col in df.columns:
+            df[col] = df[col].apply(lambda x: x.strftime('%d/%m/%Y %H:%M:%S') if pd.notna(x) else "")
+
     # Prepare the data for batch update
     values = [df.columns.tolist()] + df.values.tolist()
     
@@ -767,17 +773,17 @@ def main():
                     payment_date_str = selected_student['DATE']
                     try:
                         payment_date = pd.to_datetime(payment_date_str, format='%d/%m/%Y %H:%M:%S', errors='coerce', dayfirst=True)
-                        payment_date_value = payment_date.date() if not pd.isna(payment_date) else None
+                        payment_date_value = payment_date if not pd.isna(payment_date) else None
                     except AttributeError:
                         payment_date_value = None
-            
+                
                     payment_date = st.date_input(
                         "Payment Date", 
                         value=payment_date_value,
                         key="payment_date", 
                         on_change=update_student_data
                     )
-            
+                
                     payment_method = st.selectbox("Payment Method", payment_amount_options, index=payment_amount_options.index(selected_student['Payment Amount']) if selected_student['Payment Amount'] in payment_amount_options else 0, key="payment_method", on_change=update_student_data)
                     payment_type = st.selectbox("Payment Type", payment_type_options, key="payment_type", on_change=update_student_data)
                     compte = st.selectbox("Compte", compte_options, key="compte", on_change=update_student_data)
@@ -793,25 +799,25 @@ def main():
                 st.markdown('</div>', unsafe_allow_html=True)
     
                 
-                with tab5:
-                    st.markdown('<div class="stCard">', unsafe_allow_html=True)
-                    st.subheader("📂 Document Upload and Status")
-                    document_type = st.selectbox("Select Document Type", 
-                                                 ["Passport", "Bank Statement", "Financial Letter", 
-                                                  "Transcripts", "Diplomas", "English Test", "Payment Receipt",
-                                                  "SEVIS Receipt", "SEVIS"], 
-                                                 key="document_type")
-                    uploaded_file = st.file_uploader("Upload Document", type=["jpg", "jpeg", "png", "pdf"], key="uploaded_file")
-                    
-                    if uploaded_file and st.button("Upload Document"):
-                        file_id = handle_file_upload(student_name, document_type, uploaded_file)
-                        if file_id:
-                            st.success(f"{document_type} uploaded successfully!")
-                            if 'document_status_cache' in st.session_state:
-                                st.session_state['document_status_cache'].pop(student_name, None)
-                            clear_cache_and_rerun()  # Clear cache and rerun the app
-                        else:
-                            st.error("An error occurred while uploading the document.")
+            with tab5:
+                st.markdown('<div class="stCard">', unsafe_allow_html=True)
+                st.subheader("📂 Document Upload and Status")
+                document_type = st.selectbox("Select Document Type", 
+                                             ["Passport", "Bank Statement", "Financial Letter", 
+                                              "Transcripts", "Diplomas", "English Test", "Payment Receipt",
+                                              "SEVIS Receipt", "SEVIS"], 
+                                             key="document_type")
+                uploaded_file = st.file_uploader("Upload Document", type=["jpg", "jpeg", "png", "pdf"], key="uploaded_file")
+                
+                if uploaded_file and st.button("Upload Document"):
+                    file_id = handle_file_upload(student_name, document_type, uploaded_file)
+                    if file_id:
+                        st.success(f"{document_type} uploaded successfully!")
+                        if 'document_status_cache' in st.session_state:
+                            st.session_state['document_status_cache'].pop(student_name, None)
+                        clear_cache_and_rerun()  # Clear cache and rerun the app
+                    else:
+                        st.error("An error occurred while uploading the document.")
             
             if edit_mode:
                 if st.button("Save Changes", key="save_changes_button"):
