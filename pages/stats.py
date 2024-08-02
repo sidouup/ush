@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from collections import Counter
 from google.oauth2.service_account import Credentials
 import gspread
 
@@ -24,7 +23,6 @@ def load_data(spreadsheet_id, sheet_name):
     sheet = client.open_by_key(spreadsheet_id).worksheet(sheet_name)
     data = sheet.get_all_records()
     df = pd.DataFrame(data)
-    df = df.astype(str)  # Convert all columns to strings
     return df
 
 def statistics_page():
@@ -58,6 +56,12 @@ def statistics_page():
     sheet_name = "ALL"
     data = load_data(spreadsheet_id, sheet_name)
 
+    # Calculate visa approval rate
+    visa_approved = len(data[data['Visa Result'] == 'Visa Approved'])
+    visa_denied = len(data[data['Visa Result'] == 'Visa Denied'])
+    total_decisions = visa_approved + visa_denied
+    visa_approval_rate = (visa_approved / total_decisions * 100) if total_decisions > 0 else 0
+
     col1, col2, col3 = st.columns(3)
 
     with col1:
@@ -65,11 +69,9 @@ def statistics_page():
         st.metric("Total Students", total_students)
 
     with col2:
-        visa_approved = len(data[data['Visa Result'] == 'Visa Approved'])
         st.metric("Visa Approvals", visa_approved)
 
     with col3:
-        visa_approval_rate = (visa_approved / total_students) * 100
         st.metric("Visa Approval Rate", f"{visa_approval_rate:.2f}%")
 
     st.markdown("---")
@@ -77,7 +79,7 @@ def statistics_page():
     col1, col2 = st.columns(2)
 
     with col1:
-        st.subheader("🏫 Top Schools")
+        st.subheader("🏫 Top Chosen Schools")
         school_counts = data['Chosen School'].value_counts().head(10)
         fig = px.bar(school_counts, x=school_counts.index, y=school_counts.values,
                      labels={'y': 'Number of Students', 'x': 'School'},
@@ -85,12 +87,10 @@ def statistics_page():
         st.plotly_chart(fig, use_container_width=True)
 
     with col2:
-        st.subheader("🌎 Student Distribution by Country")
-        # Since we don't have a 'Country' column, we'll use 'Address' as a proxy
-        # This is a simplification and may not be entirely accurate
-        country_counts = data['Address'].value_counts().head(10)
-        fig = px.pie(values=country_counts.values, names=country_counts.index,
-                     title="Top 10 Student Locations (based on Address)")
+        st.subheader("🛂 Student Visa Approval")
+        visa_status = data['Visa Result'].value_counts()
+        fig = px.pie(values=visa_status.values, names=visa_status.index,
+                     title="Visa Application Results")
         st.plotly_chart(fig, use_container_width=True)
 
     st.markdown("---")
@@ -116,24 +116,16 @@ def statistics_page():
 
     st.markdown("---")
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns(2)
 
     with col1:
-        st.subheader("🎓 Program Types")
-        program_counts = data['Specialite'].value_counts().head(5)
-        fig = px.bar(program_counts, x=program_counts.index, y=program_counts.values,
-                     labels={'y': 'Number of Students', 'x': 'Program'},
-                     title="Top 5 Program Types")
-        st.plotly_chart(fig, use_container_width=True)
-
-    with col2:
         st.subheader("👥 Gender Distribution")
         gender_counts = data['Gender'].value_counts()
         fig = px.pie(values=gender_counts.values, names=gender_counts.index,
                      title="Gender Distribution")
         st.plotly_chart(fig, use_container_width=True)
 
-    with col3:
+    with col2:
         st.subheader("🔄 Application Attempts")
         attempts_counts = data['Attempts'].value_counts()
         fig = px.bar(attempts_counts, x=attempts_counts.index, y=attempts_counts.values,
@@ -144,10 +136,10 @@ def statistics_page():
     st.markdown("---")
 
     st.subheader("🏆 Top Performing Agents")
-    agent_performance = data.groupby('Agent')['Visa Result'].apply(lambda x: (x == 'Visa Approved').sum() / len(x) * 100).sort_values(ascending=False).head(5)
+    agent_performance = data['Agent'].value_counts().head(5)
     fig = px.bar(agent_performance, x=agent_performance.index, y=agent_performance.values,
-                 labels={'y': 'Approval Rate (%)', 'x': 'Agent'},
-                 title="Top 5 Agents by Visa Approval Rate")
+                 labels={'y': 'Number of Students', 'x': 'Agent'},
+                 title="Top 5 Agents by Number of Students")
     st.plotly_chart(fig, use_container_width=True)
 
 if __name__ == "__main__":
