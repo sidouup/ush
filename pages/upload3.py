@@ -480,6 +480,9 @@ def main():
     if 'edit_mode' not in st.session_state:
         st.session_state.edit_mode = False
 
+ 
+
+
 
 
     # Check if we need to refresh the page
@@ -657,7 +660,11 @@ def main():
             selected_student = filtered_data[filtered_data['Student Name'] == search_query].iloc[0]
             student_name = selected_student['Student Name']
             
-            edit_mode = st.checkbox("Edit Mode", value=st.session_state.edit_mode, key="edit_mode")
+            def toggle_edit_mode():
+                st.session_state.edit_mode = not st.session_state.edit_mode
+            
+            edit_mode = st.checkbox("Edit Mode", value=st.session_state.edit_mode, key="edit_mode", on_change=toggle_edit_mode)
+
 
 
             tab_titles = ["Personal", "School", "Embassy", "Payment", "Documents"]
@@ -802,8 +809,8 @@ def main():
 
                 # Save the updated data back to Google Sheets
                 save_data(filtered_data, spreadsheet_id, selected_student['Current Step'])
-                st.success("Changes saved successfully!")
-                st.session_state.edit_mode = False
+                st.success("Changes saved successfully!")                
+                st.session_state.edit_mode = not st.session_state.edit_mode
                 
                 # Set a flag to reload data on next run
                 st.session_state['reload_data'] = True
