@@ -13,7 +13,7 @@ import logging
 import asyncio
 import aiohttp
 import threading
-
+import numpy as np
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -134,7 +134,7 @@ import string
 def save_data(df, spreadsheet_id, sheet_name):
     def replace_invalid_floats(val):
         if isinstance(val, float):
-            if pd.isna(val) or pd.isinf(val):
+            if pd.isna(val) or np.isinf(val):
                 return None
         return val
 
