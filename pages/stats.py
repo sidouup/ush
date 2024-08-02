@@ -4,6 +4,9 @@ import plotly.express as px
 import plotly.graph_objects as go
 from collections import Counter
 
+def get_google_sheet_client():
+    creds = Credentials.from_service_account_info(SERVICE_ACCOUNT_INFO, scopes=SCOPES)
+    return gspread.authorize(creds)
 
 def load_data():
     client = get_google_sheet_client()
