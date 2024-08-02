@@ -582,12 +582,6 @@ def main():
                 except AttributeError:
                     payment_date_value = None
     
-                payment_date = st.date_input(
-                    "Payment Date", 
-                    value=payment_date_value,
-                    key="payment_date", 
-                    on_change=update_student_data
-                )
     
                 st.write(f"**📆 Date of Payment:** {payment_date.strftime('%d %B %Y') if payment_date else 'Not set'}")
         
