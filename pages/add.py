@@ -1,11 +1,15 @@
-import streamlit as st
+def refresh():
+    Server.get_current()._reloader.reload()import streamlit as st
 import pandas as pd
 from datetime import datetime
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 import gspread
 import time
+from streamlit.server.server import Server
 
+def refresh():
+    Server.get_current()._reloader.reload()
 # Set up Google Sheets authentication
 def get_google_sheet_client():
     creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive'])
@@ -160,6 +164,7 @@ def main():
     if st.session_state.form_submitted:
         st.session_state.form_submitted = False
         st.rerun()
+        refresh()
 
 if __name__ == "__main__":
     main()
