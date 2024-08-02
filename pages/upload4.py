@@ -879,10 +879,10 @@ def main():
             with tab5:
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("🚩 Current Stage")
-                
+            
                 # Define the stages
                 stages = ['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'SEVIS', 'CLIENTS']
-                
+            
                 if edit_mode:
                     current_stage = st.selectbox(
                         "Current Stage",
@@ -891,14 +891,13 @@ def main():
                         key="current_stage",
                         on_change=update_student_data
                     )
-                    st.write(f"Current Stage: {current_stage}")
                 else:
                     st.write(f"**Current Stage:** {selected_student['Stage']}")
-                
+            
                 # Display progress bar
                 step_index = stages.index(selected_student['Stage']) if selected_student['Stage'] in stages else 0
                 progress = ((step_index + 1) / len(stages)) * 100
-                
+            
                 progress_bar = f"""
                 <div class="progress-container">
                     <div class="progress-bar" style="width: {progress}%;">
@@ -907,7 +906,7 @@ def main():
                 </div>
                 """
                 st.markdown(progress_bar, unsafe_allow_html=True)
-                
+            
                 st.markdown('</div>', unsafe_allow_html=True)
     
             if edit_mode and st.button("Save Changes", key="save_changes_button"):
