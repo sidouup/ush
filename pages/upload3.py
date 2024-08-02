@@ -217,6 +217,12 @@ def save_data(df, spreadsheet_id, sheet_name):
     # Log the number of columns in the DataFrame and the sheet
     print(f"DataFrame columns: {len(df.columns)}, Sheet columns: {sheet_columns}")
 def clear_cache_and_rerun(delay=12):
+    st.cache_data.clear()
+    st.cache_resource.clear()
+    st.rerun()
+
+
+def clear_cache_and_rerun_2(delay=12):
     time.sleep(delay)
     st.cache_data.clear()
     st.cache_resource.clear()
@@ -792,8 +798,7 @@ def main():
                 # Save the updated data back to Google Sheets
                 save_data(filtered_data, spreadsheet_id, selected_student['Current Step'])
                 st.success("Changes saved successfully!")
-                time.sleep(3)
-                clear_cache_and_rerun()  # Clear cache and rerun the app
+                clear_cache_and_rerun_2()  # Clear cache and rerun the app
 
 
         else:
