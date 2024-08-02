@@ -205,7 +205,6 @@ def calculate_days_until_interview(interview_date):
         return None
 
 
-
 # Function to get visa status
 def get_visa_status(result):
     result_mapping = {
