@@ -60,10 +60,15 @@ def statistics_page():
     sheet_name = "ALL"
     data = load_data(spreadsheet_id, sheet_name)
 
+    # Convert 'DATE' column to datetime and handle NaT values
+    data['DATE'] = pd.to_datetime(data['DATE'], errors='coerce')
+    min_date = data['DATE'].min()
+    max_date = data['DATE'].max()
+
     # Date filter options
     st.sidebar.subheader("Filter by Date")
-    start_date = st.sidebar.date_input("Start Date", pd.to_datetime(data['DATE'].min()))
-    end_date = st.sidebar.date_input("End Date", pd.to_datetime(data['DATE'].max()))
+    start_date = st.sidebar.date_input("Start Date", min_date if not pd.isna(min_date) else pd.Timestamp('2022-01-01'))
+    end_date = st.sidebar.date_input("End Date", max_date if not pd.isna(max_date) else pd.Timestamp('2022-12-31'))
     filtered_data = filter_data_by_date(data, start_date, end_date)
 
     # Calculate visa approval rate
