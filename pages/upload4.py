@@ -14,13 +14,14 @@ import asyncio
 import aiohttp
 import threading
 import numpy as np
+import string
+
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def on_student_select():
     st.session_state.student_changed = True
-
 
 def reload_data(spreadsheet_id):
     data = load_data(spreadsheet_id)
@@ -87,13 +88,13 @@ def upload_file_to_drive(file_path, mime_type, folder_id=None):
 def load_data(spreadsheet_id):
     sheet_headers = {
         'ALL': [
-'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 
-    'Emergency contact N°', 'Chosen School', 'Specialite', 'Duration', 
-    'Payment Amount', 'Sevis payment ?', 'Application payment ?', 'DS-160 maker', 
-    'Password DS-160', 'Secret Q.', 'School Entry Date', 'Entry Date in the US', 
-    'ADDRESS in the U.S', 'E-MAIL RDV', 'PASSWORD RDV', 'EMBASSY ITW. DATE', 
-    'Attempts', 'Visa Result', 'Agent', 'Note']
-       
+            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 
+            'Emergency contact N°', 'Chosen School', 'Specialite', 'Duration', 
+            'Payment Amount', 'Sevis payment ?', 'Application payment ?', 'DS-160 maker', 
+            'Password DS-160', 'Secret Q.', 'School Entry Date', 'Entry Date in the US', 
+            'ADDRESS in the U.S', 'E-MAIL RDV', 'PASSWORD RDV', 'EMBASSY ITW. DATE', 
+            'Attempts', 'Visa Result', 'Agent', 'Note', 'Stage'
+        ]
     }
     
     try:
@@ -119,7 +120,6 @@ def load_data(spreadsheet_id):
                     df['Student Name'] = df['First Name'] + " " + df['Last Name']
                 df.dropna(subset=['Student Name'], inplace=True)
                 df.dropna(how='all', inplace=True)
-                df['Current Step'] = title
                 combined_data = pd.concat([combined_data, df], ignore_index=True)
         
         combined_data.drop_duplicates(subset='Student Name', keep='last', inplace=True)
@@ -129,8 +129,6 @@ def load_data(spreadsheet_id):
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
         return pd.DataFrame()
-# Function to save data to Google Sheets (batch update)
-import string
 
 # Function to save data to Google Sheets (batch update)
 def save_data(df, spreadsheet_id, sheet_name):
@@ -172,44 +170,11 @@ def save_data(df, spreadsheet_id, sheet_name):
 
     # Log the number of columns in the DataFrame and the sheet
     print(f"DataFrame columns: {len(df.columns)}, Sheet columns: {sheet_columns}")
+
 def clear_cache_and_rerun():
     st.cache_data.clear()
     st.cache_resource.clear()
     st.rerun()
-
-    # Replace NaN and inf values with None
-    df = df.applymap(replace_invalid_floats)
-
-    # Replace [pd.NA, pd.NaT, float('inf'), float('-inf')] with None
-    df = df.replace([pd.NA, pd.NaT, float('inf'), float('-inf')], None)
-
-    client = get_google_sheet_client()
-    sheet = client.open_by_key(spreadsheet_id).worksheet(sheet_name)
-    
-    # Get the number of columns in the sheet
-    sheet_columns = len(sheet.row_values(1))
-    
-    # Limit the DataFrame to the number of columns in the sheet
-    df = df.iloc[:, :sheet_columns]
-    
-    # Prepare the data for batch update
-    values = [df.columns.tolist()] + df.values.tolist()
-    
-    # Calculate the last column letter
-    if sheet_columns <= 26:
-        last_column = string.ascii_uppercase[sheet_columns - 1]
-    else:
-        last_column = string.ascii_uppercase[(sheet_columns - 1) // 26 - 1] + string.ascii_uppercase[(sheet_columns - 1) % 26]
-
-    # Perform batch update
-    sheet.batch_update([{
-        'range': f'A1:{last_column}{len(values)}',
-        'values': values
-    }])
-
-    # Log the number of columns in the DataFrame &#8203;:citation[oaicite:0]{index=0}&#8203;
-    # Log the number of columns in the DataFrame and the sheet
-    print(f"DataFrame columns: {len(df.columns)}, Sheet columns: {sheet_columns}")
 
 # Function to calculate days until interview
 def calculate_days_until_interview(interview_date):
@@ -268,7 +233,7 @@ def create_folder_in_drive(folder_name, parent_id=None):
 def check_file_exists(file_name, folder_id):
     service = get_google_drive_service()
     query = f"name='{file_name}' and '{folder_id}' in parents"
-    results = service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
+    results = service.files().list(q=query, spaces='drive', fields='files &#8203;:citation[oaicite:0]{index=0}&#8203;(id, name)').execute()
     files = results.get('files', [])
     return bool(files)
 
@@ -427,7 +392,6 @@ def main():
     if 'active_tab' not in st.session_state:
         st.session_state.active_tab = "Personal"
 
-
     # Check if we need to refresh the page
     if st.session_state.upload_success:
         st.session_state.upload_success = False
@@ -510,7 +474,9 @@ def main():
 
     spreadsheet_id = "1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI"
     
-    if 'data' not in st.session_state or st.session_state.get('reload_data', False):
+    if 'data' not in st.session_state
+
+ or st.session_state.get('reload_data', False):
         data = load_data(spreadsheet_id)
         st.session_state['data'] = data
         st.session_state['reload_data'] = False
@@ -518,9 +484,9 @@ def main():
         data = st.session_state['data']
 
     if not data.empty:
-        current_steps = ["All"] + list(data['Current Step'].unique())
-        status_filter = st.selectbox("Filter by status", current_steps, key="status_filter")
-        filtered_data = data if status_filter == "All" else data[data['Current Step'] == status_filter]
+        current_steps = ["All"] + list(data['Stage'].unique())
+        status_filter = st.selectbox("Filter by Stage", current_steps, key="status_filter")
+        filtered_data = data if status_filter == "All" else data[data['Stage'] == status_filter]
         student_names = filtered_data['Student Name'].tolist()
 
         st.markdown('<div class="stCard" style="display: flex; justify-content: space-between;">', unsafe_allow_html=True)
@@ -545,7 +511,7 @@ def main():
             if not filtered_data.empty:
                 selected_student = filtered_data[filtered_data['Student Name'] == search_query].iloc[0]
                 steps = ['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'SEVIS', 'CLIENTS ']
-                current_step = selected_student['Current Step'] if not filtered_data.empty else "Unknown"
+                current_step = selected_student['Stage'] if not filtered_data.empty else "Unknown"
                 step_index = steps.index(current_step) if current_step in steps else 0
                 progress = ((step_index + 1) / len(steps)) * 100
         
@@ -567,7 +533,7 @@ def main():
                         date_of_payment = "Invalid Date"
                 st.write(f"**📆 Date of Payment:** {date_of_payment}")
         
-                st.write(f"**🚩 Current Step:** {current_step}")
+                st.write(f"**🚩 Current Stage:** {current_step}")
         
                 # Agent
                 agent = selected_student['Agent'] if not filtered_data.empty else "Unknown"
@@ -589,6 +555,7 @@ def main():
 
                 entry_date = selected_student['School Entry Date'] if not filtered_data.empty else "Unknown"
                 st.write(f"**🏫 School Entry Date:** {entry_date}")
+
                 # Days until Interview
                 interview_date = selected_student['EMBASSY ITW. DATE'] if not filtered_data.empty else None
                 days_remaining = calculate_days_until_interview(interview_date)
@@ -678,6 +645,8 @@ def main():
                 st.subheader("🏛️ Embassy Information")
                 if edit_mode:
                     address_us = st.text_input("Address in the U.S", selected_student['ADDRESS in the U.S'], key="address_us", on_change=update_student_data)
+
+
                     email_rdv = st.text_input("E-mail RDV", selected_student['E-MAIL RDV'], key="email_rdv", on_change=update_student_data)
                     password_rdv = st.text_input("Password RDV", selected_student['PASSWORD RDV'], key="password_rdv", on_change=update_student_data)
                     embassy_itw_date = st.text_input("Embassy Interview Date", selected_student['EMBASSY ITW. DATE'], key="embassy_itw_date", on_change=update_student_data)
@@ -751,7 +720,7 @@ def main():
                     'Password DS-160': password_ds160,
                     'Secret Q.': secret_q,
                     'Visa Result': visa_status,
-                    'Current Step': current_step,
+                    'Stage': current_step,
                     'DATE': payment_date,
                     'Payment Amount': payment_method,
                     'Sevis payment ?': sevis_payment,
@@ -763,7 +732,7 @@ def main():
                     filtered_data.loc[filtered_data['Student Name'] == student_name, key] = value
 
                 # Save the updated data back to Google Sheets
-                save_data(filtered_data, spreadsheet_id, selected_student['Current Step'])
+                save_data(filtered_data, spreadsheet_id, 'ALL')
                 st.success("Changes saved successfully!")
                 clear_cache_and_rerun()  # Clear cache and rerun the app
 
@@ -778,4 +747,105 @@ def main():
 
 if __name__ == "__main__":
     main()
+                    email_rdv = st.text_input("E-mail RDV", selected_student['E-MAIL RDV'], key="email_rdv", on_change=update_student_data)
+                    password_rdv = st.text_input("Password RDV", selected_student['PASSWORD RDV'], key="password_rdv", on_change=update_student_data)
+                    embassy_itw_date = st.text_input("Embassy Interview Date", selected_student['EMBASSY ITW. DATE'], key="embassy_itw_date", on_change=update_student_data)
+                    ds160_maker = st.text_input("DS-160 Maker", selected_student['DS-160 maker'], key="ds160_maker", on_change=update_student_data)
+                    password_ds160 = st.text_input("Password DS-160", selected_student['Password DS-160'], key="password_ds160", on_change=update_student_data)
+                    secret_q = st.text_input("Secret Question", selected_student['Secret Q.'], key="secret_q", on_change=update_student_data)
+                else:
+                    st.write(f"**Address in the U.S:** {selected_student['ADDRESS in the U.S']}")
+                    st.write(f"**E-mail RDV:** {selected_student['E-MAIL RDV']}")
+                    st.write(f"**Password RDV:** {selected_student['PASSWORD RDV']}")
+                    st.write(f"**Embassy Interview Date:** {selected_student['EMBASSY ITW. DATE']}")
+                    st.write(f"**DS-160 Maker:** {selected_student['DS-160 maker']}")
+                    st.write(f"**Password DS-160:** {selected_student['Password DS-160']}")
+                    st.write(f"**Secret Question:** {selected_student['Secret Q.']}")
+                st.markdown('</div>', unsafe_allow_html=True)
+            
+            with tab4:
+                st.markdown('<div class="stCard">', unsafe_allow_html=True)
+                st.subheader("💰 Payment Information")
+                if edit_mode:
+                    payment_date = st.text_input("Payment Date", selected_student['DATE'], key="payment_date", on_change=update_student_data)
+                    payment_method = st.text_input("Payment Method", selected_student['Payment Amount'], key="payment_method", on_change=update_student_data)
+                    sevis_payment = st.text_input("Sevis Payment", selected_student['Sevis payment ?'], key="sevis_payment", on_change=update_student_data)
+                    application_payment = st.text_input("Application Payment", selected_student['Application payment ?'], key="application_payment", on_change=update_student_data)
+                else:
+                    st.write(f"**Payment Date:** {selected_student['DATE']}")
+                    st.write(f"**Payment Method:** {selected_student['Payment Amount']}")
+                    st.write(f"**Sevis Payment:** {selected_student['Sevis payment ?']}")
+                    st.write(f"**Application Payment:** {selected_student['Application payment ?']}")
+                st.markdown('</div>', unsafe_allow_html=True)
+                
+            with tab5:
+                st.markdown('<div class="stCard">', unsafe_allow_html=True)
+                st.subheader("📂 Document Upload and Status")
+                document_type = st.selectbox("Select Document Type", 
+                                             ["Passport", "Bank Statement", "Financial Letter", 
+                                              "Transcripts", "Diplomas", "English Test", "Payment Receipt",
+                                              "SEVIS Receipt", "SEVIS"], 
+                                             key="document_type")
+                uploaded_file = st.file_uploader("Upload Document", type=["jpg", "jpeg", "png", "pdf"], key="uploaded_file")
+                
+                if uploaded_file and st.button("Upload Document"):
+                    file_id = handle_file_upload(student_name, document_type, uploaded_file)
+                    if file_id:
+                        st.success(f"{document_type} uploaded successfully!")
+                        if 'document_status_cache' in st.session_state:
+                            st.session_state['document_status_cache'].pop(student_name, None)
+                        clear_cache_and_rerun()  # Clear cache and rerun the app
+                    else:
+                        st.error("An error occurred while uploading the document.")
+
+            if edit_mode and st.button("Save Changes"):
+                updated_student = {
+                    'First Name': first_name,
+                    'Last Name': last_name,
+                    'Phone N°': phone_number,
+                    'E-mail': email,
+                    'Emergency contact N°': emergency_contact,
+                    'Address': address,
+                    'Attempts': attempts,
+                    'Chosen School': chosen_school,
+                    'Specialite': specialite,
+                    'Duration': duration,
+                    'School Entry Date': school_entry_date,
+                    'Entry Date in the US': entry_date_in_us,
+                    'ADDRESS in the U.S': address_us,
+                    'E-MAIL RDV': email_rdv,
+                    'PASSWORD RDV': password_rdv,
+                    'EMBASSY ITW. DATE': embassy_itw_date,
+                    'DS-160 maker': ds160_maker,
+                    'Password DS-160': password_ds160,
+                    'Secret Q.': secret_q,
+                    'Visa Result': visa_status,
+                    'Stage': current_step,
+                    'DATE': payment_date,
+                    'Payment Amount': payment_method,
+                    'Sevis payment ?': sevis_payment,
+                    'Application payment ?': application_payment,
+                }
+                
+                # Update the data in the DataFrame
+                for key, value in updated_student.items():
+                    filtered_data.loc[filtered_data['Student Name'] == student_name, key] = value
+
+                # Save the updated data back to Google Sheets
+                save_data(filtered_data, spreadsheet_id, 'ALL')
+                st.success("Changes saved successfully!")
+                clear_cache_and_rerun()  # Clear cache and rerun the app
+
+        else:
+            st.info("No students found matching the search criteria.")
+
+    else:
+        st.error("No data available. Please check your Google Sheets connection and data.")
+
+    st.markdown("---")
+    st.markdown("© 2024 The Us House. All rights reserved.")
+
+if __name__ == "__main__":
+    main()
+
 
