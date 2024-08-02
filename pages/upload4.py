@@ -688,7 +688,7 @@ def main():
             edit_mode = st.checkbox("Edit Mode", value=False)
 
             # Tabs for student information
-            tab1, tab2, tab3, tab4, tab5 = st.tabs(["Personal", "School", "Embassy", "Payment", "Documents"])
+            tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["Personal", "School", "Embassy", "Payment", "Documents", "Stage"])
             
             # Options for dropdowns
             school_options = ["University", "Community College", "CCLS Miami", "CCLS NY NJ", "Connect English",
@@ -848,7 +848,40 @@ def main():
                         clear_cache_and_rerun()  # Clear cache and rerun the app
                     else:
                         st.error("An error occurred while uploading the document.")
-            
+            with tab6:
+                st.markdown('<div class="stCard">', unsafe_allow_html=True)
+                st.subheader("🚩 Current Stage")
+                
+                # Define the stages
+                stages = ['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'SEVIS', 'CLIENTS']
+                
+                if edit_mode:
+                    current_stage = st.selectbox(
+                        "Current Stage",
+                        stages,
+                        index=stages.index(selected_student['Stage']) if selected_student['Stage'] in stages else 0,
+                        key="current_stage",
+                        on_change=update_student_data
+                    )
+                    st.write(f"Current Stage: {current_stage}")
+                else:
+                    st.write(f"**Current Stage:** {selected_student['Stage']}")
+                
+                # Display progress bar
+                step_index = stages.index(selected_student['Stage']) if selected_student['Stage'] in stages else 0
+                progress = ((step_index + 1) / len(stages)) * 100
+                
+                progress_bar = f"""
+                <div class="progress-container">
+                    <div class="progress-bar" style="width: {progress}%;">
+                        {int(progress)}%
+                    </div>
+                </div>
+                """
+                st.markdown(progress_bar, unsafe_allow_html=True)
+                
+                st.markdown('</div>', unsafe_allow_html=True)
+    
             if edit_mode and st.button("Save Changes", key="save_changes_button"):
                 updated_student = {
                     'First Name': st.session_state.get('first_name', ''),
@@ -871,7 +904,7 @@ def main():
                     'Password DS-160': st.session_state.get('password_ds160', ''),
                     'Secret Q.': st.session_state.get('secret_q', ''),
                     'Visa Result': st.session_state.get('visa_status', ''),
-                    'Stage': st.session_state.get('current_step', ''),
+                    'Stage': st.session_state.get('current_stage', ''),  # Add this line
                     'DATE': st.session_state.get('payment_date', ''),
                     'Payment Amount': st.session_state.get('payment_method', ''),
                     'Payment Type': st.session_state.get('payment_type', ''),
