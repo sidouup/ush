@@ -687,7 +687,7 @@ def main():
                                         clear_cache_and_rerun()
 
                 else:
-                st.info("Select a student to view document status.")
+                    st.info("Select a student to view document status.")
 
                                         
             if not filtered_data.empty:
