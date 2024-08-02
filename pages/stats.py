@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.express as px
 from google.oauth2.service_account import Credentials
 import gspread
+from collections import defaultdict
 
 # Use Streamlit secrets for service account info
 SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
@@ -35,6 +36,26 @@ def filter_data_by_month_year(data, year, month):
     start_date = pd.Timestamp(year=year, month=month, day=1)
     end_date = start_date + pd.offsets.MonthEnd(1)
     return data[(data['DATE'] >= start_date) & (data['DATE'] <= end_date)]
+
+def is_valid_payment(amount):
+    valid_amounts = [139000, 159000, 132000, 152000]
+    try:
+        payment = float(amount.replace('.', '').replace(' DZD', ''))
+        return any(abs(payment - valid) < 1 for valid in valid_amounts)
+    except:
+        return False
+
+def remove_duplicates(df):
+    df['FullName'] = df['First Name'] + ' ' + df['Last Name']
+    return df.drop_duplicates(subset=['Phone N°', 'FullName'])
+
+def analyze_payments(df):
+    monthly_payments = defaultdict(int)
+    for _, row in df.iterrows():
+        if is_valid_payment(row['Payment Amount']):
+            month_year = row['DATE'].strftime('%Y-%m')
+            monthly_payments[month_year] += 1
+    return monthly_payments
 
 def statistics_page():
     st.set_page_config(page_title="Student Recruitment Statistics", layout="wide")
@@ -86,6 +107,9 @@ def statistics_page():
         selected_year = st.sidebar.selectbox("Year", years)
         selected_month = st.sidebar.selectbox("Month", months, format_func=lambda x: pd.Timestamp(year=2023, month=x, day=1).strftime('%B'))
         filtered_data = filter_data_by_month_year(data, selected_year, selected_month)
+
+    # Remove duplicates
+    filtered_data = remove_duplicates(filtered_data)
 
     # Calculate visa approval rate
     visa_approved = len(filtered_data[filtered_data['Visa Result'] == 'Visa Approved'])
@@ -178,6 +202,21 @@ def statistics_page():
                  labels={'Number of Students': 'Number of Students', 'Agent': 'Agent'},
                  title="Top 5 Agents by Number of Students")
     st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown("---")
+
+    st.subheader("💵 Monthly Payment Tracking")
+    monthly_payments = analyze_payments(filtered_data)
+    months = sorted(monthly_payments.keys())
+    payments = [monthly_payments[month] for month in months]
+    fig = px.bar(x=months, y=payments,
+                 labels={'x': 'Month', 'y': 'Number of Payments'},
+                 title="Monthly Payment Tracking")
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown("Monthly Payment Summary:")
+    for month, count in sorted(monthly_payments.items()):
+        st.write(f"{month}: {count} payments")
 
 if __name__ == "__main__":
     statistics_page()
