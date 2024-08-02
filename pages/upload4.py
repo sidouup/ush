@@ -663,7 +663,14 @@ def main():
                         key="school_entry_date",
                         on_change=update_student_data
                     )
-                    entry_date_in_us = st.date_input("Entry Date in the US", pd.to_datetime(selected_student['Entry Date in the US'], errors='coerce'), key="entry_date_in_us", on_change=update_student_data)
+                    entry_date_in_us_str = selected_student['Entry Date in the US']
+                    entry_date_in_us = pd.to_datetime(entry_date_in_us_str, errors='coerce')
+                    entry_date_in_us = st.date_input(
+                        "Entry Date in the US",
+                        value=entry_date_in_us.date() if not pd.isna(entry_date_in_us) else None,
+                        key="entry_date_in_us",
+                        on_change=update_student_data
+                    )
                 else:
                     st.write(f"**Chosen School:** {selected_student['Chosen School']}")
                     st.write(f"**Specialite:** {selected_student['Specialite']}")
