@@ -805,8 +805,10 @@ def main():
                 st.success("Changes saved successfully!")
                 st.session_state.edit_mode = False
             
-                # Use a timer to delay rerun
-                threading.Timer(10, clear_cache_and_rerun).start()  # Delay to allow state update
+                # Clear cache and rerun after a short delay
+                st.cache_data.clear()
+                st.cache_resource.clear()
+                threading.Timer(1, st.rerun).start()
                 
 
 
