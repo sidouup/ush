@@ -509,7 +509,7 @@ def main():
     </div>
     """, unsafe_allow_html=True)
 
-    spreadsheet_id = "1NPc-dQ7uts1c1JjNoABBou-uq2ixzUTiSBTB8qlTuOQ"
+    spreadsheet_id = "1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI"
     
     if 'data' not in st.session_state or st.session_state.get('reload_data', False):
         data = load_data(spreadsheet_id)
