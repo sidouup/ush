@@ -136,7 +136,7 @@ def load_data(spreadsheet_id):
 def save_data(df, spreadsheet_id, sheet_name):
     def replace_invalid_floats(val):
         if isinstance(val, float):
-            if pd.isna(val) or np.isinf(val):
+            if pd.isna(val) or pd.isinf(val):
                 return None
         return val
 
@@ -155,7 +155,7 @@ def save_data(df, spreadsheet_id, sheet_name):
     # Limit the DataFrame to the number of columns in the sheet
     df = df.iloc[:, :sheet_columns]
     
-    # Prepare the data for batch up
+    # Prepare the data for batch update
     values = [df.columns.tolist()] + df.values.tolist()
     
     # Calculate the last column letter
@@ -164,8 +164,8 @@ def save_data(df, spreadsheet_id, sheet_name):
     else:
         last_column = string.ascii_uppercase[(sheet_columns - 1) // 26 - 1] + string.ascii_uppercase[(sheet_columns - 1) % 26]
 
-    # Perform batch up
-    sheet.batch_up([{
+    # Perform batch update
+    sheet.batch_update([{
         'range': f'A1:{last_column}{len(values)}',
         'values': values
     }])
