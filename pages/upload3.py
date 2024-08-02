@@ -751,29 +751,29 @@ def main():
                     with col2:
                         st.markdown("")
                                     
-            if not filtered_data.empty:
-                selected_student = filtered_data[filtered_data['Student Name'] == search_query].iloc[0]
-                student_name = selected_student['Student Name']
-                
-                def toggle_edit_mode():
-                    st.session_state.edit_mode = not st.session_state.edit_mode
-                
-                edit_mode = st.checkbox("Edit Mode", value=st.session_state.edit_mode, key="edit_mode", on_change=toggle_edit_mode)
-        
-                tab_titles = ["Personal", "School", "Embassy", "Payment", "Documents"]
-                selected_tab = st.session_state.get('active_tab', "Personal")
-                selected_index = tab_titles.index(selected_tab)
-                
-                tabs = st.tabs(tab_titles)
-                
-                for index, tab in enumerate(tabs):
-                    if index == selected_index:
-                        with tab:
-                            tab_content(index, selected_student, student_name, edit_mode)
-                            st.session_state.active_tab = tab_titles[index]
-                    else:
-                        with tab:
-                            st.write("")
+        if not filtered_data.empty:
+            selected_student = filtered_data[filtered_data['Student Name'] == search_query].iloc[0]
+            student_name = selected_student['Student Name']
+            
+            def toggle_edit_mode():
+                st.session_state.edit_mode = not st.session_state.edit_mode
+            
+            edit_mode = st.checkbox("Edit Mode", value=st.session_state.edit_mode, key="edit_mode", on_change=toggle_edit_mode)
+    
+            tab_titles = ["Personal", "School", "Embassy", "Payment", "Documents"]
+            selected_tab = st.session_state.get('active_tab', "Personal")
+            selected_index = tab_titles.index(selected_tab)
+            
+            tabs = st.tabs(tab_titles)
+            
+            for index, tab in enumerate(tabs):
+                if index == selected_index:
+                    with tab:
+                        tab_content(index, selected_student, student_name, edit_mode)
+                        st.session_state.active_tab = tab_titles[index]
+                else:
+                    with tab:
+                        st.write("")
 
             if edit_mode and st.button("Save Changes"):
                 updated_student = {
