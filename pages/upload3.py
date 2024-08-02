@@ -599,17 +599,7 @@ def main():
                 </div>
                 """
                 st.markdown(progress_bar, unsafe_allow_html=True)
-        
-                visa_status = selected_student['Visa Result'] if not filtered_data.empty else "Unknown"
-                st.write(f"**🛂 Visa Status:** {visa_status}")
-        
-                interview_date = selected_student['EMBASSY ITW. DATE'] if not filtered_data.empty else None
-                days_remaining = calculate_days_until_interview(interview_date)
-                if days_remaining is not None:
-                    st.metric("📅 Days until interview", days_remaining)
-                else:
-                    st.metric("📅 Days until interview", "N/A")
-        
+                
                 # Date of Payment
                 date_of_payment = selected_student['DATE'] if not filtered_data.empty else None
                 if date_of_payment:
@@ -635,6 +625,18 @@ def main():
                 application_icon = "✅" if application_payment == "YES" else "❌"
                 st.write(f"**💸 Application Payment:** {application_icon} ({application_payment})")
         
+                # Visa Status
+                visa_status = selected_student['Visa Result'] if not filtered_data.empty else "Unknown"
+                st.write(f"**🛂 Visa Status:** {visa_status}")
+        
+                # Days until Interview
+                interview_date = selected_student['EMBASSY ITW. DATE'] if not filtered_data.empty else None
+                days_remaining = calculate_days_until_interview(interview_date)
+                if days_remaining is not None:
+                    st.metric("📅 Days until interview", days_remaining)
+                else:
+                    st.metric("📅 Days until interview", "N/A")
+                
             else:
                 st.write("No data available for the current filters.")
 
