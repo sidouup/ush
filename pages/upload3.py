@@ -611,7 +611,7 @@ def main():
                         date_of_payment = "Invalid Date"
                 st.write(f"**Date of Payment:** {date_of_payment}")
 
-                st.write(f"Current Step: {current_step}")
+                st.write(f"**Current Step:** {current_step}")
 
                 # Agent
                 agent = selected_student['Agent'] if not filtered_data.empty else "Unknown"
