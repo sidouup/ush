@@ -1,277 +1,137 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from google.oauth2.service_account import Credentials
-import gspread
-from datetime import datetime
-import calendar
+import plotly.graph_objects as go
+from collections import Counter
 
-# Use Streamlit secrets for service account info
-SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
 
-# Define the scopes
-SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
+def load_data():
+    client = get_google_sheet_client()
+    sheet = client.open_by_key("1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI").worksheet('ALL')
+    data = sheet.get_all_records()
+    return pd.DataFrame(data)
 
-# Authenticate and build the Google Sheets service
-@st.cache_resource
-def get_google_sheet_client():
-    creds = Credentials.from_service_account_info(SERVICE_ACCOUNT_INFO, scopes=SCOPES)
-    return gspread.authorize(creds)
 
-def load_data(spreadsheet_id):
-    sheet_headers = {
-        'PAYMENT & MAIL': [
-            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
-            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
-            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
-            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
-        ],
-        'APPLICATION': [
-            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
-            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
-            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
-            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
-        ],
-        'SCAN & SEND': [
-            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
-            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
-            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
-            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
-        ],
-        'ARAMEX & RDV': [
-            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
-            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
-            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
-            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
-        ],
-        'DS-160': [
-            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
-            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
-            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
-            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
-        ],
-        'ITW Prep.': [
-            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
-            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
-            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
-            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
-        ],
-        'SEVIS': [
-            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
-            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
-            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
-            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
-        ],
-        'CLIENTS ': [
-            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
-            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
-            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
-            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
-        ]
-    }
+def statistics_page():
+    st.set_page_config(page_title="Student Recruitment Statistics", layout="wide")
+    
+    st.markdown("""
+    <style>
+        .reportview-container {
+            background: #f0f2f6;
+        }
+        .main .block-container {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+        h1, h2, h3 {
+            color: #1E3A8A;
+        }
+        .stMetric {
+            background-color: #ffffff;
+            border-radius: 5px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+    """, unsafe_allow_html=True)
 
-    try:
-        client = get_google_sheet_client()
-        sheet = client.open_by_key(spreadsheet_id)
+    st.title("📊 Student Recruitment Statistics")
 
-        combined_data = pd.DataFrame()
+    data = load_data()
 
-        for worksheet in sheet.worksheets():
-            title = worksheet.title
-            expected_headers = sheet_headers.get(title, None)
+    col1, col2, col3 = st.columns(3)
 
-            if expected_headers:
-                data = worksheet.get_all_records(expected_headers=expected_headers)
-            else:
-                data = worksheet.get_all_records()
+    with col1:
+        total_students = len(data)
+        st.metric("Total Students", total_students)
 
-            df = pd.DataFrame(data)
-            if not df.empty:
-                if 'First Name' in df.columns and 'Last Name' in df.columns:
-                    df['First Name'] = df['First Name'].astype(str)
-                    df['Last Name'] = df['Last Name'].astype(str)
-                    df['Student Name'] = df['First Name'] + " " + df['Last Name']
-                df.dropna(subset=['Student Name'], inplace=True)
-                df.dropna(how='all', inplace=True)
-                df['Current Step'] = title
-                combined_data = pd.concat([combined_data, df], ignore_index=True)
+    with col2:
+        visa_approved = len(data[data['Visa Result'] == 'Visa Approved'])
+        st.metric("Visa Approvals", visa_approved)
 
-        combined_data.drop_duplicates(subset='Student Name', keep='last', inplace=True)
-        combined_data.reset_index(drop=True, inplace=True)
+    with col3:
+        visa_approval_rate = (visa_approved / total_students) * 100
+        st.metric("Visa Approval Rate", f"{visa_approval_rate:.2f}%")
 
-        return combined_data
-    except Exception as e:
-        st.error(f"An error occurred: {str(e)}")
-        return pd.DataFrame()
+    st.markdown("---")
 
-# Set page config
-st.set_page_config(page_title="Student Recruitment CRM", layout="wide")
+    col1, col2 = st.columns(2)
 
-# Custom CSS
-st.markdown("""
-<style>
-    .reportview-container {
-        background: #f0f2f6;
-    }
-    .main {
-        background-color: #ffffff;
-        padding: 2rem;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    .stplot {
-        background-color: #ffffff;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        padding: 1rem;
-    }
-    h1, h2, h3 {
-        color: #2c3e50;
-    }
-    .stSelectbox label, .stMultiSelect label {
-        color: #2c3e50;
-    }
-</style>
-""", unsafe_allow_html=True)
+    with col1:
+        st.subheader("🏫 Top Schools")
+        school_counts = data['Chosen School'].value_counts().head(10)
+        fig = px.bar(school_counts, x=school_counts.index, y=school_counts.values,
+                     labels={'y': 'Number of Students', 'x': 'School'},
+                     title="Top 10 Chosen Schools")
+        st.plotly_chart(fig, use_container_width=True)
 
-def main():
-    st.title('📊 Student Recruitment CRM Dashboard')
+    with col2:
+        st.subheader("🌎 Student Distribution by Country")
+        # Assuming you have a 'Country' column. If not, you might need to extract it from another column
+        if 'Country' in data.columns:
+            country_counts = data['Country'].value_counts()
+        else:
+            country_counts = pd.Series({'United States': len(data)})  # Placeholder if no country data
+        fig = px.pie(values=country_counts.values, names=country_counts.index,
+                     title="Student Distribution by Country")
+        st.plotly_chart(fig, use_container_width=True)
 
-    # Sidebar
-    st.sidebar.title('📌 Navigation')
-    page = st.sidebar.radio('Go to', ['Overview', 'Student Details', 'School Analytics', 'Visa Statistics'])
+    st.markdown("---")
 
-    # Google Sheets ID
-    spreadsheet_id = "1NPc-dQ7uts1c1JjNoABBou-uq2ixzUTiSBTB8qlTuOQ"
+    col1, col2 = st.columns(2)
 
-    if spreadsheet_id:
-        data = load_data(spreadsheet_id)
+    with col1:
+        st.subheader("📅 Applications Over Time")
+        data['DATE'] = pd.to_datetime(data['DATE'])
+        monthly_apps = data.resample('M', on='DATE').size()
+        fig = px.line(monthly_apps, x=monthly_apps.index, y=monthly_apps.values,
+                      labels={'y': 'Number of Applications', 'x': 'Date'},
+                      title="Monthly Application Trend")
+        st.plotly_chart(fig, use_container_width=True)
 
-        if not data.empty:
-            # Data preprocessing
-            data['DATE'] = pd.to_datetime(data['DATE'], format='%d/%m/%Y %H:%M:%S', errors='coerce')
+    with col2:
+        st.subheader("💰 Payment Methods")
+        payment_counts = data['Payment Type'].value_counts()
+        fig = px.pie(values=payment_counts.values, names=payment_counts.index,
+                     title="Payment Method Distribution")
+        st.plotly_chart(fig, use_container_width=True)
 
-            # Separate data where date conversion did not work
-            invalid_date_data = data[data['DATE'].isnull()]
-            st.write("Students with invalid or missing dates:")
-            st.write(invalid_date_data[['First Name', 'Last Name', 'DATE']])
+    st.markdown("---")
 
-            # Separate data where date conversion worked
-            valid_date_data = data[data['DATE'].notnull()]
-            st.write("Students with valid dates:")
-            st.write(valid_date_data[['First Name', 'Last Name', 'DATE']])
+    col1, col2, col3 = st.columns(3)
 
-            # Remove duplicate students by comparing names
-            valid_date_data = valid_date_data.drop_duplicates(subset=['First Name', 'Last Name'])
+    with col1:
+        st.subheader("🎓 Program Types")
+        program_counts = data['Specialite'].value_counts().head(5)
+        fig = px.bar(program_counts, x=program_counts.index, y=program_counts.values,
+                     labels={'y': 'Number of Students', 'x': 'Program'},
+                     title="Top 5 Program Types")
+        st.plotly_chart(fig, use_container_width=True)
 
-            # Extract Year and Month
-            valid_date_data['Year'] = valid_date_data['DATE'].dt.year
-            valid_date_data['Month'] = valid_date_data['DATE'].dt.month_name()
+    with col2:
+        st.subheader("👥 Gender Distribution")
+        gender_counts = data['Gender'].value_counts()
+        fig = px.pie(values=gender_counts.values, names=gender_counts.index,
+                     title="Gender Distribution")
+        st.plotly_chart(fig, use_container_width=True)
 
-            if page == 'Overview':
-                st.header('📈 Recruitment Overview')
+    with col3:
+        st.subheader("🔄 Application Attempts")
+        attempts_counts = data['Attempts'].value_counts()
+        fig = px.bar(attempts_counts, x=attempts_counts.index, y=attempts_counts.values,
+                     labels={'y': 'Number of Students', 'x': 'Attempt'},
+                     title="Application Attempts Distribution")
+        st.plotly_chart(fig, use_container_width=True)
 
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.metric("Total Students", len(valid_date_data))
-                with col2:
-                    st.metric("This Year's Recruits", len(valid_date_data[valid_date_data['Year'] == datetime.now().year]))
-                with col3:
-                    st.metric("Visa Approval Rate", f"{(valid_date_data['Visa Result'] == 'Visa Approved').mean():.2%}")
+    st.markdown("---")
 
-                # Monthly recruitment trend
-                st.subheader('Monthly Recruitment Trend')
-                monthly_trend = valid_date_data.groupby(['Year', 'Month']).size().reset_index(name='Count')
-                monthly_trend['Date'] = pd.to_datetime(monthly_trend['Year'].astype(str) + ' ' + monthly_trend['Month'], format='%Y %B')
-                monthly_trend = monthly_trend.sort_values('Date')
-                fig_trend = px.line(monthly_trend, x='Date', y='Count', title='Monthly Recruitment Trend')
-                st.plotly_chart(fig_trend, use_container_width=True)
-
-                # Top schools
-                st.subheader('Top Schools')
-                top_schools = valid_date_data['Chosen School'].value_counts().reset_index()
-                top_schools.columns = ['School', 'Count']
-                top_schools = top_schools.head(5)
-                fig_schools = px.bar(top_schools, x='School', y='Count', title='Top 5 Schools')
-                st.plotly_chart(fig_schools, use_container_width=True)
-
-                # Monthly Payments for 2024
-                st.subheader('Monthly Payments for 2024')
-                data_2024 = valid_date_data[valid_date_data['Year'] == 2024]
-                monthly_payments_2024 = data_2024.groupby('Month').size().reset_index(name='Number of Payments')
-                month_order = list(calendar.month_name)[1:]  # January to December
-                monthly_payments_2024['Month'] = pd.Categorical(monthly_payments_2024['Month'], categories=month_order, ordered=True)
-                monthly_payments_2024 = monthly_payments_2024.sort_values('Month')
-                fig_payments_2024 = px.bar(monthly_payments_2024, x='Month', y='Number of Payments', title='Monthly Payments Distribution for 2024')
-                st.plotly_chart(fig_payments_2024, use_container_width=True)
-
-            # Student Details Page
-            elif page == 'Student Details':
-                st.header('👨‍🎓 Student Details')
-
-                # Search functionality
-                search_term = st.text_input('🔍 Search for a student (First Name or Last Name)')
-                if search_term:
-                    filtered_data = valid_date_data[valid_date_data['First Name'].str.contains(search_term, case=False) | 
-                                                     valid_date_data['Last Name'].str.contains(search_term, case=False)]
-                else:
-                    filtered_data = valid_date_data
-
-                # Display student details
-                for _, student in filtered_data.iterrows():
-                    with st.expander(f"{student['First Name']} {student['Last Name']}"):
-                        col1, col2 = st.columns(2)
-                        with col1:
-                            st.write(f"**Email:** {student['E-mail']}")
-                            st.write(f"**Phone:** {student['Phone N°']}")
-                            st.write(f"**School:** {student['Chosen School']}")
-                        with col2:
-                            st.write(f"**Visa Result:** {student['Visa Result']}")
-                            st.write(f"**Current Step:** {student['Current Step']}")
-                            st.write(f"**Agent:** {student['Agent']}")
-
-            # School Analytics Page
-            elif page == 'School Analytics':
-                st.header('🏫 School Analytics')
-
-                # School selection
-                selected_school = st.selectbox('Select a school', valid_date_data['Chosen School'].unique())
-                school_data = valid_date_data[valid_date_data['Chosen School'] == selected_school]
-
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.metric("Total Students", len(school_data))
-                with col2:
-                    st.metric("Visa Approval Rate", f"{(school_data['Visa Result'] == 'Visa Approved').mean():.2%}")
-
-                # Monthly trend for the selected school
-                monthly_school_trend = school_data.groupby(['Year', 'Month']).size().reset_index(name='Count')
-                monthly_school_trend['Date'] = pd.to_datetime(monthly_school_trend['Year'].astype(str) + ' ' + monthly_school_trend['Month'], format='%Y %B')
-                monthly_school_trend = monthly_school_trend.sort_values('Date')
-                fig_school_trend = px.line(monthly_school_trend, x='Date', y='Count', title=f'Monthly Trend for {selected_school}')
-                st.plotly_chart(fig_school_trend, use_container_width=True)
-
-            # Visa Statistics Page
-            elif page == 'Visa Statistics':
-                st.header('🛂 Visa Statistics')
-
-                # Overall visa statistics
-                visa_stats = valid_date_data['Visa Result'].value_counts()
-                fig_visa = px.pie(values=visa_stats.values, names=visa_stats.index, title='Overall Visa Results')
-                st.plotly_chart(fig_visa, use_container_width=True)
-
-                # Visa approval rate by school
-                visa_by_school = valid_date_data.groupby('Chosen School')['Visa Result'].apply(lambda x: (x == 'Visa Approved').mean()).sort_values(ascending=False)
-                fig_visa_school = px.bar(visa_by_school, x=visa_by_school.index, y=visa_by_school.values, title='Visa Approval Rate by School')
-                fig_visa_school.update_layout(yaxis_title='Approval Rate', xaxis_title='School')
-                st.plotly_chart(fig_visa_school, use_container_width=True)
-
-                # Visa approval trend
-                visa_trend = valid_date_data.groupby(['Year', 'Month'])['Visa Result'].apply(lambda x: (x == 'Visa Approved').mean()).reset_index(name='Approval Rate')
-                visa_trend['Date'] = pd.to_datetime(visa_trend['Year'].astype(str) + ' ' + visa_trend['Month'], format='%Y %B')
-                visa_trend = visa_trend.sort_values('Date')
-                fig_visa_trend = px.line(visa_trend, x='Date', y='Approval Rate', title='Visa Approval Rate Trend')
-                st.plotly_chart(fig_visa_trend, use_container_width=True)
+    st.subheader("🏆 Top Performing Agents")
+    agent_performance = data.groupby('Agent')['Visa Result'].apply(lambda x: (x == 'Visa Approved').sum() / len(x) * 100).sort_values(ascending=False).head(5)
+    fig = px.bar(agent_performance, x=agent_performance.index, y=agent_performance.values,
+                 labels={'y': 'Approval Rate (%)', 'x': 'Agent'},
+                 title="Top 5 Agents by Visa Approval Rate")
+    st.plotly_chart(fig, use_container_width=True)
 
 if __name__ == "__main__":
-    main()
+    statistics_page()
