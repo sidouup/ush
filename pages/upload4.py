@@ -441,15 +441,16 @@ def main():
     
     if 'student_changed' not in st.session_state:
         st.session_state.student_changed = False
-
     if 'upload_success' not in st.session_state:
         st.session_state.upload_success = False
-
     if 'selected_student' not in st.session_state:
         st.session_state.selected_student = ""
-
     if 'active_tab' not in st.session_state:
         st.session_state.active_tab = "Personal"
+    # Initialize other session state variables
+    for key in ['visa_status', 'current_step', 'payment_date', 'payment_method', 'payment_type', 'compte', 'sevis_payment', 'application_payment']:
+        if key not in st.session_state:
+            st.session_state[key] = None
 
     # Check if we need to refresh the page
     if st.session_state.upload_success:
@@ -822,33 +823,33 @@ def main():
             
             if edit_mode and st.button("Save Changes", key="save_changes_button"):
                 updated_student = {
-                    'First Name': st.session_state.first_name,
-                    'Last Name': st.session_state.last_name,
-                    'Phone N°': st.session_state.phone_number,
-                    'E-mail': st.session_state.email,
-                    'Emergency contact N°': st.session_state.emergency_contact,
-                    'Address': st.session_state.address,
-                    'Attempts': st.session_state.attempts,
-                    'Chosen School': st.session_state.chosen_school,
-                    'Specialite': st.session_state.specialite,
-                    'Duration': st.session_state.duration,
-                    'School Entry Date': st.session_state.school_entry_date.strftime('%d/%m/%Y %H:%M:%S') if st.session_state.school_entry_date else '',
-                    'Entry Date in the US': st.session_state.entry_date_in_us.strftime('%d/%m/%Y %H:%M:%S') if st.session_state.entry_date_in_us else '',
-                    'ADDRESS in the U.S': st.session_state.address_us,
-                    'E-MAIL RDV': st.session_state.email_rdv,
-                    'PASSWORD RDV': st.session_state.password_rdv,
-                    'EMBASSY ITW. DATE': st.session_state.embassy_itw_date.strftime('%d/%m/%Y %H:%M:%S') if st.session_state.embassy_itw_date else '',
-                    'DS-160 maker': st.session_state.ds160_maker,
-                    'Password DS-160': st.session_state.password_ds160,
-                    'Secret Q.': st.session_state.secret_q,
-                    'Visa Result': st.session_state.visa_status,
-                    'Stage': st.session_state.current_step,
-                    'DATE': st.session_state.payment_date.strftime('%d/%m/%Y %H:%M:%S') if st.session_state.payment_date else '',
-                    'Payment Amount': st.session_state.payment_method,
-                    'Payment Type': st.session_state.payment_type,
-                    'Compte': st.session_state.compte,
-                    'Sevis payment ?': st.session_state.sevis_payment,
-                    'Application payment ?': st.session_state.application_payment,
+                    'First Name': st.session_state.get('first_name', ''),
+                    'Last Name': st.session_state.get('last_name', ''),
+                    'Phone N°': st.session_state.get('phone_number', ''),
+                    'E-mail': st.session_state.get('email', ''),
+                    'Emergency contact N°': st.session_state.get('emergency_contact', ''),
+                    'Address': st.session_state.get('address', ''),
+                    'Attempts': st.session_state.get('attempts', ''),
+                    'Chosen School': st.session_state.get('chosen_school', ''),
+                    'Specialite': st.session_state.get('specialite', ''),
+                    'Duration': st.session_state.get('duration', ''),
+                    'School Entry Date': st.session_state.get('school_entry_date', '').strftime('%d/%m/%Y %H:%M:%S') if st.session_state.get('school_entry_date') else '',
+                    'Entry Date in the US': st.session_state.get('entry_date_in_us', '').strftime('%d/%m/%Y %H:%M:%S') if st.session_state.get('entry_date_in_us') else '',
+                    'ADDRESS in the U.S': st.session_state.get('address_us', ''),
+                    'E-MAIL RDV': st.session_state.get('email_rdv', ''),
+                    'PASSWORD RDV': st.session_state.get('password_rdv', ''),
+                    'EMBASSY ITW. DATE': st.session_state.get('embassy_itw_date', '').strftime('%d/%m/%Y %H:%M:%S') if st.session_state.get('embassy_itw_date') else '',
+                    'DS-160 maker': st.session_state.get('ds160_maker', ''),
+                    'Password DS-160': st.session_state.get('password_ds160', ''),
+                    'Secret Q.': st.session_state.get('secret_q', ''),
+                    'Visa Result': st.session_state.get('visa_status', ''),
+                    'Stage': st.session_state.get('current_step', ''),
+                    'DATE': st.session_state.get('payment_date', '').strftime('%d/%m/%Y %H:%M:%S') if st.session_state.get('payment_date') else '',
+                    'Payment Amount': st.session_state.get('payment_method', ''),
+                    'Payment Type': st.session_state.get('payment_type', ''),
+                    'Compte': st.session_state.get('compte', ''),
+                    'Sevis payment ?': st.session_state.get('sevis_payment', ''),
+                    'Application payment ?': st.session_state.get('application_payment', ''),
                 }
         
                 # Update the data in the DataFrame
