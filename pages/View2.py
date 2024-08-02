@@ -49,6 +49,13 @@ import gspread
 
 # ... (previous functions remain the same)
 
+import streamlit as st
+import pandas as pd
+from google.oauth2.service_account import Credentials
+import gspread
+
+# ... (previous functions remain the same)
+
 def main():
     st.set_page_config(page_title="Student List", layout="wide")
     st.title("Student List")
@@ -69,7 +76,7 @@ def main():
     agent_colors = {}
     for agent in agents[1:]:  # Skip "All"
         color = st.sidebar.color_picker(f"Choose color for {agent}", "#FFFFFF")
-        agent_colors[agent] = f"background-color: {color}"
+        agent_colors[agent] = color
 
     # Filter buttons for stages
     st.markdown('<div class="stCard" style="display: flex; justify-content: space-between;">', unsafe_allow_html=True)
@@ -100,20 +107,25 @@ def main():
     # Function to apply colors
     def highlight_agent(row):
         agent = row['Agent']
-        return [agent_colors.get(agent, '')] * len(row)
+        return f"background-color: {agent_colors.get(agent, '#FFFFFF')}"
+
+    # Create a styled dataframe
+    styled_df = filtered_data.style.apply(lambda row: [highlight_agent(row)] * len(row), axis=1)
 
     # Editable table
     edit_mode = st.checkbox("Edit Mode")
     if edit_mode:
-        edited_data = st.data_editor(filtered_data, num_rows="dynamic")
+        edited_data = st.data_editor(
+            styled_df,
+            num_rows="dynamic",
+            hide_index=True,
+            key="data_editor"
+        )
         if st.button("Save Changes"):
-            save_data(edited_data, spreadsheet_id, sheet_name)
+            save_data(edited_data.data, spreadsheet_id, sheet_name)
             st.success("Changes saved successfully!")
     else:
-        # Apply styling and display the dataframe
-        styled_df = filtered_data.style.apply(highlight_agent, axis=1)
-        st.dataframe(styled_df)
+        st.dataframe(styled_df, hide_index=True)
 
 if __name__ == "__main__":
     main()
-
