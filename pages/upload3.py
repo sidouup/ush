@@ -805,12 +805,16 @@ def main():
                 st.success("Changes saved successfully!")
                 st.session_state.edit_mode = False
                 
+                # Set a flag to reload data on next run
                 st.session_state['reload_data'] = True
-                # Clear cache and rerun after a short delay
+                
+                # Clear caches
                 st.cache_data.clear()
                 st.cache_resource.clear()
-                threading.Timer(1, st.rerun).start()
                 
+                # Rerun the app immediately
+                st.rerun()
+                            
 
 
         else:
