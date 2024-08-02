@@ -612,14 +612,6 @@ def main():
 
             # Tabs for student information
             tab1, tab2, tab3, tab4, tab5 = st.tabs(["Personal", "School", "Embassy", "Payment", "Documents"])
-
-            def format_date(date_str):
-                if pd.isna(date_str):
-                    return "N/A"
-                try:
-                    return pd.to_datetime(date_str).strftime('%d/%m/%Y')
-                except ValueError:
-                    return "Invalid Date"
             
             # Options for dropdowns
             school_options = ["University", "Community College", "CCLS Miami", "CCLS NY NJ", "Connect English",
