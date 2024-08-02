@@ -628,7 +628,9 @@ def main():
                 # Visa Status
                 visa_status = selected_student['Visa Result'] if not filtered_data.empty else "Unknown"
                 st.write(f"**🛂 Visa Status:** {visa_status}")
-        
+
+                entry_date =selected_student['School Entry Date'] if not filtered_data.empty else "Unknown"
+                st.write(f"**🏫 School Entry Date:** {entry_date}")
                 # Days until Interview
                 interview_date = selected_student['EMBASSY ITW. DATE'] if not filtered_data.empty else None
                 days_remaining = calculate_days_until_interview(interview_date)
