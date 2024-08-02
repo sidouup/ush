@@ -808,7 +808,8 @@ def main():
                     else:
                         st.error("An error occurred while uploading the document.")
             
-                if edit_mode and st.button("Save Changes"):
+            if edit_mode:
+                if st.button("Save Changes", key="save_changes_button"):
                     updated_student = {
                         'First Name': first_name,
                         'Last Name': last_name,
@@ -832,7 +833,6 @@ def main():
                         'Visa Result': visa_status,
                         'Stage': current_step,
                         'DATE': payment_date.strftime('%d/%m/%Y') if payment_date else '',
-
                         'Payment Amount': payment_method,
                         'Payment Type': payment_type,
                         'Compte': compte,
@@ -848,7 +848,7 @@ def main():
                     save_data(filtered_data, spreadsheet_id, 'ALL')
                     st.success("Changes saved successfully!")
                     clear_cache_and_rerun()  # Clear cache and rerun the app
-
+    
         else:
             st.info("No students found matching the search criteria.")
 
