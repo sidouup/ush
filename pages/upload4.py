@@ -606,12 +606,12 @@ def main():
                 
                 # SEVIS Payment
                 sevis_payment = selected_student['Sevis payment ?'] if not filtered_data.empty else "No"
-                sevis_icon = "✅" if sevis_payment == "YES" else "❌"
+                sevis_icon = "✅" if selected_student['Sevis payment ?'] == "YES" else "❌"
                 st.write(f"**💲 SEVIS Payment:** {sevis_icon} ({sevis_payment})")
         
                 # Application Payment
                 application_payment = selected_student['Application payment ?'] if not filtered_data.empty else "No"
-                application_icon = "✅" if application_payment == "YES" else "❌"
+                application_icon = "✅" if selected_student['Application payment ?'] == "YES" else "❌"
                 st.write(f"**💸 Application Payment:** {application_icon} ({application_payment})")
         
                 # Visa Status
