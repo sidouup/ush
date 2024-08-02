@@ -146,6 +146,13 @@ def save_data(df, spreadsheet_id, sheet_name):
     # Replace [pd.NA, pd.NaT, float('inf'), float('-inf')] with None
     df = df.replace([pd.NA, pd.NaT, float('inf'), float('-inf')], None)
 
+    # Format the date columns to ensure consistency
+    date_columns = ['DATE', 'School Entry Date', 'Entry Date in the US', 'EMBASSY ITW. DATE']
+    for col in date_columns:
+        if col in df.columns:
+            df[col] = pd.to_datetime(df[col], errors='coerce')
+            df[col] = df[col].apply(lambda x: x.strftime('%d/%m/%Y %H:%M:%S') if pd.notna(x) else "")
+
     client = get_google_sheet_client()
     sheet = client.open_by_key(spreadsheet_id).worksheet(sheet_name)
     
@@ -155,13 +162,6 @@ def save_data(df, spreadsheet_id, sheet_name):
     # Limit the DataFrame to the number of columns in the sheet
     df = df.iloc[:, :sheet_columns]
     
-    # Format the date columns to ensure consistency
-    date_columns = ['DATE', 'School Entry Date', 'Entry Date in the US', 'EMBASSY ITW. DATE']
-    for col in date_columns:
-        if col in df.columns:
-            df[col] = pd.to_datetime(df[col], format='%d/%m/%Y %H:%M:%S', errors='coerce')
-            df[col] = df[col].apply(lambda x: x.strftime('%d/%m/%Y %H:%M:%S') if pd.notna(x) else "")
-
     # Prepare the data for batch update
     values = [df.columns.tolist()] + df.values.tolist()
     
@@ -820,46 +820,45 @@ def main():
                     else:
                         st.error("An error occurred while uploading the document.")
             
-            if edit_mode:
-                if st.button("Save Changes", key="save_changes_button"):
-                    updated_student = {
-                        'First Name': first_name,
-                        'Last Name': last_name,
-                        'Phone N°': phone_number,
-                        'E-mail': email,
-                        'Emergency contact N°': emergency_contact,
-                        'Address': address,
-                        'Attempts': attempts,
-                        'Chosen School': chosen_school,
-                        'Specialite': specialite,
-                        'Duration': duration,
-                        'School Entry Date': school_entry_date.strftime('%d/%m/%Y') if school_entry_date else '',
-                        'Entry Date in the US': entry_date_in_us.strftime('%d/%m/%Y') if entry_date_in_us else '',
-                        'ADDRESS in the U.S': address_us,
-                        'E-MAIL RDV': email_rdv,
-                        'PASSWORD RDV': password_rdv,
-                        'EMBASSY ITW. DATE': embassy_itw_date.strftime('%d/%m/%Y') if embassy_itw_date else '',
-                        'DS-160 maker': ds160_maker,
-                        'Password DS-160': password_ds160,
-                        'Secret Q.': secret_q,
-                        'Visa Result': visa_status,
-                        'Stage': current_step,
-                        'DATE': payment_date.strftime('%d/%m/%Y') if payment_date else '',
-                        'Payment Amount': payment_method,
-                        'Payment Type': payment_type,
-                        'Compte': compte,
-                        'Sevis payment ?': sevis_payment,
-                        'Application payment ?': application_payment,
-                    }
-            
-                    # Update the data in the DataFrame
-                    for key, value in updated_student.items():
-                        filtered_data.loc[filtered_data['Student Name'] == student_name, key] = value
-            
-                    # Save the updated data back to Google Sheets
-                    save_data(filtered_data, spreadsheet_id, 'ALL')
-                    st.success("Changes saved successfully!")
-                    clear_cache_and_rerun()  # Clear cache and rerun the app
+            if edit_mode and st.button("Save Changes", key="save_changes_button"):
+                updated_student = {
+                    'First Name': st.session_state.first_name,
+                    'Last Name': st.session_state.last_name,
+                    'Phone N°': st.session_state.phone_number,
+                    'E-mail': st.session_state.email,
+                    'Emergency contact N°': st.session_state.emergency_contact,
+                    'Address': st.session_state.address,
+                    'Attempts': st.session_state.attempts,
+                    'Chosen School': st.session_state.chosen_school,
+                    'Specialite': st.session_state.specialite,
+                    'Duration': st.session_state.duration,
+                    'School Entry Date': st.session_state.school_entry_date.strftime('%d/%m/%Y %H:%M:%S') if st.session_state.school_entry_date else '',
+                    'Entry Date in the US': st.session_state.entry_date_in_us.strftime('%d/%m/%Y %H:%M:%S') if st.session_state.entry_date_in_us else '',
+                    'ADDRESS in the U.S': st.session_state.address_us,
+                    'E-MAIL RDV': st.session_state.email_rdv,
+                    'PASSWORD RDV': st.session_state.password_rdv,
+                    'EMBASSY ITW. DATE': st.session_state.embassy_itw_date.strftime('%d/%m/%Y %H:%M:%S') if st.session_state.embassy_itw_date else '',
+                    'DS-160 maker': st.session_state.ds160_maker,
+                    'Password DS-160': st.session_state.password_ds160,
+                    'Secret Q.': st.session_state.secret_q,
+                    'Visa Result': st.session_state.visa_status,
+                    'Stage': st.session_state.current_step,
+                    'DATE': st.session_state.payment_date.strftime('%d/%m/%Y %H:%M:%S') if st.session_state.payment_date else '',
+                    'Payment Amount': st.session_state.payment_method,
+                    'Payment Type': st.session_state.payment_type,
+                    'Compte': st.session_state.compte,
+                    'Sevis payment ?': st.session_state.sevis_payment,
+                    'Application payment ?': st.session_state.application_payment,
+                }
+        
+                # Update the data in the DataFrame
+                for key, value in updated_student.items():
+                    filtered_data.loc[filtered_data['Student Name'] == student_name, key] = value
+        
+                # Save the updated data back to Google Sheets
+                save_data(filtered_data, spreadsheet_id, 'ALL')
+                st.success("Changes saved successfully!")
+                clear_cache_and_rerun()  # Clear cache and rerun the app
     
         else:
             st.info("No students found matching the search criteria.")
