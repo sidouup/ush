@@ -91,8 +91,8 @@ def load_data(spreadsheet_id):
             '', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 
             'Emergency contact N°', 'Chosen School', 'Specialite', 'Duration', 
             'Payment Amount', 'Sevis payment ?', 'Application payment ?', 'DS-160 maker', 
-            'Password DS-160', 'Secret Q.', 'School Entry ', 'Entry  in the US', 
-            'ADDRESS in the U.S', 'E-MAIL RDV', 'PASSWORD RDV', 'EMBASSY ITW. ', 
+            'Password DS-160', 'Secret Q.', 'School Entry Date', 'Entry Date in the US', 
+            'ADDRESS in the U.S', 'E-MAIL RDV', 'PASSWORD RDV', 'EMBASSY ITW. DATE', 
             'Attempts', 'Visa Result', 'Agent', 'Note', 'Stage'
         ]
     }
