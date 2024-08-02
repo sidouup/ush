@@ -90,7 +90,7 @@ def main():
     edit_mode = st.checkbox("Edit Mode")
 
     if edit_mode:
-        edited_data = st.experimental_data_editor(filtered_data, num_rows="dynamic")
+        edited_data = st.data_editor(filtered_data, num_rows="dynamic")
         if st.button("Save Changes"):
             save_data(edited_data, spreadsheet_id, sheet_name)
             st.success("Changes saved successfully!")
