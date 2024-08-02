@@ -555,6 +555,7 @@ def main():
                           "CONVERSE SCHOOL", "ELI San Francisco", "F2 Visa", "GT Chicago", "BEA Huston", "BIA Huston",
                           "OHLA Miami", "UCDEA", "HAWAII", "Not Partner", "Not yet"]
         attempts_options = ["All", "1st Try", "2nd Try", "3rd Try"]
+        Gender_options = ["Male", "Female"]
 
         st.markdown('<div class="stCard" style="display: flex; justify-content: space-between;">', unsafe_allow_html=True)
         col1, col2, col3, col4 = st.columns(4)
@@ -739,7 +740,7 @@ def main():
                     last_name = st.text_input("Last Name", selected_student['Last Name'], key="last_name", on_change=update_student_data)
                     Gender = st.selectbox(
                         "Gender", 
-                        attempts_options, 
+                        Gender_options, 
                         index=attempts_options.index(selected_student['Gender']) if selected_student['Gender'] in Gender_options else 0,
                         key="attempts", 
                         on_change=update_student_data
@@ -946,7 +947,7 @@ def main():
                     'Visa Result': st.session_state.get('visa_status', ''),
                     'Stage': st.session_state.get('current_stage', ''),  # Add this line
                     'DATE': st.session_state.get('payment_date', ''),
-                    'BANK': st.session_state.get('BANK', ''),
+                    'BANK': st.session_state.get('Bankstatment', ''),
                     'Gender': st.session_state.get('Gender', ''),
                     'Payment Amount': st.session_state.get('payment_method', ''),
                     'Payment Type': st.session_state.get('payment_type', ''),
