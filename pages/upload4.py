@@ -758,9 +758,18 @@ def main():
                         on_change=update_student_data
                     )
             
+                    # Updated phone number input
                     phone_number = st.text_input("Phone Number", selected_student['Phone N°'], key="phone_number", on_change=update_student_data)
+                    if phone_number and not re.match(r'^\+?[0-9]+$', phone_number):
+                        st.warning("Phone number should only contain digits, and optionally start with a '+'")
+                    
                     email = st.text_input("Email", selected_student['E-mail'], key="email", on_change=update_student_data)
+                    
+                    # Updated emergency contact input
                     emergency_contact = st.text_input("Emergency Contact Number", selected_student['Emergency contact N°'], key="emergency_contact", on_change=update_student_data)
+                    if emergency_contact and not re.match(r'^\+?[0-9]+$', emergency_contact):
+                        st.warning("Emergency contact number should only contain digits, and optionally start with a '+'")
+                    
                     address = st.text_input("Address", selected_student['Address'], key="address", on_change=update_student_data)
                     attempts = st.selectbox(
                         "Attempts", 
@@ -779,7 +788,7 @@ def main():
                     st.write(f"**Address:** {selected_student['Address']}")
                     st.write(f"**Attempts:** {selected_student['Attempts']}")
                 st.markdown('</div>', unsafe_allow_html=True)
-            
+                    
                 with tab2:
                     st.markdown('<div class="stCard">', unsafe_allow_html=True)
                     st.subheader("🏫 School Information")
