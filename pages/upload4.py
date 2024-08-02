@@ -585,23 +585,72 @@ def main():
             st.markdown('<div class="stCard" style="display: flex; justify-content: space-between;">', unsafe_allow_html=True)
             col2, col1, col3 = st.columns([3, 2, 3])
         
-            with col2:
-                if not filtered_data.empty:
-                    search_query = st.selectbox(
-                        "🔍 Search for a student",
-                        options=filtered_data['Display'].tolist(),
-                        key="search_query",
-                        index=filtered_data['Display'].tolist().index(st.session_state['selected_student']),
-                        on_change=lambda: st.session_state.update({'student_changed': True})
-                    )
-                else:
-                    st.write("No students found matching the search criteria.")
+            # CSS for custom scrollable list
+            st.markdown("""
+                <style>
+                    .scrollable-list {
+                        height: 200px;
+                        overflow-y: scroll;
+                        padding: 10px;
+                        border: 1px solid #ccc;
+                        border-radius: 5px;
+                    }
+                    .scrollable-list div {
+                        padding: 5px;
+                        cursor: pointer;
+                    }
+                    .scrollable-list div:hover {
+                        background-color: #f0f0f0;
+                    }
+                    .selected {
+                        background-color: #007bff;
+                        color: white;
+                    }
+                </style>
+            """, unsafe_allow_html=True)
             
-                # Handle student selection change
-                if st.session_state['student_changed'] or st.session_state['selected_student'] != search_query:
-                    st.session_state['selected_student'] = search_query
-                    st.session_state['student_changed'] = False
-                    st.rerun()
+            # Display the custom scrollable list
+            with col2:
+                st.markdown("### List of Filtered Students")
+                if not filtered_data.empty:
+                    list_items = filtered_data['Display'].tolist()
+                    st.markdown('<div class="scrollable-list">', unsafe_allow_html=True)
+                    for item in list_items:
+                        st.markdown(f'<div id="{item}" onclick="selectStudent(\'{item}\')">{item}</div>', unsafe_allow_html=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                else:
+                    st.write("No students to display")
+            
+                # JavaScript for handling the selection
+                st.markdown("""
+                    <script>
+                        function selectStudent(student) {
+                            const elements = document.querySelectorAll('.scrollable-list div');
+                            elements.forEach(el => el.classList.remove('selected'));
+                            document.getElementById(student).classList.add('selected');
+                            const streamlitCustomMessage = new CustomEvent("streamlitCustomMessage", {
+                                detail: { student: student }
+                            });
+                            window.dispatchEvent(streamlitCustomMessage);
+                        }
+                    </script>
+                """, unsafe_allow_html=True)
+            
+            # JavaScript listener for updating the Streamlit session state
+            st.write("""
+                <script>
+                    window.addEventListener("streamlitCustomMessage", (event) => {
+                        const student = event.detail.student;
+                        window.streamlit.setComponentValue(student);
+                    });
+                </script>
+            """, unsafe_allow_html=True)
+            
+            # Handle student selection change
+            if st.session_state['student_changed'] or st.session_state['selected_student'] != st.selectbox("search_query", []):
+                st.session_state['selected_student'] = st.selectbox("search_query", [])
+                st.session_state['student_changed'] = False
+                st.rerun()
                                     
             with col1:
                 st.subheader("Application Status")
