@@ -599,9 +599,17 @@ def main():
                 </div>
                 """
                 st.markdown(progress_bar, unsafe_allow_html=True)
-
-
-
+        
+                visa_status = selected_student['Visa Result'] if not filtered_data.empty else "Unknown"
+                st.write(f"**🛂 Visa Status:** {visa_status}")
+        
+                interview_date = selected_student['EMBASSY ITW. DATE'] if not filtered_data.empty else None
+                days_remaining = calculate_days_until_interview(interview_date)
+                if days_remaining is not None:
+                    st.metric("📅 Days until interview", days_remaining)
+                else:
+                    st.metric("📅 Days until interview", "N/A")
+        
                 # Date of Payment
                 date_of_payment = selected_student['DATE'] if not filtered_data.empty else None
                 if date_of_payment:
@@ -609,36 +617,23 @@ def main():
                         date_of_payment = pd.to_datetime(date_of_payment).strftime('%d %B %Y')
                     except ValueError:
                         date_of_payment = "Invalid Date"
-                st.write(f"**Date of Payment:** {date_of_payment}")
-
-                st.write(f"**Current Step:** {current_step}")
-
+                st.write(f"**📆 Date of Payment:** {date_of_payment}")
+        
+                st.write(f"**🚩 Current Step:** {current_step}")
+        
                 # Agent
                 agent = selected_student['Agent'] if not filtered_data.empty else "Unknown"
-                st.write(f"**Agent:** {agent}")
+                st.write(f"**🧑‍💼 Agent:** {agent}")
                 
                 # SEVIS Payment
                 sevis_payment = selected_student['Sevis payment ? '] if not filtered_data.empty else "No"
                 sevis_icon = "✅" if sevis_payment == "YES" else "❌"
-                st.write(f"**SEVIS Payment:** {sevis_icon} ({sevis_payment})")
+                st.write(f"**💲 SEVIS Payment:** {sevis_icon} ({sevis_payment})")
         
                 # Application Payment
                 application_payment = selected_student['Application payment ?'] if not filtered_data.empty else "No"
                 application_icon = "✅" if application_payment == "YES" else "❌"
-                st.write(f"**Application Payment:** {application_icon} ({application_payment})")
-
-                
-        
-                visa_status = selected_student['Visa Result'] if not filtered_data.empty else "Unknown"
-                st.write(f"**Visa Status:** {visa_status}")
-        
-                interview_date = selected_student['EMBASSY ITW. DATE'] if not filtered_data.empty else None
-                days_remaining = calculate_days_until_interview(interview_date)
-                if days_remaining is not None:
-                    st.metric("Days until interview", days_remaining)
-                else:
-                    st.metric("Days until interview", "N/A")
-                    
+                st.write(f"**💸 Application Payment:** {application_icon} ({application_payment})")
         
             else:
                 st.write("No data available for the current filters.")
