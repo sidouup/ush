@@ -86,7 +86,6 @@ def upload_file_to_drive(file_path, mime_type, folder_id=None):
         return file_id
     return None
 
-# Function to load data from Google Sheets
 def load_data(spreadsheet_id):
     sheet_headers = {
         'ALL': [
@@ -120,6 +119,13 @@ def load_data(spreadsheet_id):
                     df['First Name'] = df['First Name'].astype(str)
                     df['Last Name'] = df['Last Name'].astype(str)
                     df['Student Name'] = df['First Name'] + " " + df['Last Name']
+                
+                # Parse dates
+                date_columns = ['DATE', 'School Entry Date', 'Entry Date in the US', 'EMBASSY ITW. DATE']
+                for col in date_columns:
+                    if col in df.columns:
+                        df[col] = pd.to_datetime(df[col], errors='coerce', dayfirst=True)
+                
                 df.dropna(subset=['Student Name'], inplace=True)
                 df.dropna(how='all', inplace=True)
                 combined_data = pd.concat([combined_data, df], ignore_index=True)
@@ -192,8 +198,8 @@ def format_date(date_string):
         return "Not set"
     try:
         # Parse the date string, assuming day first format
-        date = pd.to_datetime(date_string, format='%d/%m/%Y %H:%M:%S', dayfirst=True)
-        return date.strftime('%d %B %Y')
+        date = pd.to_datetime(date_string, errors='coerce', dayfirst=True)
+        return date.strftime('%d %B %Y') if not pd.isna(date) else "Invalid Date"
     except:
         return "Invalid Date"
 
@@ -745,7 +751,7 @@ def main():
                         key="Gender", 
                         on_change=update_student_data
                     )
-
+            
                     phone_number = st.text_input("Phone Number", selected_student['Phone N°'], key="phone_number", on_change=update_student_data)
                     email = st.text_input("Email", selected_student['E-mail'], key="email", on_change=update_student_data)
                     emergency_contact = st.text_input("Emergency Contact Number", selected_student['Emergency contact N°'], key="emergency_contact", on_change=update_student_data)
@@ -776,20 +782,19 @@ def main():
                     specialite = st.text_input("Specialite", selected_student['Specialite'], key="specialite", on_change=update_student_data)
                     duration = st.text_input("Duration", selected_student['Duration'], key="duration", on_change=update_student_data)
                     Bankstatment = st.text_input("BANK", selected_student['BANK'], key="Bankstatment", on_change=update_student_data)
-
-                    school_entry_date_str = selected_student['School Entry Date']
-                    school_entry_date = pd.to_datetime(school_entry_date_str, format='%d/%m/%Y %H:%M:%S', errors='coerce', dayfirst=True)
+            
+                    school_entry_date = pd.to_datetime(selected_student['School Entry Date'], errors='coerce', dayfirst=True)
                     school_entry_date = st.date_input(
                         "School Entry Date",
-                        value=school_entry_date.date() if not pd.isna(school_entry_date) else None,
+                        value=school_entry_date if not pd.isna(school_entry_date) else None,
                         key="school_entry_date",
                         on_change=update_student_data
                     )
-                    entry_date_in_us_str = selected_student['Entry Date in the US']
-                    entry_date_in_us = pd.to_datetime(entry_date_in_us_str, format='%d/%m/%Y %H:%M:%S', errors='coerce', dayfirst=True)
+                    
+                    entry_date_in_us = pd.to_datetime(selected_student['Entry Date in the US'], errors='coerce', dayfirst=True)
                     entry_date_in_us = st.date_input(
                         "Entry Date in the US",
-                        value=entry_date_in_us.date() if not pd.isna(entry_date_in_us) else None,
+                        value=entry_date_in_us if not pd.isna(entry_date_in_us) else None,
                         key="entry_date_in_us",
                         on_change=update_student_data
                     )
