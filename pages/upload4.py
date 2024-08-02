@@ -353,7 +353,7 @@ async def check_document_status_async(student_name, service):
     
     document_types = ["Passport", "Bank Statement", "Financial Letter", 
                       "Transcripts", "Diplomas", "English Test", "Payment Receipt",
-                      "SEVIS Receipt", "I20"]
+                      "SEVIS Receipt", "I20","Bank"]
     document_status = {doc_type: {'status': False, 'files': []} for doc_type in document_types}
 
     if not student_folder_id:
@@ -728,6 +728,7 @@ def main():
             compte_options = ["Mohamed", "Sid Ali"]
             yes_no_options = ["YES", "NO"]
             attempts_options = ["1st Try", "2nd Try", "3rd Try"]
+            Gender_options = ["Male", "Female"]
 
             
             with tab1:
@@ -736,6 +737,14 @@ def main():
                 if edit_mode:
                     first_name = st.text_input("First Name", selected_student['First Name'], key="first_name", on_change=update_student_data)
                     last_name = st.text_input("Last Name", selected_student['Last Name'], key="last_name", on_change=update_student_data)
+                    Gender = st.selectbox(
+                        "Gender", 
+                        attempts_options, 
+                        index=attempts_options.index(selected_student['Gender']) if selected_student['Gender'] in Gender_options else 0,
+                        key="attempts", 
+                        on_change=update_student_data
+                    )
+
                     phone_number = st.text_input("Phone Number", selected_student['Phone N°'], key="phone_number", on_change=update_student_data)
                     email = st.text_input("Email", selected_student['E-mail'], key="email", on_change=update_student_data)
                     emergency_contact = st.text_input("Emergency Contact Number", selected_student['Emergency contact N°'], key="emergency_contact", on_change=update_student_data)
@@ -750,6 +759,7 @@ def main():
                 else:
                     st.write(f"**First Name:** {selected_student['First Name']}")
                     st.write(f"**Last Name:** {selected_student['Last Name']}")
+                    st.write(f"**Gender:** {selected_student['Gender']}")
                     st.write(f"**Phone Number:** {selected_student['Phone N°']}")
                     st.write(f"**Email:** {selected_student['E-mail']}")
                     st.write(f"**Emergency Contact Number:** {selected_student['Emergency contact N°']}")
@@ -764,6 +774,8 @@ def main():
                     chosen_school = st.selectbox("Chosen School", school_options, index=school_options.index(selected_student['Chosen School']) if selected_student['Chosen School'] in school_options else 0, key="chosen_school", on_change=update_student_data)
                     specialite = st.text_input("Specialite", selected_student['Specialite'], key="specialite", on_change=update_student_data)
                     duration = st.text_input("Duration", selected_student['Duration'], key="duration", on_change=update_student_data)
+                    Bankstatment = st.text_input("BANK", selected_student['BANK'], key="Bankstatment", on_change=update_student_data)
+
                     school_entry_date_str = selected_student['School Entry Date']
                     school_entry_date = pd.to_datetime(school_entry_date_str, format='%d/%m/%Y %H:%M:%S', errors='coerce', dayfirst=True)
                     school_entry_date = st.date_input(
@@ -784,6 +796,7 @@ def main():
                     st.write(f"**Chosen School:** {selected_student['Chosen School']}")
                     st.write(f"**Specialite:** {selected_student['Specialite']}")
                     st.write(f"**Duration:** {selected_student['Duration']}")
+                    st.write(f"**Bank:** {selected_student['Bank']}")
                     st.write(f"**School Entry Date:** {format_date(selected_student['School Entry Date'])}")
                     st.write(f"**Entry Date in the US:** {format_date(selected_student['Entry Date in the US'])}")
                 st.markdown('</div>', unsafe_allow_html=True)
@@ -863,7 +876,7 @@ def main():
                 document_type = st.selectbox("Select Document Type", 
                                              ["Passport", "Bank Statement", "Financial Letter", 
                                               "Transcripts", "Diplomas", "English Test", "Payment Receipt",
-                                              "SEVIS Receipt", "I20"], 
+                                              "SEVIS Receipt", "I20","Bank"], 
                                              key="document_type")
                 uploaded_file = st.file_uploader("Upload Document", type=["jpg", "jpeg", "png", "pdf"], key="uploaded_file")
                 
@@ -933,6 +946,8 @@ def main():
                     'Visa Result': st.session_state.get('visa_status', ''),
                     'Stage': st.session_state.get('current_stage', ''),  # Add this line
                     'DATE': st.session_state.get('payment_date', ''),
+                    'BANK': st.session_state.get('BANK', ''),
+                    'Gender': st.session_state.get('Gender', ''),
                     'Payment Amount': st.session_state.get('payment_method', ''),
                     'Payment Type': st.session_state.get('payment_type', ''),
                     'Compte': st.session_state.get('compte', ''),
