@@ -680,31 +680,6 @@ def main():
         else:
             st.info("No students found matching the search criteria.")
 
-        with col3:
-            selected_student = filtered_data[filtered_data['Student Name'] == search_query].iloc[0]
-            student_name = selected_student['Student Name']
-        
-            document_status = get_document_status(student_name)
-            st.subheader("Document Status")
-        
-            for doc_type, status_info in document_status.items():
-                icon = "✅" if status_info['status'] else "❌"
-                col1, col2 = st.columns([9, 1])
-                with col1:
-                    st.markdown(f"**{icon} {doc_type}**")
-                    for file in status_info['files']:
-                        st.markdown(f"- [{file['name']}]({file['webViewLink']})")
-                if status_info['status']:
-                    if status_info['status']:
-                        with col2:
-                            if st.button("🗑️", key=f"delete_{status_info['files'][0]['id']}", help="Delete file"):
-                                file_id = status_info['files'][0]['id']
-                                if trash_file_in_drive(file_id, student_name):
-                                    st.session_state['reload_data'] = True
-                                    clear_cache_and_rerun()
-                else:
-                    with col2:
-                        st.markdown("")
                                     
         if not filtered_data.empty:
             selected_student = filtered_data[filtered_data['Student Name'] == search_query].iloc[0]
