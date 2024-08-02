@@ -43,7 +43,6 @@ def save_data(df, spreadsheet_id, sheet_name):
 # Main function for the new page
 def main():
     st.set_page_config(page_title="Student List", layout="wide")
-
     st.title("Student List")
 
     # Load data from Google Sheets
@@ -65,7 +64,6 @@ def main():
 
     # Filter widgets
     col1, col2, col3 = st.columns(3)
-
     with col1:
         agent_filter = st.selectbox("Filter by Agent", agents, key="agent_filter")
     with col2:
@@ -88,9 +86,19 @@ def main():
 
     # Editable table
     edit_mode = st.checkbox("Edit Mode")
-
     if edit_mode:
-        edited_data = st.data_editor(filtered_data, num_rows="dynamic")
+        # Convert empty strings to None to allow editing
+        filtered_data = filtered_data.replace('', None)
+        edited_data = st.data_editor(
+            filtered_data,
+            num_rows="dynamic",
+            key="data_editor",
+            use_container_width=True,
+            column_config={
+                col: st.column_config.TextColumn(col, required=False)
+                for col in filtered_data.columns
+            }
+        )
         if st.button("Save Changes"):
             save_data(edited_data, spreadsheet_id, sheet_name)
             st.success("Changes saved successfully!")
