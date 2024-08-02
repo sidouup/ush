@@ -631,7 +631,6 @@ def main():
             payment_type_options = ["Cash", "CCP", "Baridimob", "Bank"]
             compte_options = ["Mohamed", "Sid Ali"]
             yes_no_options = ["Yes", "No"]
-
             
             with tab1:
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
@@ -710,6 +709,7 @@ def main():
                     st.write(f"**Sevis Payment:** {selected_student['Sevis payment ?']}")
                     st.write(f"**Application Payment:** {selected_student['Application payment ?']}")
                 st.markdown('</div>', unsafe_allow_html=True)
+
             
             with tab5:
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
