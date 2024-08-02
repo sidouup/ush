@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from plotly.graph_objs import Figure
 from google.oauth2.service_account import Credentials
 import gspread
 
@@ -27,6 +26,8 @@ def load_data(spreadsheet_id, sheet_name):
 
 def filter_data_by_date(data, start_date, end_date):
     data['DATE'] = pd.to_datetime(data['DATE'], errors='coerce')
+    start_date = pd.to_datetime(start_date)
+    end_date = pd.to_datetime(end_date)
     return data[(data['DATE'] >= start_date) & (data['DATE'] <= end_date)]
 
 def statistics_page():
@@ -55,10 +56,9 @@ def statistics_page():
 
     st.title("📊 Student Recruitment Statistics")
 
-    # Load data from Google Sheets
-    spreadsheet_id = "1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI"
-    sheet_name = "ALL"
-    data = load_data(spreadsheet_id, sheet_name)
+    # Load data from CSV file
+    file_path = '/mnt/data/Updated sheet 3 - ALL (1).csv'
+    data = pd.read_csv(file_path)
 
     # Convert 'DATE' column to datetime and handle NaT values
     data['DATE'] = pd.to_datetime(data['DATE'], errors='coerce')
