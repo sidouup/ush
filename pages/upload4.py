@@ -574,16 +574,14 @@ def main():
                 """
                 st.markdown(progress_bar, unsafe_allow_html=True)
                 
-                # Handle payment date
                 payment_date_str = selected_student['DATE']
                 try:
                     payment_date = pd.to_datetime(payment_date_str, format='%d/%m/%Y %H:%M:%S', errors='coerce', dayfirst=True)
-                    payment_date_value = payment_date.date() if not pd.isna(payment_date) else None
+                    payment_date_value = payment_date.strftime('%d %B %Y') if not pd.isna(payment_date) else "Not set"
                 except AttributeError:
-                    payment_date_value = None
-    
-    
-                st.write(f"**📆 Date of Payment:** {payment_date.strftime('%d %B %Y') if payment_date else 'Not set'}")
+                    payment_date_value = "Not set"
+                
+                st.write(f"**📆 Date of Payment:** {payment_date_value}")
         
                 st.write(f"**🚩 Current Stage:** {current_step}")
         
