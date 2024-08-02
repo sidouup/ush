@@ -83,6 +83,18 @@ def main():
 
     student_names = filtered_data['Student Name'].tolist()
 
+    # Define color scheme for agents
+    agent_colors = {
+        "Nesrine": "background-color: yellow",
+        "Hamza": "background-color: lightblue",
+        "Djazila": "background-color: lightcoral"
+    }
+
+    # Function to apply colors
+    def highlight_agent(row):
+        agent = row['Agent']
+        return [agent_colors.get(agent, '')] * len(row)
+
     # Editable table
     edit_mode = st.checkbox("Edit Mode")
     if edit_mode:
@@ -91,7 +103,9 @@ def main():
             save_data(edited_data, spreadsheet_id, sheet_name)
             st.success("Changes saved successfully!")
     else:
-        st.dataframe(filtered_data)
+        # Apply styling and display the dataframe
+        styled_df = filtered_data.style.apply(highlight_agent, axis=1)
+        st.dataframe(styled_df)
 
 if __name__ == "__main__":
     main()
