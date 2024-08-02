@@ -86,7 +86,7 @@ def upload_file_to_drive(file_path, mime_type, folder_id=None):
 # Function to load data from Google Sheets
 def load_data(spreadsheet_id):
     sheet_headers = {
-        'PAYMENT & MAIL': [
+        'ALL': [
             'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
             'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
             'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
