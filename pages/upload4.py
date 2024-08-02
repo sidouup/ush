@@ -574,14 +574,14 @@ def main():
                 """
                 st.markdown(progress_bar, unsafe_allow_html=True)
                 
-                # Date of Payment
-                date_of_payment = selected_student['DATE'] if not filtered_data.empty else None
-                if date_of_payment:
-                    try:
-                        date_of_payment = pd.to_datetime(date_of_payment).strftime('%d %B %Y')
-                    except ValueError:
-                        date_of_payment = "Invalid Date"
-                st.write(f"**📆 Date of Payment:** {date_of_payment}")
+                payment_date = st.date_input(
+                    "Payment Date", 
+                    value=pd.to_datetime(selected_student['DATE'], format='%d/%m/%Y %H:%M:%S', errors='coerce', dayfirst=True).date() if pd.notna(selected_student['DATE']) else None,
+                    key="payment_date", 
+                    on_change=update_student_data
+                )
+
+                st.write(f"**📆 Date of Payment:** {payment_date}")
         
                 st.write(f"**🚩 Current Stage:** {current_step}")
         
