@@ -2,7 +2,7 @@ import pandas as pd
 import plotly.express as px
 from google.oauth2.service_account import Credentials
 import gspread
-
+import streamlit as st
 # Use Streamlit secrets for service account info
 SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
 
