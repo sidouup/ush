@@ -618,10 +618,9 @@ def main():
             
             # Options for dropdowns
             school_options = ["University", "Community College", "CCLS Miami", "CCLS NY NJ", "Connect English",
-                              "CONVERSE SCHOOL", "ELI San Francisco", "F2 Visa", "GT Chicago", "Not Partner", "Not yet"]
+                              "CONVERSE SCHOOL", "ELI San Francisco", "F2 Visa", "GT Chicago","BEA Huston","BIA Huston","OHLA Miami", "UCDEA","HAWAII","Not Partner", "Not yet"]
             
-            payment_amount_options = ["159.000 DZD", "152.000 DZD", "139.000 DZD", "132.000 DZD", "116.000 DZD", 
-                                      "82.000 DZD", "101.000 DZD", "36.000 DZD", "20.000 DZD", "Giveaway", "No Paiement"]
+            payment_amount_options = ["159.000 DZD", "152.000 DZD", "139.000 DZD", "132.000 DZD", "36.000 DZD", "20.000 DZD", "Giveaway", "No Paiement"]
             
             payment_type_options = ["Cash", "CCP", "Baridimob", "Bank"]
             compte_options = ["Mohamed", "Sid Ali"]
