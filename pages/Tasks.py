@@ -40,20 +40,30 @@ def tasks_and_emergencies_page():
 
     # Load data
     data = load_data("1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI")
+    
+    today = datetime.now()
 
-    # 1. List of students sorted by embassy appointment date
-    st.header("1. Students Sorted by Embassy Appointment Date")
-    embassy_sorted = data.sort_values('EMBASSY ITW. DATE').dropna(subset=['EMBASSY ITW. DATE'])
+    # 1. List of students sorted by embassy appointment date (future dates only)
+    st.header("1. Students Sorted by Upcoming Embassy Appointment Date")
+    embassy_sorted = data[data['EMBASSY ITW. DATE'] > today].sort_values('EMBASSY ITW. DATE')
     st.dataframe(embassy_sorted[['Student Name', 'EMBASSY ITW. DATE', 'Stage']])
 
-    # 2. List of students sorted by school entry date
-    st.header("2. Students Sorted by School Entry Date")
-    school_sorted = data.sort_values('School Entry Date').dropna(subset=['School Entry Date'])
+    # 2. List of students sorted by school entry date (future dates only)
+    st.header("2. Students Sorted by Upcoming School Entry Date")
+    school_sorted = data[data['School Entry Date'] > today].sort_values('School Entry Date')
     st.dataframe(school_sorted[['Student Name', 'School Entry Date', 'Chosen School']])
 
-    # 3. Students with appointment in 30 days but not past DS-160 stage
-    st.header("3. Urgent: Appointment in 30 days, DS-160 Not Completed")
-    today = datetime.now()
+    # New table: Students with school entry date within the next 40 days
+    st.header("3. Students with School Entry Date in the Next 40 Days")
+    forty_days = today + timedelta(days=40)
+    upcoming_entry = data[
+        (data['School Entry Date'] > today) &
+        (data['School Entry Date'] <= forty_days)
+    ].sort_values('School Entry Date')
+    st.dataframe(upcoming_entry[['Student Name', 'School Entry Date', 'Chosen School', 'Stage']])
+
+    # 4. Students with appointment in 30 days but not past DS-160 stage
+    st.header("4. Urgent: Appointment in 30 days, DS-160 Not Completed")
     thirty_days = today + timedelta(days=30)
     urgent_ds160 = data[
         (data['EMBASSY ITW. DATE'] <= thirty_days) &
@@ -62,19 +72,19 @@ def tasks_and_emergencies_page():
     ]
     st.dataframe(urgent_ds160[['Student Name', 'EMBASSY ITW. DATE', 'Stage']])
 
-    # 4. Applicants without a school entry date
-    st.header("4. Applicants Without School Entry Date")
+    # 5. Applicants without a school entry date
+    st.header("5. Applicants Without School Entry Date")
     no_entry_date = data[data['School Entry Date'].isna()]
     st.dataframe(no_entry_date[['Student Name', 'Chosen School', 'Stage']])
 
-    # 5. Additional Important Information
-    st.header("5. Additional Important Information")
+    # 6. Additional Important Information
+    st.header("6. Additional Important Information")
 
-    # Students with upcoming embassy interviews (next 7 days)
-    st.subheader("Upcoming Embassy Interviews (Next 7 Days)")
-    seven_days = today + timedelta(days=7)
+    # Students with upcoming embassy interviews (next 15 days)
+    st.subheader("Upcoming Embassy Interviews (Next 15 Days)")
+    fifteen_days = today + timedelta(days=15)
     upcoming_interviews = data[
-        (data['EMBASSY ITW. DATE'] <= seven_days) &
+        (data['EMBASSY ITW. DATE'] <= fifteen_days) &
         (data['EMBASSY ITW. DATE'] >= today)
     ]
     st.dataframe(upcoming_interviews[['Student Name', 'EMBASSY ITW. DATE', 'Stage']])
