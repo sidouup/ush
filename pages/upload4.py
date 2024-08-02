@@ -716,7 +716,7 @@ def main():
 
 
             # Tabs for student information
-            tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["Personal", "School", "Embassy", "Payment", "Documents", "Stage"])
+            tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["Personal", "School", "Embassy", "Payment","Stage", "Documents"])
             
             # Options for dropdowns
             school_options = ["University", "Community College", "CCLS Miami", "CCLS NY NJ", "Connect English",
