@@ -84,16 +84,14 @@ def upload_file_to_drive(file_path, mime_type, folder_id=None):
     return None
 
 # Function to load data from Google Sheets
-@st.cache_data(ttl=900)
 def load_data(spreadsheet_id):
     sheet_headers = {
-        'Cleaned_Student_Applications_Da': [
-            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°',
-            'Chosen School', 'Specialite', 'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?',
-            'DS-160 maker', 'Password DS-160', 'Secret Q.', 'School Entry Date', 'Entry Date in the US',
-            'ADDRESS in the U.S', 'E-MAIL RDV', 'PASSWORD RDV', 'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent',
-            'Note'
-        ]
+        'PAYMENT & MAIL': [
+            'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 'Emergency contact N°', 'Chosen School',
+            'Duration', 'Payment Method ', 'Sevis payment ? ', 'Application payment ?', 'DS-160 maker', 'Password DS-160',
+            'Secret Q.', 'School Entry Date', 'Entry Date in the US', 'ADDRESS in the U.S', ' E-MAIL RDV', 'PASSWORD RDV',
+            'EMBASSY ITW. DATE', 'Attempts', 'Visa Result', 'Agent', 'Note'
+       
     }
     
     try:
