@@ -741,7 +741,7 @@ def main():
                     Gender = st.selectbox(
                         "Gender", 
                         Gender_options, 
-                        index=attempts_options.index(selected_student['Gender']) if selected_student['Gender'] in Gender_options else 0,
+                        index=Gender_options.index(selected_student['Gender']) if selected_student['Gender'] in Gender_options else 0,
                         key="Gender", 
                         on_change=update_student_data
                     )
