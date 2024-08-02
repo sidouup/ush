@@ -82,22 +82,26 @@ def main():
     if attempts_filter != "All":
         filtered_data = filtered_data[filtered_data['Attempts'] == attempts_filter]
 
-    student_names = filtered_data['Student Name'].tolist()
-
     # Editable table
     edit_mode = st.checkbox("Edit Mode")
     if edit_mode:
         # Convert empty strings to None to allow editing
         filtered_data = filtered_data.replace('', None)
+        
+        # Create a dictionary of column configs
+        column_config = {}
+        for col in filtered_data.columns:
+            if filtered_data[col].dtype == 'int64':
+                column_config[col] = st.column_config.NumberColumn(col, required=False)
+            else:
+                column_config[col] = st.column_config.TextColumn(col, required=False)
+        
         edited_data = st.data_editor(
             filtered_data,
             num_rows="dynamic",
             key="data_editor",
             use_container_width=True,
-            column_config={
-                col: st.column_config.TextColumn(col, required=False)
-                for col in filtered_data.columns
-            }
+            column_config=column_config
         )
         if st.button("Save Changes"):
             save_data(edited_data, spreadsheet_id, sheet_name)
