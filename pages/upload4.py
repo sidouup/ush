@@ -579,41 +579,33 @@ def main():
         if attempts_filter != "All":
             filtered_data = filtered_data[filtered_data['Attempts'] == attempts_filter]
 
-        if filtered_data.empty:
-            st.warning("No data available for the selected filters. Please adjust your filter criteria.")
-            return
-
         student_names = filtered_data['Student Name'].tolist()
 
         st.markdown('<div class="stCard" style="display: flex; justify-content: space-between;">', unsafe_allow_html=True)
         col2, col1, col3 = st.columns([3, 2, 3])
 
         with col2:
-            if student_names:
-                search_query = st.selectbox(
-                    "🔍 Search for a student (First or Last Name)",
-                    options=student_names,
-                    key="search_query",
-                    index=student_names.index(st.session_state.selected_student) if st.session_state.selected_student in student_names else 0,
-                    on_change=on_student_select
-                )
-                # After the selectbox:
-                if st.session_state.student_changed or st.session_state.selected_student != search_query:
-                    st.session_state.selected_student = search_query
-                    st.session_state.student_changed = False
-                    st.rerun()
+            search_query = st.selectbox(
+                "🔍 Search for a student (First or Last Name)",
+                options=[""] + student_names,  # Add empty option
+                key="search_query",
+                index=0 if not student_names else (student_names.index(st.session_state.selected_student) + 1 if st.session_state.selected_student in student_names else 0),
+                on_change=on_student_select
+            )
+            if search_query:
+                st.session_state.selected_student = search_query
             else:
-                st.warning("No students found for the current filter settings.")
-                return
+                st.session_state.selected_student = ""
 
         with col1:
             st.subheader("Application Status")
-            if not filtered_data.empty:
+            if search_query:
                 selected_student = filtered_data[filtered_data['Student Name'] == search_query]
                 if not selected_student.empty:
                     selected_student = selected_student.iloc[0]
+                    # Display student information
                     steps = ['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'SEVIS', 'CLIENTS ']
-                    current_step = selected_student['Stage'] if not filtered_data.empty else "Unknown"
+                    current_step = selected_student['Stage']
                     step_index = steps.index(current_step) if current_step in steps else 0
                     progress = ((step_index + 1) / len(steps)) * 100
             
@@ -668,15 +660,15 @@ def main():
                     else:
                         st.metric("📅 Days until interview", "N/A")
                     
-                else:
-                    st.write("No data available for the current filters.")
+            else:
+                st.info("No student selected.")
+
     
-            with col3:
-                selected_student = filtered_data[filtered_data['Student Name'] == search_query].iloc[0]
-                student_name = selected_student['Student Name']
-            
-                document_status = get_document_status(student_name)
+        with col3:
+            if search_query:
                 st.subheader("Document Status")
+                document_status = get_document_status(search_query)
+
             
                 for doc_type, status_info in document_status.items():
                     icon = "✅" if status_info['status'] else "❌"
@@ -696,6 +688,9 @@ def main():
                     else:
                         with col2:
                             st.markdown("")
+                else:
+                st.info("Select a student to view document status.")
+
                                         
             if not filtered_data.empty:
                 selected_student = filtered_data[filtered_data['Student Name'] == search_query].iloc[0]
@@ -918,7 +913,8 @@ def main():
                 st.info("No students found matching the search criteria.")
     
     else:
-        st.error("No data available. Please check your Google Sheets connection and data.")
+        st.info("No data available. Please check your Google Sheets connection and data.")
+
 
     st.markdown("---")
     st.markdown("© 2024 The Us House. All rights reserved.")
