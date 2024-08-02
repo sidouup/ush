@@ -41,10 +41,11 @@ def cache_with_timeout(timeout_minutes=60):
                 if datetime.now() - timestamp < timedelta(minutes=timeout_minutes):
                     return result
             result = func(*args, **kwargs)
-            cache[key] = (result, time.now())
+            cache[key] = (result, datetime.now())
             return result
         return wrapper
     return decorator
+
 
 # Use Streamlit secrets for service account info
 SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
