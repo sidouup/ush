@@ -16,6 +16,7 @@ import threading
 import numpy as np
 import string
 import time
+from streamlit_toggle import st_toggle_switch
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -685,7 +686,8 @@ def main():
             selected_student = filtered_data[filtered_data['Student Name'] == search_query].iloc[0]
             student_name = selected_student['Student Name']
 
-            edit_mode = st.checkbox("Edit Mode", value=False)
+            edit_mode = st_toggle_switch(label="Edit Mode", default_value=False, label_after=False, inactive_color='#D3D3D3', active_color="#11567f")
+
 
             # Tabs for student information
             tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["Personal", "School", "Embassy", "Payment", "Documents", "Stage"])
