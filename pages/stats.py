@@ -1,10 +1,9 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
+from plotly.graph_objs import Figure
 from google.oauth2.service_account import Credentials
 import gspread
-from datetime import datetime, timedelta
 
 # Use Streamlit secrets for service account info
 SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
@@ -24,11 +23,11 @@ def load_data(spreadsheet_id, sheet_name):
     sheet = client.open_by_key(spreadsheet_id).worksheet(sheet_name)
     data = sheet.get_all_records()
     df = pd.DataFrame(data)
-    df['DATE'] = pd.to_datetime(df['DATE'], errors='coerce')
     return df
 
-def filter_data_by_date(df, start_date, end_date):
-    return df[(df['DATE'] >= start_date) & (df['DATE'] <= end_date)]
+def filter_data_by_date(data, start_date, end_date):
+    data['DATE'] = pd.to_datetime(data['DATE'], errors='coerce')
+    return data[(data['DATE'] >= start_date) & (data['DATE'] <= end_date)]
 
 def statistics_page():
     st.set_page_config(page_title="Student Recruitment Statistics", layout="wide")
@@ -61,36 +60,17 @@ def statistics_page():
     sheet_name = "ALL"
     data = load_data(spreadsheet_id, sheet_name)
 
-    # Date filtering options
-    st.subheader("Date Range Selection")
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        filter_option = st.radio("Select filter type:", ["All Time", "By Month", "Custom Range"])
-    
-    if filter_option == "By Month":
-        with col2:
-            selected_month = st.selectbox("Select Month", range(1, 13), format_func=lambda x: datetime(2023, x, 1).strftime('%B'))
-        with col3:
-            selected_year = st.selectbox("Select Year", range(data['DATE'].min().year, datetime.now().year + 1))
-        start_date = pd.Timestamp(year=selected_year, month=selected_month, day=1)
-        end_date = start_date + pd.offsets.MonthEnd(1)
-    elif filter_option == "Custom Range":
-        with col2:
-            start_date = st.date_input("Start Date", min_value=data['DATE'].min().date(), max_value=datetime.now().date())
-        with col3:
-            end_date = st.date_input("End Date", min_value=start_date, max_value=datetime.now().date())
-        start_date = pd.Timestamp(start_date)
-        end_date = pd.Timestamp(end_date)
-    else:
-        start_date = data['DATE'].min()
-        end_date = data['DATE'].max()
-
-    # Filter data based on selected date range
+    # Date filter options
+    st.sidebar.subheader("Filter by Date")
+    start_date = st.sidebar.date_input("Start Date", pd.to_datetime(data['DATE'].min()))
+    end_date = st.sidebar.date_input("End Date", pd.to_datetime(data['DATE'].max()))
     filtered_data = filter_data_by_date(data, start_date, end_date)
 
     # Calculate visa approval rate
     visa_approved = len(filtered_data[filtered_data['Visa Result'] == 'Visa Approved'])
     visa_denied = len(filtered_data[filtered_data['Visa Result'] == 'Visa Denied'])
+    visa_not_yet = len(filtered_data[filtered_data['Visa Result'] == '0 not yet'])
+    visa_not_our_school = len(filtered_data[filtered_data['Visa Result'] == 'not our school'])
     total_decisions = visa_approved + visa_denied
     visa_approval_rate = (visa_approved / total_decisions * 100) if total_decisions > 0 else 0
 
@@ -119,12 +99,11 @@ def statistics_page():
         st.plotly_chart(fig, use_container_width=True)
 
     with col2:
-        st.subheader("🛂 Student Visa Status")
+        st.subheader("🛂 Student Visa Approval")
         visa_status = filtered_data['Visa Result'].value_counts()
-        colors = {'Visa Approved': 'blue', 'Visa Denied': 'red', 'Not yet': 'green', 'Not Our school': 'gray'}
+        colors = {'Visa Approved': 'blue', 'Visa Denied': 'red', '0 not yet': 'grey', 'not our school': 'lightblue'}
         fig = px.pie(values=visa_status.values, names=visa_status.index,
-                     title="Visa Application Results",
-                     color=visa_status.index,
+                     title="Visa Application Results", color=visa_status.index, 
                      color_discrete_map=colors)
         st.plotly_chart(fig, use_container_width=True)
 
