@@ -797,7 +797,7 @@ def main():
                     st.write(f"**Chosen School:** {selected_student['Chosen School']}")
                     st.write(f"**Specialite:** {selected_student['Specialite']}")
                     st.write(f"**Duration:** {selected_student['Duration']}")
-                    st.write(f"**Bank:** {selected_student['Bank']}")
+                    st.write(f"**Bank:** {selected_student['BANK']}")
                     st.write(f"**School Entry Date:** {format_date(selected_student['School Entry Date'])}")
                     st.write(f"**Entry Date in the US:** {format_date(selected_student['Entry Date in the US'])}")
                 st.markdown('</div>', unsafe_allow_html=True)
