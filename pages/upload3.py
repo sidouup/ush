@@ -477,6 +477,10 @@ def main():
     if 'active_tab' not in st.session_state:
         st.session_state.active_tab = "Personal"
 
+    if 'edit_mode' not in st.session_state:
+        st.session_state.edit_mode = False
+
+
 
     # Check if we need to refresh the page
     if st.session_state.upload_success:
@@ -652,8 +656,9 @@ def main():
         if not filtered_data.empty:
             selected_student = filtered_data[filtered_data['Student Name'] == search_query].iloc[0]
             student_name = selected_student['Student Name']
+            
+            edit_mode = st.checkbox("Edit Mode", value=st.session_state.edit_mode, key="edit_mode")
 
-            edit_mode = st.checkbox("Edit Mode", value=False)
 
             tab_titles = ["Personal", "School", "Embassy", "Payment", "Documents"]
             selected_tab = st.session_state.get('active_tab', "Personal")
@@ -798,7 +803,9 @@ def main():
                 # Save the updated data back to Google Sheets
                 save_data(filtered_data, spreadsheet_id, selected_student['Current Step'])
                 st.success("Changes saved successfully!")
+                st.session_state.edit_mode = False
                 clear_cache_and_rerun_2()  # Clear cache and rerun the app
+                
 
 
         else:
