@@ -578,32 +578,32 @@ def main():
             filtered_data = filtered_data[filtered_data['Chosen School'] == school_filter]
         if attempts_filter != "All":
             filtered_data = filtered_data[filtered_data['Attempts'] == attempts_filter]
-
+        
         student_names = filtered_data['Student Name'].tolist()
-
-        st.markdown('<div class="stCard" style="display: flex; justify-content: space-between;">', unsafe_allow_html=True)
-        col2, col1, col3 = st.columns([3, 2, 3])
-
-        with col2:
-            search_query = st.selectbox(
-                "🔍 Search for a student (First or Last Name)",
-                options=student_names,
-                key="search_query",
-                index=student_names.index(st.session_state.selected_student) if st.session_state.selected_student in student_names else 0,
-                on_change=on_student_select
-            )
-            # After the selectbox:
-            if st.session_state.student_changed or st.session_state.selected_student != search_query:
-                st.session_state.selected_student = search_query
-                st.session_state.student_changed = False
-                st.rerun()
-
-        with col1:
-            st.subheader("Application Status")
-            if not filtered_data.empty:
+        
+        if not filtered_data.empty:
+            st.markdown('<div class="stCard" style="display: flex; justify-content: space-between;">', unsafe_allow_html=True)
+            col2, col1, col3 = st.columns([3, 2, 3])
+        
+            with col2:
+                search_query = st.selectbox(
+                    "🔍 Search for a student (First or Last Name)",
+                    options=student_names,
+                    key="search_query",
+                    index=student_names.index(st.session_state.selected_student) if st.session_state.selected_student in student_names else 0,
+                    on_change=on_student_select
+                )
+                # After the selectbox:
+                if st.session_state.student_changed or st.session_state.selected_student != search_query:
+                    st.session_state.selected_student = search_query
+                    st.session_state.student_changed = False
+                    st.rerun()
+        
+            with col1:
+                st.subheader("Application Status")
                 selected_student = filtered_data[filtered_data['Student Name'] == search_query].iloc[0]
                 steps = ['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'SEVIS', 'CLIENTS ']
-                current_step = selected_student['Stage'] if not filtered_data.empty else "Unknown"
+                current_step = selected_student['Stage']
                 step_index = steps.index(current_step) if current_step in steps else 0
                 progress = ((step_index + 1) / len(steps)) * 100
         
@@ -628,38 +628,57 @@ def main():
                 st.write(f"**🚩 Current Stage:** {current_step}")
         
                 # Agent
-                agent = selected_student['Agent'] if not filtered_data.empty else "Unknown"
+                agent = selected_student['Agent']
                 st.write(f"**🧑‍💼 Agent:** {agent}")
                 
                 # SEVIS Payment
-                sevis_payment = selected_student['Sevis payment ?'] if not filtered_data.empty else "No"
+                sevis_payment = selected_student['Sevis payment ?']
                 sevis_icon = "✅" if selected_student['Sevis payment ?'] == "YES" else "❌"
                 st.write(f"**💲 SEVIS Payment:** {sevis_icon} ({sevis_payment})")
         
                 # Application Payment
-                application_payment = selected_student['Application payment ?'] if not filtered_data.empty else "No"
+                application_payment = selected_student['Application payment ?']
                 application_icon = "✅" if selected_student['Application payment ?'] == "YES" else "❌"
                 st.write(f"**💸 Application Payment:** {application_icon} ({application_payment})")
         
                 # Visa Status
-                visa_status = selected_student['Visa Result'] if not filtered_data.empty else "Unknown"
+                visa_status = selected_student['Visa Result']
                 st.write(f"**🛂 Visa Status:** {visa_status}")
-
+        
                 # Find the section where we display the school entry date
-                entry_date = format_date(selected_student['School Entry Date']) if not filtered_data.empty else "Unknown"
+                entry_date = format_date(selected_student['School Entry Date'])
                 st.write(f"**🏫 School Entry Date:** {entry_date}")
-
-
+        
                 # Days until Interview
-                interview_date = selected_student['EMBASSY ITW. DATE'] if not filtered_data.empty else None
+                interview_date = selected_student['EMBASSY ITW. DATE']
                 days_remaining = calculate_days_until_interview(interview_date)
                 if days_remaining is not None:
                     st.metric("📅 Days until interview", days_remaining)
                 else:
                     st.metric("📅 Days until interview", "N/A")
-                
-            else:
-                st.write("No data available for the current filters.")
+        
+            with col3:
+                student_name = selected_student['Student Name']
+                document_status = get_document_status(student_name)
+                st.subheader("Document Status")
+        
+                for doc_type, status_info in document_status.items():
+                    icon = "✅" if status_info['status'] else "❌"
+                    col1, col2 = st.columns([9, 1])
+                    with col1:
+                        st.markdown(f"**{icon} {doc_type}**")
+                        for file in status_info['files']:
+                            st.markdown(f"- [{file['name']}]({file['webViewLink']})")
+                    if status_info['status']:
+                        with col2:
+                            if st.button("🗑️", key=f"delete_{status_info['files'][0]['id']}", help="Delete file"):
+                                file_id = status_info['files'][0]['id']
+                                if trash_file_in_drive(file_id, student_name):
+                                    st.session_state['reload_data'] = True
+                                    clear_cache_and_rerun()
+        
+        else:
+            st.info("No students found matching the search criteria.")
 
         with col3:
             selected_student = filtered_data[filtered_data['Student Name'] == search_query].iloc[0]
