@@ -251,9 +251,21 @@ def create_folder_in_drive(folder_name, parent_id=None):
 def check_file_exists(file_name, folder_id):
     service = get_google_drive_service()
     query = f"name='{file_name}' and '{folder_id}' in parents"
-    results = service.files().list(q=query, spaces='drive', fields='files &#8203;:citation[oaicite:0]{index=0}&#8203;(id, name)').execute()
-    files = results.get('files', [])
-    return bool(files)
+    try:
+        results = service.files().list(
+            q=query,
+            spaces='drive',
+            fields='files(id, name)'
+        ).execute()
+        files = results.get('files', [])
+        return bool(files)
+    except HttpError as error:
+        logger.error(f"An error occurred: {error}")
+        return False
+
+# Update the import statement at the top of your file
+from googleapiclient.errors import HttpError
+
 
 # Function to handle file upload and folder creation
 def handle_file_upload(student_name, document_type, uploaded_file):
