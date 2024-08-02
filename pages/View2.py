@@ -21,6 +21,7 @@ def load_data(spreadsheet_id, sheet_name):
     sheet = client.open_by_key(spreadsheet_id).worksheet(sheet_name)
     data = sheet.get_all_records()
     df = pd.DataFrame(data)
+    df = df.astype(str)  # Convert all columns to strings
     return df
 
 # Function to apply filters
