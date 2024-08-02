@@ -792,6 +792,7 @@ def main():
                 # Save the updated data back to Google Sheets
                 save_data(filtered_data, spreadsheet_id, selected_student['Current Step'])
                 st.success("Changes saved successfully!")
+                time.sleep(3)
                 clear_cache_and_rerun()  # Clear cache and rerun the app
 
 
