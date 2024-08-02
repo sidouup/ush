@@ -73,6 +73,10 @@ def main():
     st.title("🎓 Add New Student")
     st.markdown("Fill in the form below to add a new student to the database.")
 
+    # Initialize session state for form inputs
+    if 'form_submitted' not in st.session_state:
+        st.session_state.form_submitted = False
+
     # Create form
     with st.form("student_form"):
         col1, col2 = st.columns(2)
@@ -83,7 +87,7 @@ def main():
             last_name = st.text_input("👤 Last Name")
             gender = st.selectbox("⚧ Gender", ["Male", "Female"])
             phone = st.text_input("📞 Phone Number")
-            address = st.text_input("🏠 Address")  # Changed from text_area to text_input
+            address = st.text_input("🏠 Address")
             email = st.text_input("📧 Email")
             emergency_contact = st.text_input("🆘 Emergency Contact Number")
 
@@ -98,7 +102,7 @@ def main():
             payment_amount = st.selectbox("💰 Payment Amount", payment_amount_options)
             payment_type = st.selectbox("💳 Payment Type", ["Cash", "CCP", "Baridimob", "Bank"])
             compte = st.selectbox("🏦 Compte", ["Mohamed", "Sid Ali"])
-            agent_options = ["Nesrine", "Hamza", "Djazila"]  # Added agent options
+            agent_options = ["Nesrine", "Hamza", "Djazila"]
             agent = st.selectbox("👨‍💼 Agent", agent_options)
 
         submit_button = st.form_submit_button("Add Student")
@@ -122,8 +126,8 @@ def main():
                 "Payment Amount": payment_amount,
                 "Payment Type": payment_type,
                 "Compte": compte,
-                "Sevis payment ?": "NO",  # Default value
-                "Application payment ?": "NO",  # Default value
+                "Sevis payment ?": "NO",
+                "Application payment ?": "NO",
                 "DS-160 maker": "",
                 "Password DS-160": "",
                 "Secret Q.": "",
@@ -137,7 +141,7 @@ def main():
                 "Visa Result": "",
                 "Agent": agent,
                 "Note": "",
-                "Stage": "PAYMENT & MAIL",  # Auto-filled
+                "Stage": "PAYMENT & MAIL",
                 "BANK": "",
                 "Student Name": f"{first_name} {last_name}"
             }
@@ -149,9 +153,13 @@ def main():
         # Show success message
         st.markdown(f'<p class="success-message">✅ Student {first_name} {last_name} added successfully!</p>', unsafe_allow_html=True)
 
-        # Display added student information
-        st.subheader("Added Student Information")
-        st.json(student_data)
+        # Set form_submitted to True to trigger a rerun
+        st.session_state.form_submitted = True
+
+    # Check if form was just submitted and rerun if so
+    if st.session_state.form_submitted:
+        st.session_state.form_submitted = False
+        st.experimental_rerun()
 
 if __name__ == "__main__":
     main()
