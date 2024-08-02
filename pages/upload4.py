@@ -633,143 +633,143 @@ def main():
             yes_no_options = ["Yes", "No"]
 
             
-with tab1:
-    st.markdown('<div class="stCard">', unsafe_allow_html=True)
-    st.subheader("📋 Personal Information")
-    if edit_mode:
-        first_name = st.text_input("First Name", selected_student['First Name'], key="first_name", on_change=update_student_data)
-        last_name = st.text_input("Last Name", selected_student['Last Name'], key="last_name", on_change=update_student_data)
-        phone_number = st.text_input("Phone Number", selected_student['Phone N°'], key="phone_number", on_change=update_student_data)
-        email = st.text_input("Email", selected_student['E-mail'], key="email", on_change=update_student_data)
-        emergency_contact = st.text_input("Emergency Contact Number", selected_student['Emergency contact N°'], key="emergency_contact", on_change=update_student_data)
-        address = st.text_input("Address", selected_student['Address'], key="address", on_change=update_student_data)
-        attempts = st.text_input("Attempts", selected_student['Attempts'], key="attempts", on_change=update_student_data)
-    else:
-        st.write(f"**First Name:** {selected_student['First Name']}")
-        st.write(f"**Last Name:** {selected_student['Last Name']}")
-        st.write(f"**Phone Number:** {selected_student['Phone N°']}")
-        st.write(f"**Email:** {selected_student['E-mail']}")
-        st.write(f"**Emergency Contact Number:** {selected_student['Emergency contact N°']}")
-        st.write(f"**Address:** {selected_student['Address']}")
-        st.write(f"**Attempts:** {selected_student['Attempts']}")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-with tab2:
-    st.markdown('<div class="stCard">', unsafe_allow_html=True)
-    st.subheader("🏫 School Information")
-    if edit_mode:
-        chosen_school = st.selectbox("Chosen School", school_options, index=school_options.index(selected_student['Chosen School']) if selected_student['Chosen School'] in school_options else 0, key="chosen_school", on_change=update_student_data)
-        specialite = st.text_input("Specialite", selected_student['Specialite'], key="specialite", on_change=update_student_data)
-        duration = st.text_input("Duration", selected_student['Duration'], key="duration", on_change=update_student_data)
-        school_entry_date = st.date_input("School Entry Date", pd.to_datetime(selected_student['School Entry Date'], errors='coerce'), key="school_entry_date", on_change=update_student_data)
-        entry_date_in_us = st.date_input("Entry Date in the US", pd.to_datetime(selected_student['Entry Date in the US'], errors='coerce'), key="entry_date_in_us", on_change=update_student_data)
-    else:
-        st.write(f"**Chosen School:** {selected_student['Chosen School']}")
-        st.write(f"**Specialite:** {selected_student['Specialite']}")
-        st.write(f"**Duration:** {selected_student['Duration']}")
-        st.write(f"**School Entry Date:** {format_date(selected_student['School Entry Date'])}")
-        st.write(f"**Entry Date in the US:** {format_date(selected_student['Entry Date in the US'])}")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-with tab3:
-    st.markdown('<div class="stCard">', unsafe_allow_html=True)
-    st.subheader("🏛️ Embassy Information")
-    if edit_mode:
-        address_us = st.text_input("Address in the U.S", selected_student['ADDRESS in the U.S'], key="address_us", on_change=update_student_data)
-        email_rdv = st.text_input("E-mail RDV", selected_student['E-MAIL RDV'], key="email_rdv", on_change=update_student_data)
-        password_rdv = st.text_input("Password RDV", selected_student['PASSWORD RDV'], key="password_rdv", on_change=update_student_data)
-        embassy_itw_date = st.date_input("Embassy Interview Date", pd.to_datetime(selected_student['EMBASSY ITW. DATE'], errors='coerce'), key="embassy_itw_date", on_change=update_student_data)
-        ds160_maker = st.text_input("DS-160 Maker", selected_student['DS-160 maker'], key="ds160_maker", on_change=update_student_data)
-        password_ds160 = st.text_input("Password DS-160", selected_student['Password DS-160'], key="password_ds160", on_change=update_student_data)
-        secret_q = st.text_input("Secret Question", selected_student['Secret Q.'], key="secret_q", on_change=update_student_data)
-    else:
-        st.write(f"**Address in the U.S:** {selected_student['ADDRESS in the U.S']}")
-        st.write(f"**E-mail RDV:** {selected_student['E-MAIL RDV']}")
-        st.write(f"**Password RDV:** {selected_student['PASSWORD RDV']}")
-        st.write(f"**Embassy Interview Date:** {format_date(selected_student['EMBASSY ITW. DATE'])}")
-        st.write(f"**DS-160 Maker:** {selected_student['DS-160 maker']}")
-        st.write(f"**Password DS-160:** {selected_student['Password DS-160']}")
-        st.write(f"**Secret Question:** {selected_student['Secret Q.']}")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-with tab4:
-    st.markdown('<div class="stCard">', unsafe_allow_html=True)
-    st.subheader("💰 Payment Information")
-    if edit_mode:
-        payment_date = st.date_input("Payment Date", pd.to_datetime(selected_student['DATE'], errors='coerce'), key="payment_date", on_change=update_student_data)
-        payment_method = st.selectbox("Payment Method", payment_amount_options, index=payment_amount_options.index(selected_student['Payment Amount']) if selected_student['Payment Amount'] in payment_amount_options else 0, key="payment_method", on_change=update_student_data)
-        payment_type = st.selectbox("Payment Type", payment_type_options, key="payment_type", on_change=update_student_data)
-        compte = st.selectbox("Compte", compte_options, key="compte", on_change=update_student_data)
-        sevis_payment = st.selectbox("Sevis Payment", yes_no_options, index=yes_no_options.index(selected_student['Sevis payment ?']) if selected_student['Sevis payment ?'] in yes_no_options else 0, key="sevis_payment", on_change=update_student_data)
-        application_payment = st.selectbox("Application Payment", yes_no_options, index=yes_no_options.index(selected_student['Application payment ?']) if selected_student['Application payment ?'] in yes_no_options else 0, key="application_payment", on_change=update_student_data)
-    else:
-        st.write(f"**Payment Date:** {format_date(selected_student['DATE'])}")
-        st.write(f"**Payment Method:** {selected_student['Payment Amount']}")
-        st.write(f"**Payment Type:** {selected_student['Payment Type']}")
-        st.write(f"**Compte:** {selected_student['Compte']}")
-        st.write(f"**Sevis Payment:** {selected_student['Sevis payment ?']}")
-        st.write(f"**Application Payment:** {selected_student['Application payment ?']}")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-with tab5:
-    st.markdown('<div class="stCard">', unsafe_allow_html=True)
-    st.subheader("📂 Document Upload and Status")
-    document_type = st.selectbox("Select Document Type", 
-                                 ["Passport", "Bank Statement", "Financial Letter", 
-                                  "Transcripts", "Diplomas", "English Test", "Payment Receipt",
-                                  "SEVIS Receipt", "SEVIS"], 
-                                 key="document_type")
-    uploaded_file = st.file_uploader("Upload Document", type=["jpg", "jpeg", "png", "pdf"], key="uploaded_file")
-    
-    if uploaded_file and st.button("Upload Document"):
-        file_id = handle_file_upload(student_name, document_type, uploaded_file)
-        if file_id:
-            st.success(f"{document_type} uploaded successfully!")
-            if 'document_status_cache' in st.session_state:
-                st.session_state['document_status_cache'].pop(student_name, None)
-            clear_cache_and_rerun()  # Clear cache and rerun the app
-        else:
-            st.error("An error occurred while uploading the document.")
-
-    if edit_mode and st.button("Save Changes"):
-        updated_student = {
-            'First Name': first_name,
-            'Last Name': last_name,
-            'Phone N°': phone_number,
-            'E-mail': email,
-            'Emergency contact N°': emergency_contact,
-            'Address': address,
-            'Attempts': attempts,
-            'Chosen School': chosen_school,
-            'Specialite': specialite,
-            'Duration': duration,
-            'School Entry Date': school_entry_date.strftime('%d/%m/%Y') if school_entry_date else '',
-            'Entry Date in the US': entry_date_in_us.strftime('%d/%m/%Y') if entry_date_in_us else '',
-            'ADDRESS in the U.S': address_us,
-            'E-MAIL RDV': email_rdv,
-            'PASSWORD RDV': password_rdv,
-            'EMBASSY ITW. DATE': embassy_itw_date.strftime('%d/%m/%Y') if embassy_itw_date else '',
-            'DS-160 maker': ds160_maker,
-            'Password DS-160': password_ds160,
-            'Secret Q.': secret_q,
-            'Visa Result': visa_status,
-            'Stage': current_step,
-            'DATE': payment_date.strftime('%d/%m/%Y') if payment_date else '',
-            'Payment Amount': payment_method,
-            'Payment Type': payment_type,
-            'Compte': compte,
-            'Sevis payment ?': sevis_payment,
-            'Application payment ?': application_payment,
-        }
-
-        # Update the data in the DataFrame
-        for key, value in updated_student.items():
-            filtered_data.loc[filtered_data['Student Name'] == student_name, key] = value
-
-        # Save the updated data back to Google Sheets
-        save_data(filtered_data, spreadsheet_id, 'ALL')
-        st.success("Changes saved successfully!")
-        clear_cache_and_rerun()  # Clear cache and rerun the app
+            with tab1:
+                st.markdown('<div class="stCard">', unsafe_allow_html=True)
+                st.subheader("📋 Personal Information")
+                if edit_mode:
+                    first_name = st.text_input("First Name", selected_student['First Name'], key="first_name", on_change=update_student_data)
+                    last_name = st.text_input("Last Name", selected_student['Last Name'], key="last_name", on_change=update_student_data)
+                    phone_number = st.text_input("Phone Number", selected_student['Phone N°'], key="phone_number", on_change=update_student_data)
+                    email = st.text_input("Email", selected_student['E-mail'], key="email", on_change=update_student_data)
+                    emergency_contact = st.text_input("Emergency Contact Number", selected_student['Emergency contact N°'], key="emergency_contact", on_change=update_student_data)
+                    address = st.text_input("Address", selected_student['Address'], key="address", on_change=update_student_data)
+                    attempts = st.text_input("Attempts", selected_student['Attempts'], key="attempts", on_change=update_student_data)
+                else:
+                    st.write(f"**First Name:** {selected_student['First Name']}")
+                    st.write(f"**Last Name:** {selected_student['Last Name']}")
+                    st.write(f"**Phone Number:** {selected_student['Phone N°']}")
+                    st.write(f"**Email:** {selected_student['E-mail']}")
+                    st.write(f"**Emergency Contact Number:** {selected_student['Emergency contact N°']}")
+                    st.write(f"**Address:** {selected_student['Address']}")
+                    st.write(f"**Attempts:** {selected_student['Attempts']}")
+                st.markdown('</div>', unsafe_allow_html=True)
+            
+            with tab2:
+                st.markdown('<div class="stCard">', unsafe_allow_html=True)
+                st.subheader("🏫 School Information")
+                if edit_mode:
+                    chosen_school = st.selectbox("Chosen School", school_options, index=school_options.index(selected_student['Chosen School']) if selected_student['Chosen School'] in school_options else 0, key="chosen_school", on_change=update_student_data)
+                    specialite = st.text_input("Specialite", selected_student['Specialite'], key="specialite", on_change=update_student_data)
+                    duration = st.text_input("Duration", selected_student['Duration'], key="duration", on_change=update_student_data)
+                    school_entry_date = st.date_input("School Entry Date", pd.to_datetime(selected_student['School Entry Date'], errors='coerce'), key="school_entry_date", on_change=update_student_data)
+                    entry_date_in_us = st.date_input("Entry Date in the US", pd.to_datetime(selected_student['Entry Date in the US'], errors='coerce'), key="entry_date_in_us", on_change=update_student_data)
+                else:
+                    st.write(f"**Chosen School:** {selected_student['Chosen School']}")
+                    st.write(f"**Specialite:** {selected_student['Specialite']}")
+                    st.write(f"**Duration:** {selected_student['Duration']}")
+                    st.write(f"**School Entry Date:** {format_date(selected_student['School Entry Date'])}")
+                    st.write(f"**Entry Date in the US:** {format_date(selected_student['Entry Date in the US'])}")
+                st.markdown('</div>', unsafe_allow_html=True)
+            
+            with tab3:
+                st.markdown('<div class="stCard">', unsafe_allow_html=True)
+                st.subheader("🏛️ Embassy Information")
+                if edit_mode:
+                    address_us = st.text_input("Address in the U.S", selected_student['ADDRESS in the U.S'], key="address_us", on_change=update_student_data)
+                    email_rdv = st.text_input("E-mail RDV", selected_student['E-MAIL RDV'], key="email_rdv", on_change=update_student_data)
+                    password_rdv = st.text_input("Password RDV", selected_student['PASSWORD RDV'], key="password_rdv", on_change=update_student_data)
+                    embassy_itw_date = st.date_input("Embassy Interview Date", pd.to_datetime(selected_student['EMBASSY ITW. DATE'], errors='coerce'), key="embassy_itw_date", on_change=update_student_data)
+                    ds160_maker = st.text_input("DS-160 Maker", selected_student['DS-160 maker'], key="ds160_maker", on_change=update_student_data)
+                    password_ds160 = st.text_input("Password DS-160", selected_student['Password DS-160'], key="password_ds160", on_change=update_student_data)
+                    secret_q = st.text_input("Secret Question", selected_student['Secret Q.'], key="secret_q", on_change=update_student_data)
+                else:
+                    st.write(f"**Address in the U.S:** {selected_student['ADDRESS in the U.S']}")
+                    st.write(f"**E-mail RDV:** {selected_student['E-MAIL RDV']}")
+                    st.write(f"**Password RDV:** {selected_student['PASSWORD RDV']}")
+                    st.write(f"**Embassy Interview Date:** {format_date(selected_student['EMBASSY ITW. DATE'])}")
+                    st.write(f"**DS-160 Maker:** {selected_student['DS-160 maker']}")
+                    st.write(f"**Password DS-160:** {selected_student['Password DS-160']}")
+                    st.write(f"**Secret Question:** {selected_student['Secret Q.']}")
+                st.markdown('</div>', unsafe_allow_html=True)
+            
+            with tab4:
+                st.markdown('<div class="stCard">', unsafe_allow_html=True)
+                st.subheader("💰 Payment Information")
+                if edit_mode:
+                    payment_date = st.date_input("Payment Date", pd.to_datetime(selected_student['DATE'], errors='coerce'), key="payment_date", on_change=update_student_data)
+                    payment_method = st.selectbox("Payment Method", payment_amount_options, index=payment_amount_options.index(selected_student['Payment Amount']) if selected_student['Payment Amount'] in payment_amount_options else 0, key="payment_method", on_change=update_student_data)
+                    payment_type = st.selectbox("Payment Type", payment_type_options, key="payment_type", on_change=update_student_data)
+                    compte = st.selectbox("Compte", compte_options, key="compte", on_change=update_student_data)
+                    sevis_payment = st.selectbox("Sevis Payment", yes_no_options, index=yes_no_options.index(selected_student['Sevis payment ?']) if selected_student['Sevis payment ?'] in yes_no_options else 0, key="sevis_payment", on_change=update_student_data)
+                    application_payment = st.selectbox("Application Payment", yes_no_options, index=yes_no_options.index(selected_student['Application payment ?']) if selected_student['Application payment ?'] in yes_no_options else 0, key="application_payment", on_change=update_student_data)
+                else:
+                    st.write(f"**Payment Date:** {format_date(selected_student['DATE'])}")
+                    st.write(f"**Payment Method:** {selected_student['Payment Amount']}")
+                    st.write(f"**Payment Type:** {selected_student['Payment Type']}")
+                    st.write(f"**Compte:** {selected_student['Compte']}")
+                    st.write(f"**Sevis Payment:** {selected_student['Sevis payment ?']}")
+                    st.write(f"**Application Payment:** {selected_student['Application payment ?']}")
+                st.markdown('</div>', unsafe_allow_html=True)
+            
+            with tab5:
+                st.markdown('<div class="stCard">', unsafe_allow_html=True)
+                st.subheader("📂 Document Upload and Status")
+                document_type = st.selectbox("Select Document Type", 
+                                             ["Passport", "Bank Statement", "Financial Letter", 
+                                              "Transcripts", "Diplomas", "English Test", "Payment Receipt",
+                                              "SEVIS Receipt", "SEVIS"], 
+                                             key="document_type")
+                uploaded_file = st.file_uploader("Upload Document", type=["jpg", "jpeg", "png", "pdf"], key="uploaded_file")
+                
+                if uploaded_file and st.button("Upload Document"):
+                    file_id = handle_file_upload(student_name, document_type, uploaded_file)
+                    if file_id:
+                        st.success(f"{document_type} uploaded successfully!")
+                        if 'document_status_cache' in st.session_state:
+                            st.session_state['document_status_cache'].pop(student_name, None)
+                        clear_cache_and_rerun()  # Clear cache and rerun the app
+                    else:
+                        st.error("An error occurred while uploading the document.")
+            
+                if edit_mode and st.button("Save Changes"):
+                    updated_student = {
+                        'First Name': first_name,
+                        'Last Name': last_name,
+                        'Phone N°': phone_number,
+                        'E-mail': email,
+                        'Emergency contact N°': emergency_contact,
+                        'Address': address,
+                        'Attempts': attempts,
+                        'Chosen School': chosen_school,
+                        'Specialite': specialite,
+                        'Duration': duration,
+                        'School Entry Date': school_entry_date.strftime('%d/%m/%Y') if school_entry_date else '',
+                        'Entry Date in the US': entry_date_in_us.strftime('%d/%m/%Y') if entry_date_in_us else '',
+                        'ADDRESS in the U.S': address_us,
+                        'E-MAIL RDV': email_rdv,
+                        'PASSWORD RDV': password_rdv,
+                        'EMBASSY ITW. DATE': embassy_itw_date.strftime('%d/%m/%Y') if embassy_itw_date else '',
+                        'DS-160 maker': ds160_maker,
+                        'Password DS-160': password_ds160,
+                        'Secret Q.': secret_q,
+                        'Visa Result': visa_status,
+                        'Stage': current_step,
+                        'DATE': payment_date.strftime('%d/%m/%Y') if payment_date else '',
+                        'Payment Amount': payment_method,
+                        'Payment Type': payment_type,
+                        'Compte': compte,
+                        'Sevis payment ?': sevis_payment,
+                        'Application payment ?': application_payment,
+                    }
+            
+                    # Update the data in the DataFrame
+                    for key, value in updated_student.items():
+                        filtered_data.loc[filtered_data['Student Name'] == student_name, key] = value
+            
+                    # Save the updated data back to Google Sheets
+                    save_data(filtered_data, spreadsheet_id, 'ALL')
+                    st.success("Changes saved successfully!")
+                    clear_cache_and_rerun()  # Clear cache and rerun the app
 
         else:
             st.info("No students found matching the search criteria.")
