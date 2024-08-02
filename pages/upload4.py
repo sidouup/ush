@@ -474,9 +474,7 @@ def main():
 
     spreadsheet_id = "1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI"
     
-    if 'data' not in st.session_state
-
- or st.session_state.get('reload_data', False):
+    if 'data' not in st.session_state or st.session_state.get('reload_data', False):
         data = load_data(spreadsheet_id)
         st.session_state['data'] = data
         st.session_state['reload_data'] = False
