@@ -175,8 +175,15 @@ def save_data(df, spreadsheet_id, sheet_name, student_name):
     # Prepare the data for update
     values = [student_row.tolist()]
     
+    # Calculate the last column letter
+    num_columns = len(student_row)
+    if num_columns <= 26:
+        last_column = string.ascii_uppercase[num_columns - 1]
+    else:
+        last_column = string.ascii_uppercase[(num_columns - 1) // 26 - 1] + string.ascii_uppercase[(num_columns - 1) % 26]
+
     # Update only the specific student's row
-    sheet.update(f'A{row_number}:{string.ascii_uppercase[len(student_row)-1]}{row_number}', values)
+    sheet.update(f'A{row_number}:{last_column}{row_number}', values)
 
     logger.info(f"Updated data for student: {student_name}")
 
