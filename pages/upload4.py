@@ -898,8 +898,6 @@ def main():
                 st.rerun()
             
     
-        else:
-            st.info("No students found matching the search criteria.")
 
     else:
         st.error("No data available. Please check your Google Sheets connection and data.")
