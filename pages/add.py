@@ -159,7 +159,7 @@ def main():
     # Check if form was just submitted and rerun if so
     if st.session_state.form_submitted:
         st.session_state.form_submitted = False
-        st.experimental_rerun()
+        st.rerun()
 
 if __name__ == "__main__":
     main()
