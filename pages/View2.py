@@ -1,7 +1,6 @@
 import gspread
 import streamlit as st
 import pandas as pd
-import numpy as np
 from google.oauth2.service_account import Credentials
 
 # Use Streamlit secrets for service account info
@@ -22,8 +21,6 @@ def load_data(spreadsheet_id, sheet_name):
     sheet = client.open_by_key(spreadsheet_id).worksheet(sheet_name)
     data = sheet.get_all_records()
     df = pd.DataFrame(data)
-    # Replace empty strings with NaN
-    df = df.replace('', np.nan)
     return df
 
 # Function to apply filters
