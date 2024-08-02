@@ -686,7 +686,8 @@ def main():
             selected_student = filtered_data[filtered_data['Student Name'] == search_query].iloc[0]
             student_name = selected_student['Student Name']
 
-            edit_mode = st_toggle_switch(label="Edit Mode", default_value=False, label_after=False, inactive_color='#D3D3D3', active_color="#11567f")
+            edit_mode = st.toggle("Edit Mode", value=False)
+
 
 
             # Tabs for student information
