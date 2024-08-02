@@ -685,9 +685,7 @@ def main():
                                     if trash_file_in_drive(file_id, student_name):
                                         st.session_state['reload_data'] = True
                                         clear_cache_and_rerun()
-                    else:
-                        with col2:
-                            st.markdown("")
+
                 else:
                 st.info("Select a student to view document status.")
 
