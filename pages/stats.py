@@ -24,10 +24,10 @@ def load_data(spreadsheet_id, sheet_name):
     df = pd.DataFrame(data)
     return df
 
-def filter_data_by_date(data, start_date, end_date):
+def filter_data_by_date(data, year, month):
     data['DATE'] = pd.to_datetime(data['DATE'], errors='coerce')
-    start_date = pd.to_datetime(start_date)
-    end_date = pd.to_datetime(end_date)
+    start_date = pd.Timestamp(year=year, month=month, day=1)
+    end_date = start_date + pd.offsets.MonthEnd(1)
     return data[(data['DATE'] >= start_date) & (data['DATE'] <= end_date)]
 
 def statistics_page():
@@ -65,12 +65,14 @@ def statistics_page():
     data['DATE'] = pd.to_datetime(data['DATE'], errors='coerce')
     min_date = data['DATE'].min()
     max_date = data['DATE'].max()
+    years = list(range(min_date.year, max_date.year + 1))
+    months = list(range(1, 13))
 
     # Date filter options
     st.sidebar.subheader("Filter by Date")
-    start_date = st.sidebar.date_input("Start Date", min_date if not pd.isna(min_date) else pd.Timestamp('2022-01-01'))
-    end_date = st.sidebar.date_input("End Date", max_date if not pd.isna(max_date) else pd.Timestamp('2022-12-31'))
-    filtered_data = filter_data_by_date(data, start_date, end_date)
+    selected_year = st.sidebar.selectbox("Year", years)
+    selected_month = st.sidebar.selectbox("Month", months, format_func=lambda x: pd.Timestamp(year=2023, month=x, day=1).strftime('%B'))
+    filtered_data = filter_data_by_date(data, selected_year, selected_month)
 
     # Calculate visa approval rate
     visa_approved = len(filtered_data[filtered_data['Visa Result'] == 'Visa Approved'])
