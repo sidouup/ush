@@ -1,17 +1,13 @@
-
+import streamlit as st
 import pandas as pd
 from datetime import datetime
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 import gspread
 import time
-from streamlit.server.server import Server
 
-
-def refresh():
-    Server.get_current()._reloader.reload()
-    
 # Set up Google Sheets authentication
+@st.cache_resource
 def get_google_sheet_client():
     creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive'])
     return gspread.authorize(creds)
@@ -21,6 +17,14 @@ def add_student_to_sheet(student_data):
     client = get_google_sheet_client()
     sheet = client.open_by_key("1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI").worksheet('ALL')
     sheet.append_row(list(student_data.values()))
+
+# Function to load data from Google Sheets
+@st.cache_data(ttl=5)
+def load_data():
+    client = get_google_sheet_client()
+    sheet = client.open_by_key("1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI").worksheet('ALL')
+    data = sheet.get_all_records()
+    return pd.DataFrame(data)
 
 # Custom CSS to make the app beautiful and modern
 def load_css():
@@ -78,9 +82,11 @@ def main():
     st.title("🎓 Add New Student")
     st.markdown("Fill in the form below to add a new student to the database.")
 
-    # Initialize session state for form inputs
+    # Initialize session state
     if 'form_submitted' not in st.session_state:
         st.session_state.form_submitted = False
+    if 'success_message' not in st.session_state:
+        st.session_state.success_message = None
 
     # Create form
     with st.form("student_form"):
@@ -155,17 +161,27 @@ def main():
             add_student_to_sheet(student_data)
             time.sleep(1)  # Simulate processing time
 
-        # Show success message
-        st.markdown(f'<p class="success-message">✅ Student {first_name} {last_name} added successfully!</p>', unsafe_allow_html=True)
-
-        # Set form_submitted to True to trigger a rerun
+        # Set success message
+        st.session_state.success_message = f"✅ Student {first_name} {last_name} added successfully!"
         st.session_state.form_submitted = True
 
-    # Check if form was just submitted and rerun if so
-    if st.session_state.form_submitted:
-        st.session_state.form_submitted = False
+        # Clear the form by resetting the session state
+        for key in st.session_state.keys():
+            if key not in ['form_submitted', 'success_message']:
+                del st.session_state[key]
+
+        # Rerun the app to show the success message and clear the form
         st.rerun()
-        refresh()
+
+    # Display success message if it exists
+    if st.session_state.success_message:
+        st.markdown(f'<p class="success-message">{st.session_state.success_message}</p>', unsafe_allow_html=True)
+        st.session_state.success_message = None  # Clear the message after displaying
+
+    # Display the latest data
+    st.subheader("Latest Students")
+    data = load_data()
+    st.dataframe(data.tail(5))  # Show the last 5 entries
 
 if __name__ == "__main__":
     main()
