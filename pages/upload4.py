@@ -539,118 +539,128 @@ def main():
     </div>
     """, unsafe_allow_html=True)
 
+if 'data' not in st.session_state or st.session_state.get('reload_data', False):
     spreadsheet_id = "1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI"
-    
-    if 'data' not in st.session_state or st.session_state.get('reload_data', False):
-        data = load_data(spreadsheet_id)
-        st.session_state['data'] = data
-        st.session_state['reload_data'] = False
-    else:
-        data = st.session_state['data']
+    data = load_data(spreadsheet_id)
+    st.session_state['data'] = data
+    st.session_state['reload_data'] = False
+else:
+    data = st.session_state['data']
 
-    if not data.empty:
-        current_steps = ["All"] + list(data['Stage'].unique())
-        agents = ["All", "Nesrine", "Hamza", "Djazila"]
-        school_options = ["All", "University", "Community College", "CCLS Miami", "CCLS NY NJ", "Connect English",
-                          "CONVERSE SCHOOL", "ELI San Francisco", "F2 Visa", "GT Chicago", "BEA Huston", "BIA Huston",
-                          "OHLA Miami", "UCDEA", "HAWAII", "Not Partner", "Not yet"]
-        attempts_options = ["All", "1st Try", "2nd Try", "3rd Try"]
+# Apply filters and display the UI
+if not data.empty:
+    current_steps = ["All"] + list(data['Stage'].unique())
+    agents = ["All", "Nesrine", "Hamza", "Djazila"]
+    school_options = ["All", "University", "Community College", "CCLS Miami", "CCLS NY NJ", "Connect English",
+                      "CONVERSE SCHOOL", "ELI San Francisco", "F2 Visa", "GT Chicago", "BEA Huston", "BIA Huston",
+                      "OHLA Miami", "UCDEA", "HAWAII", "Not Partner", "Not yet"]
+    attempts_options = ["All", "1st Try", "2nd Try", "3rd Try"]
 
-        st.markdown('<div class="stCard" style="display: flex; justify-content: space-between;">', unsafe_allow_html=True)
-        col1, col2, col3, col4 = st.columns(4)
+    st.markdown('<div class="stCard" style="display: flex; justify-content: space-between;">', unsafe_allow_html=True)
+    col1, col2, col3, col4 = st.columns(4)
 
-        with col1:
-            status_filter = st.selectbox("Filter by Stage", current_steps, key="status_filter")
-        with col2:
-            agent_filter = st.selectbox("Filter by Agent", agents, key="agent_filter")
-        with col3:
-            school_filter = st.selectbox("Filter by School", school_options, key="school_filter")
-        with col4:
-            attempts_filter = st.selectbox("Filter by Attempts", attempts_options, key="attempts_filter")
+    with col1:
+        status_filter = st.selectbox("Filter by Stage", current_steps, key="status_filter")
+    with col2:
+        agent_filter = st.selectbox("Filter by Agent", agents, key="agent_filter")
+    with col3:
+        school_filter = st.selectbox("Filter by School", school_options, key="school_filter")
+    with col4:
+        attempts_filter = st.selectbox("Filter by Attempts", attempts_options, key="attempts_filter")
 
-        # Apply filters
-        filtered_data = data
-        if status_filter != "All":
-            filtered_data = filtered_data[filtered_data['Stage'] == status_filter]
-        if agent_filter != "All":
-            filtered_data = filtered_data[filtered_data['Agent'] == agent_filter]
-        if school_filter != "All":
-            filtered_data = filtered_data[filtered_data['Chosen School'] == school_filter]
-        if attempts_filter != "All":
-            filtered_data = filtered_data[filtered_data['Attempts'] == attempts_filter]
-        
-        student_names = filtered_data['Student Name'].tolist()
-        
+    # Apply filters
+    filtered_data = data
+    if status_filter != "All":
+        filtered_data = filtered_data[filtered_data['Stage'] == status_filter]
+    if agent_filter != "All":
+        filtered_data = filtered_data[filtered_data['Agent'] == agent_filter]
+    if school_filter != "All":
+        filtered_data = filtered_data[filtered_data['Chosen School'] == school_filter]
+    if attempts_filter != "All":
+        filtered_data = filtered_data[filtered_data['Attempts'] == attempts_filter]
+
+    # Sort the data by 'Stage'
+    filtered_data = filtered_data.sort_values(by='Stage')
+
+    # Create a display column for the custom list
+    filtered_data['Display'] = filtered_data.apply(lambda row: f"{row['Student Name']} - {row['Stage']}", axis=1)
+
+    # Ensure session state variables are set
+    if 'selected_student' not in st.session_state:
+        st.session_state['selected_student'] = filtered_data['Display'].tolist()[0]
+    if 'student_changed' not in st.session_state:
+        st.session_state['student_changed'] = False
+
+    # Add a column for displaying the list of students
+    st.markdown('<div class="stCard" style="display: flex; justify-content: space-between;">', unsafe_allow_html=True)
+    col2, col1, col3 = st.columns([3, 2, 3])
+
+    # CSS for custom scrollable list
+    st.markdown("""
+        <style>
+            .scrollable-list {
+                height: 200px;
+                overflow-y: scroll;
+                padding: 10px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+            }
+            .scrollable-list div {
+                padding: 5px;
+                cursor: pointer;
+            }
+            .scrollable-list div:hover {
+                background-color: #f0f0f0;
+            }
+            .selected {
+                background-color: #007bff;
+                color: white;
+            }
+        </style>
+    """, unsafe_allow_html=True)
+
+    # Display the custom scrollable list
+    with col2:
+        st.markdown("### List of Filtered Students")
         if not filtered_data.empty:
-            st.markdown('<div class="stCard" style="display: flex; justify-content: space-between;">', unsafe_allow_html=True)
-            col2, col1, col3 = st.columns([3, 2, 3])
-        
-            # CSS for custom scrollable list
-            st.markdown("""
-                <style>
-                    .scrollable-list {
-                        height: 200px;
-                        overflow-y: scroll;
-                        padding: 10px;
-                        border: 1px solid #ccc;
-                        border-radius: 5px;
-                    }
-                    .scrollable-list div {
-                        padding: 5px;
-                        cursor: pointer;
-                    }
-                    .scrollable-list div:hover {
-                        background-color: #f0f0f0;
-                    }
-                    .selected {
-                        background-color: #007bff;
-                        color: white;
-                    }
-                </style>
-            """, unsafe_allow_html=True)
-            
-            # Display the custom scrollable list
-            with col2:
-                st.markdown("### List of Filtered Students")
-                if not filtered_data.empty:
-                    list_items = filtered_data['Display'].tolist()
-                    st.markdown('<div class="scrollable-list">', unsafe_allow_html=True)
-                    for item in list_items:
-                        st.markdown(f'<div id="{item}" onclick="selectStudent(\'{item}\')">{item}</div>', unsafe_allow_html=True)
-                    st.markdown('</div>', unsafe_allow_html=True)
-                else:
-                    st.write("No students to display")
-            
-                # JavaScript for handling the selection
-                st.markdown("""
-                    <script>
-                        function selectStudent(student) {
-                            const elements = document.querySelectorAll('.scrollable-list div');
-                            elements.forEach(el => el.classList.remove('selected'));
-                            document.getElementById(student).classList.add('selected');
-                            const streamlitCustomMessage = new CustomEvent("streamlitCustomMessage", {
-                                detail: { student: student }
-                            });
-                            window.dispatchEvent(streamlitCustomMessage);
-                        }
-                    </script>
-                """, unsafe_allow_html=True)
-            
-            # JavaScript listener for updating the Streamlit session state
-            st.write("""
-                <script>
-                    window.addEventListener("streamlitCustomMessage", (event) => {
-                        const student = event.detail.student;
-                        window.streamlit.setComponentValue(student);
+            list_items = filtered_data['Display'].tolist()
+            st.markdown('<div class="scrollable-list">', unsafe_allow_html=True)
+            for item in list_items:
+                st.markdown(f'<div id="{item}" onclick="selectStudent(\'{item}\')">{item}</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+        else:
+            st.write("No students to display")
+
+        # JavaScript for handling the selection
+        st.markdown("""
+            <script>
+                function selectStudent(student) {
+                    const elements = document.querySelectorAll('.scrollable-list div');
+                    elements.forEach(el => el.classList.remove('selected'));
+                    document.getElementById(student).classList.add('selected');
+                    const streamlitCustomMessage = new CustomEvent("streamlitCustomMessage", {
+                        detail: { student: student }
                     });
-                </script>
-            """, unsafe_allow_html=True)
-            
-            # Handle student selection change
-            if st.session_state['student_changed'] or st.session_state['selected_student'] != st.selectbox("search_query", []):
-                st.session_state['selected_student'] = st.selectbox("search_query", [])
-                st.session_state['student_changed'] = False
-                st.rerun()
+                    window.dispatchEvent(streamlitCustomMessage);
+                }
+            </script>
+        """, unsafe_allow_html=True)
+
+        # JavaScript listener for updating the Streamlit session state
+        st.write("""
+            <script>
+                window.addEventListener("streamlitCustomMessage", (event) => {
+                    const student = event.detail.student;
+                    window.streamlit.setComponentValue(student);
+                });
+            </script>
+        """, unsafe_allow_html=True)
+
+        # Handle student selection change
+        if st.session_state['student_changed'] or st.session_state['selected_student'] != st.selectbox("search_query", []):
+            st.session_state['selected_student'] = st.selectbox("search_query", [])
+            st.session_state['student_changed'] = False
+            st.rerun()
                                     
             with col1:
                 st.subheader("Application Status")
