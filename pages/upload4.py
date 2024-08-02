@@ -588,26 +588,27 @@ def main():
             with col2:
                 if not filtered_data.empty:
                     search_query = st.selectbox(
-                        "🔍 Search for a student (First or Last Name)",
-                        options=student_names,
+                        "🔍 Search for a student",
+                        options=filtered_data['Display'].tolist(),
                         key="search_query",
-                        index=student_names.index(st.session_state.selected_student) if st.session_state.selected_student in student_names else 0,
-                        on_change=on_student_select
+                        index=filtered_data['Display'].tolist().index(st.session_state.get('selected_student', filtered_data['Display'].tolist()[0])),
+                        on_change=lambda: st.session_state.update({'student_changed': True})
                     )
                 else:
                     st.write("No students found matching the search criteria.")
             
+                # Display the filtered list of students
                 st.write("### List of Filtered Students")
                 if not filtered_data.empty:
-                    student_table = filtered_data[['Student Name']].reset_index(drop=True)
-                    st.table(student_table)
+                    for i, row in filtered_data.iterrows():
+                        st.write(f"{row['Student Name']} - {row['Stage']}")
                 else:
                     st.write("No students to display")
             
-                # After the selectbox:
-                if st.session_state.student_changed or st.session_state.selected_student != search_query:
-                    st.session_state.selected_student = search_query
-                    st.session_state.student_changed = False
+                # Handle student selection change
+                if st.session_state.get('student_changed', False) or st.session_state.get('selected_student') != search_query:
+                    st.session_state['selected_student'] = search_query
+                    st.session_state['student_changed'] = False
                     st.rerun()
                         
             with col1:
