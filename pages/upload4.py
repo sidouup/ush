@@ -586,19 +586,21 @@ def main():
             col2, col1, col3 = st.columns([3, 2, 3])
         
             with col2:
-                search_query = st.selectbox(
-                    "🔍 Search for a student (First or Last Name)",
-                    options=student_names,
-                    key="search_query",
-                    index=student_names.index(st.session_state.selected_student) if st.session_state.selected_student in student_names else 0,
-                    on_change=on_student_select
-                )
+                if not filtered_data.empty:
+                    selected_student = st.selectbox(
+                        "🔍 Search for a student (First or Last Name)",
+                        options=student_names,
+                        key="search_query",
+                        index=student_names.index(st.session_state.selected_student) if st.session_state.selected_student in student_names else 0,
+                        on_change=on_student_select
+                    )
+                else:
+                    st.write("No students found matching the search criteria.")
                 # After the selectbox:
-                if st.session_state.student_changed or st.session_state.selected_student != search_query:
-                    st.session_state.selected_student = search_query
+                if st.session_state.student_changed or st.session_state.selected_student != selected_student:
+                    st.session_state.selected_student = selected_student
                     st.session_state.student_changed = False
-                    st.rerun()
-        
+                    st.rerun()        
             with col1:
                 st.subheader("Application Status")
                 selected_student = filtered_data[filtered_data['Student Name'] == search_query].iloc[0]
