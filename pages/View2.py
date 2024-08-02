@@ -1,6 +1,7 @@
 import gspread
 import streamlit as st
 import pandas as pd
+import numpy as np
 from google.oauth2.service_account import Credentials
 
 # Use Streamlit secrets for service account info
@@ -21,6 +22,8 @@ def load_data(spreadsheet_id, sheet_name):
     sheet = client.open_by_key(spreadsheet_id).worksheet(sheet_name)
     data = sheet.get_all_records()
     df = pd.DataFrame(data)
+    # Replace empty strings with NaN
+    df = df.replace('', np.nan)
     return df
 
 # Function to apply filters
@@ -53,9 +56,7 @@ def main():
     # Define filter options
     current_steps = ["All"] + list(df_all['Stage'].unique())
     agents = ["All", "Nesrine", "Hamza", "Djazila"]
-    school_options = ["All", "University", "Community College", "CCLS Miami", "CCLS NY NJ", "Connect English",
-                      "CONVERSE SCHOOL", "ELI San Francisco", "F2 Visa", "GT Chicago", "BEA Huston", "BIA Huston",
-                      "OHLA Miami", "UCDEA", "HAWAII", "Not Partner", "Not yet"]
+    school_options = ["All", "University", "Community College", "CCLS Miami", "CCLS NY NJ", "Connect English", "CONVERSE SCHOOL", "ELI San Francisco", "F2 Visa", "GT Chicago", "BEA Huston", "BIA Huston", "OHLA Miami", "UCDEA", "HAWAII", "Not Partner", "Not yet"]
     attempts_options = ["All", "1st Try", "2nd Try", "3rd Try"]
 
     # Filter buttons for stages
@@ -82,27 +83,12 @@ def main():
     if attempts_filter != "All":
         filtered_data = filtered_data[filtered_data['Attempts'] == attempts_filter]
 
+    student_names = filtered_data['Student Name'].tolist()
+
     # Editable table
     edit_mode = st.checkbox("Edit Mode")
     if edit_mode:
-        # Convert empty strings to None to allow editing
-        filtered_data = filtered_data.replace('', None)
-        
-        # Create a dictionary of column configs
-        column_config = {}
-        for col in filtered_data.columns:
-            if filtered_data[col].dtype == 'int64':
-                column_config[col] = st.column_config.NumberColumn(col, required=False)
-            else:
-                column_config[col] = st.column_config.TextColumn(col, required=False)
-        
-        edited_data = st.data_editor(
-            filtered_data,
-            num_rows="dynamic",
-            key="data_editor",
-            use_container_width=True,
-            column_config=column_config
-        )
+        edited_data = st.data_editor(filtered_data, num_rows="dynamic")
         if st.button("Save Changes"):
             save_data(edited_data, spreadsheet_id, sheet_name)
             st.success("Changes saved successfully!")
