@@ -159,6 +159,7 @@ def save_data(df, spreadsheet_id, sheet_name):
     date_columns = ['DATE', 'School Entry Date', 'Entry Date in the US', 'EMBASSY ITW. DATE']
     for col in date_columns:
         if col in df.columns:
+            df[col] = pd.to_datetime(df[col], format='%d/%m/%Y %H:%M:%S', errors='coerce')
             df[col] = df[col].apply(lambda x: x.strftime('%d/%m/%Y %H:%M:%S') if pd.notna(x) else "")
 
     # Prepare the data for batch update
@@ -776,14 +777,14 @@ def main():
                         payment_date_value = payment_date if not pd.isna(payment_date) else None
                     except AttributeError:
                         payment_date_value = None
-                
+            
                     payment_date = st.date_input(
                         "Payment Date", 
                         value=payment_date_value,
                         key="payment_date", 
                         on_change=update_student_data
                     )
-                
+            
                     payment_method = st.selectbox("Payment Method", payment_amount_options, index=payment_amount_options.index(selected_student['Payment Amount']) if selected_student['Payment Amount'] in payment_amount_options else 0, key="payment_method", on_change=update_student_data)
                     payment_type = st.selectbox("Payment Type", payment_type_options, key="payment_type", on_change=update_student_data)
                     compte = st.selectbox("Compte", compte_options, key="compte", on_change=update_student_data)
