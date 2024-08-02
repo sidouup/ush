@@ -174,7 +174,7 @@ def save_data(df, spreadsheet_id, sheet_name):
     print(f"DataFrame columns: {len(df.columns)}, Sheet columns: {sheet_columns}")
 
 def format_date(date_string):
-    if pd.isna(date_string):
+    if pd.isna(date_string) or date_string == 'NaT':
         return "Not set"
     try:
         # Parse the date string, assuming day first format
@@ -689,12 +689,22 @@ def main():
                     address_us = st.text_input("Address in the U.S", selected_student['ADDRESS in the U.S'], key="address_us", on_change=update_student_data)
                     email_rdv = st.text_input("E-mail RDV", selected_student['E-MAIL RDV'], key="email_rdv", on_change=update_student_data)
                     password_rdv = st.text_input("Password RDV", selected_student['PASSWORD RDV'], key="password_rdv", on_change=update_student_data)
+                    
+                    # Handle embassy interview date
+                    embassy_itw_date_str = selected_student['EMBASSY ITW. DATE']
+                    try:
+                        embassy_itw_date = pd.to_datetime(embassy_itw_date_str, format='%d/%m/%Y %H:%M:%S', errors='coerce', dayfirst=True)
+                        embassy_itw_date_value = embassy_itw_date.date() if not pd.isna(embassy_itw_date) else None
+                    except AttributeError:
+                        embassy_itw_date_value = None
+        
                     embassy_itw_date = st.date_input(
                         "Embassy Interview Date", 
-                        value=pd.to_datetime(selected_student['EMBASSY ITW. DATE'], format='%d/%m/%Y %H:%M:%S', errors='coerce', dayfirst=True).date() if pd.notna(selected_student['EMBASSY ITW. DATE']) else None,
+                        value=embassy_itw_date_value,
                         key="embassy_itw_date", 
                         on_change=update_student_data
                     )
+        
                     ds160_maker = st.text_input("DS-160 Maker", selected_student['DS-160 maker'], key="ds160_maker", on_change=update_student_data)
                     password_ds160 = st.text_input("Password DS-160", selected_student['Password DS-160'], key="password_ds160", on_change=update_student_data)
                     secret_q = st.text_input("Secret Question", selected_student['Secret Q.'], key="secret_q", on_change=update_student_data)
