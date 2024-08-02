@@ -177,10 +177,11 @@ def format_date(date_string):
     if pd.isna(date_string):
         return "Not set"
     try:
-        date = pd.to_datetime(date_string, dayfirst=True)
+        date = pd.to_datetime(date_string, format='%d/%m/%Y', dayfirst=True)
         return date.strftime('%d %B %Y')
     except:
         return "Invalid Date"
+
 
 
 
@@ -193,7 +194,7 @@ def clear_cache_and_rerun():
 # Function to calculate days until interview
 def calculate_days_until_interview(interview_date):
     try:
-        interview_date = pd.to_datetime(interview_date, format='%d/%m/%Y %H:%M:%S', dayfirst=True, errors='coerce')
+        interview_date = pd.to_datetime(interview_date, format='%d/%m/%Y', dayfirst=True, errors='coerce')
         if pd.isnull(interview_date):
             return None
         today = pd.to_datetime(datetime.today().strftime('%Y-%m-%d'))
@@ -202,6 +203,7 @@ def calculate_days_until_interview(interview_date):
     except Exception as e:
         logger.error(f"Error calculating days until interview: {str(e)}")
         return None
+
 
 
 # Function to get visa status
@@ -687,7 +689,12 @@ def main():
                     address_us = st.text_input("Address in the U.S", selected_student['ADDRESS in the U.S'], key="address_us", on_change=update_student_data)
                     email_rdv = st.text_input("E-mail RDV", selected_student['E-MAIL RDV'], key="email_rdv", on_change=update_student_data)
                     password_rdv = st.text_input("Password RDV", selected_student['PASSWORD RDV'], key="password_rdv", on_change=update_student_data)
-                    embassy_itw_date = st.date_input("Embassy Interview Date", pd.to_datetime(selected_student['EMBASSY ITW. DATE'], dayfirst=True, errors='coerce'), key="embassy_itw_date", on_change=update_student_data)
+                    embassy_itw_date = st.date_input(
+                        "Embassy Interview Date", 
+                        value=pd.to_datetime(selected_student['EMBASSY ITW. DATE'], format='%d/%m/%Y', errors='coerce').date() if pd.notna(selected_student['EMBASSY ITW. DATE']) else None,
+                        key="embassy_itw_date", 
+                        on_change=update_student_data
+                    )
                     ds160_maker = st.text_input("DS-160 Maker", selected_student['DS-160 maker'], key="ds160_maker", on_change=update_student_data)
                     password_ds160 = st.text_input("Password DS-160", selected_student['Password DS-160'], key="password_ds160", on_change=update_student_data)
                     secret_q = st.text_input("Secret Question", selected_student['Secret Q.'], key="secret_q", on_change=update_student_data)
@@ -705,7 +712,13 @@ def main():
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("💰 Payment Information")
                 if edit_mode:
-                    payment_date = st.date_input("Payment Date", pd.to_datetime(selected_student['DATE'], dayfirst=True, errors='coerce'), key="payment_date", on_change=update_student_data)
+                    payment_date = st.date_input(
+                        "Payment Date", 
+                        value=pd.to_datetime(selected_student['DATE'], format='%d/%m/%Y', errors='coerce').date() if pd.notna(selected_student['DATE']) else None,
+                        key="payment_date", 
+                        on_change=update_student_data
+                    )
+
                     payment_method = st.selectbox("Payment Method", payment_amount_options, index=payment_amount_options.index(selected_student['Payment Amount']) if selected_student['Payment Amount'] in payment_amount_options else 0, key="payment_method", on_change=update_student_data)
                     payment_type = st.selectbox("Payment Type", payment_type_options, key="payment_type", on_change=update_student_data)
                     compte = st.selectbox("Compte", compte_options, key="compte", on_change=update_student_data)
@@ -765,6 +778,7 @@ def main():
                         'Visa Result': visa_status,
                         'Stage': current_step,
                         'DATE': payment_date.strftime('%d/%m/%Y') if payment_date else '',
+
                         'Payment Amount': payment_method,
                         'Payment Type': payment_type,
                         'Compte': compte,
