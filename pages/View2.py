@@ -64,7 +64,7 @@ def main():
 
     # Standardize colors for agents
     agent_colors = {
-        "Nesrine": "background-color: #E6E6FA",  # Light lavender
+        "Nesrine": "background-color: #FF00FF",  # Light lavender
         "Hamza": "background-color: yellow",
         "Djazila": "background-color: red"
     }
