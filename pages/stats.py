@@ -56,9 +56,10 @@ def statistics_page():
 
     st.title("📊 Student Recruitment Statistics")
 
-    # Load data from CSV file
-    file_path = '/mnt/data/Updated sheet 3 - ALL (1).csv'
-    data = pd.read_csv(file_path)
+    # Load data from Google Sheets
+    spreadsheet_id = "1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI"
+    sheet_name = "ALL"
+    data = load_data(spreadsheet_id, sheet_name)
 
     # Convert 'DATE' column to datetime and handle NaT values
     data['DATE'] = pd.to_datetime(data['DATE'], errors='coerce')
