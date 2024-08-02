@@ -572,7 +572,7 @@ def main():
                 st.write(f"**🧑‍💼 Agent:** {agent}")
                 
                 # SEVIS Payment
-                sevis_payment = selected_student['Sevis payment ? '] if not filtered_data.empty else "No"
+                sevis_payment = selected_student['Sevis payment ?'] if not filtered_data.empty else "No"
                 sevis_icon = "✅" if sevis_payment == "YES" else "❌"
                 st.write(f"**💲 SEVIS Payment:** {sevis_icon} ({sevis_payment})")
         
