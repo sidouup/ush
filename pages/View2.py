@@ -71,18 +71,12 @@ def main():
     school_options = ["All", "University", "Community College", "CCLS Miami", "CCLS NY NJ", "Connect English", "CONVERSE SCHOOL", "ELI San Francisco", "F2 Visa", "GT Chicago", "BEA Huston", "BIA Huston", "OHLA Miami", "UCDEA", "HAWAII", "Not Partner", "Not yet"]
     attempts_options = ["All", "1st Try", "2nd Try", "3rd Try"]
 
-    # Color selection for agents with standardized colors
+    # Color selection for agents
     st.sidebar.header("Agent Color Selection")
-    agent_colors = {
-        "Nesrine": "#F200FF",  # Standardized color for Nesrine
-        "Djazila": "#FF0000",  # Standardized color for Djazila
-    }
+    agent_colors = {}
     for agent in agents[1:]:  # Skip "All"
-        if agent not in agent_colors:
-            color = st.sidebar.color_picker(f"Choose color for {agent}", "#FFFFFF")
-            agent_colors[agent] = color
-        else:
-            st.sidebar.color_picker(f"Color for {agent}", agent_colors[agent], disabled=True)
+        color = st.sidebar.color_picker(f"Choose color for {agent}", "#FFFFFF")
+        agent_colors[agent] = f"background-color: {color}"
 
     # Filter buttons for stages
     st.markdown('<div class="stCard" style="display: flex; justify-content: space-between;">', unsafe_allow_html=True)
@@ -111,39 +105,21 @@ def main():
     student_names = filtered_data['Student Name'].tolist()
 
     # Function to apply colors
-    def highlight_agent(val):
-        color = agent_colors.get(val, '#FFFFFF')
-        return f'background-color: {color}'
+    def highlight_agent(row):
+        agent = row['Agent']
+        return [agent_colors.get(agent, '')] * len(row)
 
     # Editable table
     edit_mode = st.checkbox("Edit Mode")
     if edit_mode:
-        edited_data = st.data_editor(
-            filtered_data,
-            num_rows="dynamic",
-            hide_index=True,
-            column_config={
-                "Agent": st.column_config.SelectboxColumn(
-                    "Agent",
-                    options=agents[1:],
-                    required=True
-                )
-            },
-            key="data_editor"
-        )
-        
-        # Apply styling to the edited data
-        styled_edited_data = edited_data.style.applymap(highlight_agent, subset=['Agent'])
-        st.dataframe(styled_edited_data, hide_index=True)
-        
+        edited_data = st.data_editor(filtered_data, num_rows="dynamic")
         if st.button("Save Changes"):
             save_data(edited_data, spreadsheet_id, sheet_name)
             st.success("Changes saved successfully!")
     else:
         # Apply styling and display the dataframe
-        styled_df = filtered_data.style.applymap(highlight_agent, subset=['Agent'])
-        st.dataframe(styled_df, hide_index=True)
+        styled_df = filtered_data.style.apply(highlight_agent, axis=1)
+        st.dataframe(styled_df)
 
 if __name__ == "__main__":
     main()
-
