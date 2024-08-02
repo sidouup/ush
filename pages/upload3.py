@@ -679,7 +679,7 @@ def main():
                 if tab_index == 0:
                     st.markdown('<div class="stCard">', unsafe_allow_html=True)
                     st.subheader("📋 Personal Information")
-                    if edit_mode:
+                    if st.session_state.edit_mode :
                         first_name = st.text_input("First Name", selected_student['First Name'], key="first_name", on_change=update_student_data)
                         last_name = st.text_input("Last Name", selected_student['Last Name'], key="last_name", on_change=update_student_data)
                         phone_number = st.text_input("Phone Number", selected_student['Phone N°'], key="phone_number", on_change=update_student_data)
@@ -700,7 +700,7 @@ def main():
                 elif tab_index == 1:
                     st.markdown('<div class="stCard">', unsafe_allow_html=True)
                     st.subheader("🏫 School Information")
-                    if edit_mode:
+                    if st.session_state.edit_mode:
                         chosen_school = st.text_input("Chosen School", selected_student['Chosen School'], key="chosen_school", on_change=update_student_data)
                         duration = st.text_input("Duration", selected_student['Duration'], key="duration", on_change=update_student_data)
                         school_entry_date = st.text_input("School Entry Date", selected_student['School Entry Date'], key="school_entry_date", on_change=update_student_data)
@@ -715,7 +715,7 @@ def main():
                 elif tab_index == 2:
                     st.markdown('<div class="stCard">', unsafe_allow_html=True)
                     st.subheader("🏛️ Embassy Information")
-                    if edit_mode:
+                    if st.session_state.edit_mode:
                         address_us = st.text_input("Address in the U.S", selected_student['ADDRESS in the U.S'], key="address_us", on_change=update_student_data)
                         email_rdv = st.text_input("E-mail RDV", selected_student[' E-MAIL RDV'], key="email_rdv", on_change=update_student_data)
                         password_rdv = st.text_input("Password RDV", selected_student['PASSWORD RDV'], key="password_rdv", on_change=update_student_data)
@@ -736,7 +736,7 @@ def main():
                 elif tab_index == 3:
                     st.markdown('<div class="stCard">', unsafe_allow_html=True)
                     st.subheader("💰 Payment Information")
-                    if edit_mode:
+                    if st.session_state.edit_mode:
                         payment_date = st.text_input("Payment Date", selected_student['DATE'], key="payment_date", on_change=update_student_data)
                         payment_method = st.text_input("Payment Method", selected_student['Payment Method '], key="payment_method", on_change=update_student_data)
                         sevis_payment = st.text_input("Sevis Payment", selected_student['Sevis payment ? '], key="sevis_payment", on_change=update_student_data)
