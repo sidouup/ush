@@ -11,4 +11,4 @@ xlsxwriter
 openpyxl
 aiohttp
 streamlit_toggle
-streamlit.server
+streamlit-server-state
