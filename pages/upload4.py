@@ -596,6 +596,14 @@ def main():
                     )
                 else:
                     st.write("No students found matching the search criteria.")
+            
+                st.write("### List of Filtered Students")
+                if not filtered_data.empty:
+                    student_table = filtered_data[['Student Name']].reset_index(drop=True)
+                    st.table(student_table)
+                else:
+                    st.write("No students to display")
+            
                 # After the selectbox:
                 if st.session_state.student_changed or st.session_state.selected_student != search_query:
                     st.session_state.selected_student = search_query
