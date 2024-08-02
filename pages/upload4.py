@@ -612,18 +612,6 @@ def main():
                 selected_student = filtered_data[filtered_data['Student Name'] == search_query]
                 if not selected_student.empty:
                     selected_student = selected_student.iloc[0]
-                    # ... (rest of the code for displaying student information)
-                else:
-                    st.warning("Selected student not found in the filtered data.")
-            else:
-                st.warning("No data available for the current filters.")
-
-        with col1:
-            st.subheader("Application Status")
-            if not filtered_data.empty:
-                selected_student = filtered_data[filtered_data['Student Name'] == search_query]
-                if not selected_student.empty:
-                    selected_student = selected_student.iloc[0]
                     steps = ['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'SEVIS', 'CLIENTS ']
                     current_step = selected_student['Stage'] if not filtered_data.empty else "Unknown"
                     step_index = steps.index(current_step) if current_step in steps else 0
