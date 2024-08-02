@@ -40,7 +40,7 @@ def cache_with_timeout(timeout_minutes=60):
                 if datetime.now() - timestamp < timedelta(minutes=timeout_minutes):
                     return result
             result = func(*args, **kwargs)
-            cache[key] = (result, datetime.now())
+            cache[key] = (result, time.now())
             return result
         return wrapper
     return decorator
@@ -88,11 +88,11 @@ def upload_file_to_drive(file_path, mime_type, folder_id=None):
 def load_data(spreadsheet_id):
     sheet_headers = {
         'ALL': [
-            'DATE', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 
+            '', 'First Name', 'Last Name', 'Phone N°', 'Address', 'E-mail', 
             'Emergency contact N°', 'Chosen School', 'Specialite', 'Duration', 
             'Payment Amount', 'Sevis payment ?', 'Application payment ?', 'DS-160 maker', 
-            'Password DS-160', 'Secret Q.', 'School Entry Date', 'Entry Date in the US', 
-            'ADDRESS in the U.S', 'E-MAIL RDV', 'PASSWORD RDV', 'EMBASSY ITW. DATE', 
+            'Password DS-160', 'Secret Q.', 'School Entry ', 'Entry  in the US', 
+            'ADDRESS in the U.S', 'E-MAIL RDV', 'PASSWORD RDV', 'EMBASSY ITW. ', 
             'Attempts', 'Visa Result', 'Agent', 'Note', 'Stage'
         ]
     }
@@ -130,7 +130,7 @@ def load_data(spreadsheet_id):
         st.error(f"An error occurred: {str(e)}")
         return pd.DataFrame()
 
-# Function to save data to Google Sheets (batch update)
+# Function to save data to Google Sheets (batch up)
 def save_data(df, spreadsheet_id, sheet_name):
     def replace_invalid_floats(val):
         if isinstance(val, float):
@@ -153,7 +153,7 @@ def save_data(df, spreadsheet_id, sheet_name):
     # Limit the DataFrame to the number of columns in the sheet
     df = df.iloc[:, :sheet_columns]
     
-    # Prepare the data for batch update
+    # Prepare the data for batch up
     values = [df.columns.tolist()] + df.values.tolist()
     
     # Calculate the last column letter
@@ -162,8 +162,8 @@ def save_data(df, spreadsheet_id, sheet_name):
     else:
         last_column = string.ascii_uppercase[(sheet_columns - 1) // 26 - 1] + string.ascii_uppercase[(sheet_columns - 1) % 26]
 
-    # Perform batch update
-    sheet.batch_update([{
+    # Perform batch up
+    sheet.batch_up([{
         'range': f'A1:{last_column}{len(values)}',
         'values': values
     }])
@@ -172,11 +172,14 @@ def save_data(df, spreadsheet_id, sheet_name):
     print(f"DataFrame columns: {len(df.columns)}, Sheet columns: {sheet_columns}")
 
 def format_date(date_string):
+    if pd.isna(date_string):
+        return "Not set"
     try:
         date = pd.to_datetime(date_string)
         return date.strftime('%d %B %Y')
     except:
-        return "Unknown"
+        return "Invalid Date"
+
 
 
 
@@ -652,7 +655,14 @@ def main():
                     chosen_school = st.selectbox("Chosen School", school_options, index=school_options.index(selected_student['Chosen School']) if selected_student['Chosen School'] in school_options else 0, key="chosen_school", on_change=update_student_data)
                     specialite = st.text_input("Specialite", selected_student['Specialite'], key="specialite", on_change=update_student_data)
                     duration = st.text_input("Duration", selected_student['Duration'], key="duration", on_change=update_student_data)
-                    school_entry_date = st.date_input("School Entry Date", pd.to_datetime(selected_student['School Entry Date'], errors='coerce'), key="school_entry_date", on_change=update_student_data)
+                    school_entry_date_str = selected_student['School Entry Date']
+                    school_entry_date = pd.to_datetime(school_entry_date_str, errors='coerce')
+                    school_entry_date = st.date_input(
+                        "School Entry Date",
+                        value=school_entry_date.date() if not pd.isna(school_entry_date) else None,
+                        key="school_entry_date",
+                        on_change=update_student_data
+                    )
                     entry_date_in_us = st.date_input("Entry Date in the US", pd.to_datetime(selected_student['Entry Date in the US'], errors='coerce'), key="entry_date_in_us", on_change=update_student_data)
                 else:
                     st.write(f"**Chosen School:** {selected_student['Chosen School']}")
