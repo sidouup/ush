@@ -591,26 +591,18 @@ def main():
                         "🔍 Search for a student",
                         options=filtered_data['Display'].tolist(),
                         key="search_query",
-                        index=filtered_data['Display'].tolist().index(st.session_state.get('selected_student', filtered_data['Display'].tolist()[0])),
+                        index=filtered_data['Display'].tolist().index(st.session_state['selected_student']),
                         on_change=lambda: st.session_state.update({'student_changed': True})
                     )
                 else:
                     st.write("No students found matching the search criteria.")
             
-                # Display the filtered list of students
-                st.write("### List of Filtered Students")
-                if not filtered_data.empty:
-                    for i, row in filtered_data.iterrows():
-                        st.write(f"{row['Student Name']} - {row['Stage']}")
-                else:
-                    st.write("No students to display")
-            
                 # Handle student selection change
-                if st.session_state.get('student_changed', False) or st.session_state.get('selected_student') != search_query:
+                if st.session_state['student_changed'] or st.session_state['selected_student'] != search_query:
                     st.session_state['selected_student'] = search_query
                     st.session_state['student_changed'] = False
                     st.rerun()
-                        
+                                    
             with col1:
                 st.subheader("Application Status")
                 selected_student = filtered_data[filtered_data['Student Name'] == search_query].iloc[0]
