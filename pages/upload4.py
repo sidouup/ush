@@ -129,7 +129,6 @@ def load_data(spreadsheet_id):
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
         return pd.DataFrame()
-
 # Function to save data to Google Sheets (batch update)
 import string
 
