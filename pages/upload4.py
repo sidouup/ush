@@ -651,7 +651,7 @@ def main():
                     st.write(f"**Specialite:** {selected_student['Specialite']}")
                     st.write(f"**Duration:** {selected_student['Duration']}")
                     st.write(f"**School Entry Date:** {format_date(selected_student['School Entry Date'])}")
-                    st.write(f"**Entry Date in the US:** {selected_student['Entry Date in the US']}")
+                    st.write(f"**Entry Date in the US:** {format_date(selected_student['Entry Date in the US'])}")
                 st.markdown('</div>', unsafe_allow_html=True)
             
             with tab3:
