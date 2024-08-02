@@ -109,22 +109,26 @@ def load_data(spreadsheet_id):
             expected_headers = sheet_headers.get(title, None)
             
             if expected_headers:
-                data = worksheet.get_all_records(expected_headers=expected_headers)
+                data = worksheet.get_all_records(expected_headers=expected_headers, value_render_option='UNFORMATTED_VALUE')
             else:
-                data = worksheet.get_all_records()
+                data = worksheet.get_all_records(value_render_option='UNFORMATTED_VALUE')
             
             df = pd.DataFrame(data)
             if not df.empty:
+                # Ensure phone numbers and other text fields are treated as strings
+                text_columns = ['First Name', 'Last Name', 'Phone N°', 'Emergency contact N°', 'E-mail', 'Address']
+                for col in text_columns:
+                    if col in df.columns:
+                        df[col] = df[col].astype(str)
+                
+                # Create Student Name column
                 if 'First Name' in df.columns and 'Last Name' in df.columns:
-                    df['First Name'] = df['First Name'].astype(str)
-                    df['Last Name'] = df['Last Name'].astype(str)
                     df['Student Name'] = df['First Name'] + " " + df['Last Name']
                 
                 # Parse dates
                 date_columns = ['DATE', 'School Entry Date', 'Entry Date in the US', 'EMBASSY ITW. DATE']
                 for col in date_columns:
                     if col in df.columns:
-                        df[col] = df[col].str.strip("'")  # Strip single quotes if present
                         df[col] = pd.to_datetime(df[col], errors='coerce', dayfirst=True)
                 
                 df.dropna(subset=['Student Name'], inplace=True)
