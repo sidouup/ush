@@ -124,7 +124,7 @@ def load_data(spreadsheet_id):
                 date_columns = ['DATE', 'School Entry Date', 'Entry Date in the US', 'EMBASSY ITW. DATE']
                 for col in date_columns:
                     if col in df.columns:
-                        df[col] = df[col].str.strip("'")  # Strip single quotes if present
+                        df[col] = df[col].apply(lambda x: x.strip("'") if isinstance(x, str) and x.startswith("'") else x)
                         df[col] = pd.to_datetime(df[col], errors='coerce', dayfirst=True)
                 
                 df.dropna(subset=['Student Name'], inplace=True)
