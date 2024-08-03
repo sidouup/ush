@@ -21,10 +21,20 @@ def add_student_to_sheet(student_data):
 # Function to load data from Google Sheets
 @st.cache_data(ttl=5)
 def load_data():
-    client = get_google_sheet_client()
-    sheet = client.open_by_key("1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI").worksheet('ALL')
-    data = sheet.get_all_records()
-    return pd.DataFrame(data)
+    try:
+        client = get_google_sheet_client()
+        sheet = client.open_by_key("1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI").worksheet('ALL')
+        expected_headers = ["DATE", "First Name", "Last Name", "Age", "Gender", "Phone N°", "Address", "E-mail", 
+                            "Emergency contact N°", "Chosen School", "Specialite", "Duration", "Payment Amount", 
+                            "Payment Type", "Compte", "Sevis payment ?", "Application payment ?", "DS-160 maker", 
+                            "Password DS-160", "Secret Q.", "School Entry Date", "Entry Date in the US", 
+                            "ADDRESS in the U.S", "E-MAIL RDV", "PASSWORD RDV", "EMBASSY ITW. DATE", "Attempts", 
+                            "Visa Result", "Agent", "Note", "Stage", "BANK", "Student Name"]
+        data = sheet.get_all_records(expected_headers=expected_headers)
+        return pd.DataFrame(data)
+    except Exception as e:
+        st.error(f"Error loading data from Google Sheet: {e}")
+        raise e
 
 # Custom CSS to make the app beautiful and modern
 def load_css():
