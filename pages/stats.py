@@ -230,29 +230,6 @@ def statistics_page():
                  title="Top 5 Agents by Number of Students")
     st.plotly_chart(fig, use_container_width=True)
 
-import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-from google.oauth2.service_account import Credentials
-import gspread
-import streamlit as st
-from datetime import datetime
-
-# ... [All previous functions remain unchanged] ...
-
-def statistics_page():
-    st.set_page_config(page_title="Student Recruitment Statistics", layout="wide")
-    
-    # ... [Previous styling code remains unchanged] ...
-
-    st.title("📊 Student Recruitment Statistics")
-
-    # Load and process data
-    # ... [Data loading and processing code remains unchanged] ...
-
-    # Display existing dashboard content
-    # ... [All the code for the original dashboard sections goes here, unchanged] ...
-
     st.markdown("---")
 
     # New Payment Amount Statistics Section
