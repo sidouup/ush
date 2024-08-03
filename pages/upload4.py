@@ -985,7 +985,7 @@ def main():
                     'Compte': st.session_state.get('compte', ''),
                     'School Paid': st.session_state.get('School_Paid', ''),
                     'Prep ITW': st.session_state.get('Prep_ITW', ''),
-                    'Age': st.session_state.get('sevis_payment', ''),
+                    'Age': st.session_state.get('Age', ''),
                     'Application payment ?': st.session_state.get('application_payment', ''),
                 }
             
