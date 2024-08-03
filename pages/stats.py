@@ -81,12 +81,6 @@ def statistics_page():
     # Create a DataFrame with students having incorrect date format
     students_with_incorrect_dates = data[incorrect_date_mask]
 
-    # Display warning and list of students with incorrect date format
-    st.warning(f"Number of entries with incorrect date format: {incorrect_date_count}")
-    if incorrect_date_count > 0:
-        st.subheader("Entries with Incorrect Date Format")
-        st.dataframe(students_with_incorrect_dates[['Student Name', 'DATE', 'Chosen School', 'Agent']])
-
     # Remove duplicates for analysis
     data_deduped = data.drop_duplicates(subset=['Student Name', 'Chosen School'], keep='last')
     
