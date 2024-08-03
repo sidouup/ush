@@ -833,7 +833,7 @@ def main():
                         st.write(f"**Bank:** {selected_student['BANK']}")
                         st.write(f"**School Entry Date:** {format_date(selected_student['School Entry Date'])}")
                         st.write(f"**Entry Date in the US:** {format_date(selected_student['Entry Date in the US'])}")
-                        st.write(f"**School Paid:** {format_date(selected_student['School Paid'])}")
+                        st.write(f"**School Paid:** {selected_student['School Paid']}")
                     st.markdown('</div>', unsafe_allow_html=True)
             
             with tab3:
@@ -878,7 +878,7 @@ def main():
                     st.write(f"**DS-160 Maker:** {selected_student['DS-160 maker']}")
                     st.write(f"**Password DS-160:** {selected_student['Password DS-160']}")
                     st.write(f"**Secret Question:** {selected_student['Secret Q.']}")
-                    st.write(f"**ITW Prep:** {format_date(selected_student['Prep ITW'])}")
+                    st.write(f"**ITW Prep:** {selected_student['Prep ITW']}")
                 st.markdown('</div>', unsafe_allow_html=True)
             
             with tab4:
