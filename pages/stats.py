@@ -15,6 +15,17 @@ SCOPES = ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/a
 def get_google_sheet_client():
     creds = Credentials.from_service_account_info(SERVICE_ACCOUNT_INFO, scopes=SCOPES)
     return gspread.authorize(creds)
+    
+def filter_data_by_date_range(data, start_date, end_date):
+    # Convert start_date and end_date to pandas Timestamp objects
+    start_date = pd.Timestamp(start_date)
+    end_date = pd.Timestamp(end_date)
+    return data[(data['DATE'] >= start_date) & (data['DATE'] <= end_date)]
+
+def filter_data_by_month_year(data, year, month):
+    start_date = pd.Timestamp(year=year, month=month, day=1)
+    end_date = start_date + pd.offsets.MonthEnd(1)
+    return data[(data['DATE'] >= start_date) & (data['DATE'] <= end_date)]
 
 # Function to load data from Google Sheets
 def load_data(spreadsheet_id, sheet_name):
@@ -95,8 +106,8 @@ def statistics_page():
     filter_option = st.sidebar.radio("Select Filter Method", ("Date Range", "Month and Year"))
 
     if filter_option == "Date Range":
-        start_date = st.sidebar.date_input("Start Date", min_date if not pd.isna(min_date) else pd.Timestamp('2022-01-01'))
-        end_date = st.sidebar.date_input("End Date", max_date if not pd.isna(max_date) else pd.Timestamp('2022-12-31'))
+        start_date = st.sidebar.date_input("Start Date", min_date.date() if not pd.isna(min_date) else pd.Timestamp('2022-01-01').date())
+        end_date = st.sidebar.date_input("End Date", max_date.date() if not pd.isna(max_date) else pd.Timestamp('2022-12-31').date())
         filtered_data = filter_data_by_date_range(data_clean, start_date, end_date)
     else:
         selected_year = st.sidebar.selectbox("Year", years)
