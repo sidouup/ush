@@ -819,7 +819,13 @@ def main():
                             key="entry_date_in_us",
                             on_change=update_student_data
                         )
-                        School_Paid = st.selectbox("School Paid", School_paid_opt, index=School_paid_opt.index(selected_student['School Paid']) if selected_student['School Paid'] in School_paid_opt else 0, key="School Paid", on_change=update_student_data)
+                        School_Paid = st.selectbox(
+                            "School Paid", 
+                            School_paid_opt, 
+                            index=School_paid_opt.index(selected_student['School Paid']) if selected_student['School Paid'] in School_paid_opt else 0,
+                            key="School_Paid",  # Note the capitalization here
+                            on_change=update_student_data
+                        )
                     else:
                         st.write(f"**Chosen School:** {selected_student['Chosen School']}")
                         st.write(f"**Specialite:** {selected_student['Specialite']}")
@@ -856,7 +862,13 @@ def main():
                     ds160_maker = st.text_input("DS-160 Maker", selected_student['DS-160 maker'], key="ds160_maker", on_change=update_student_data)
                     password_ds160 = st.text_input("Password DS-160", selected_student['Password DS-160'], key="password_ds160", on_change=update_student_data)
                     secret_q = st.text_input("Secret Question", selected_student['Secret Q.'], key="secret_q", on_change=update_student_data)
-                    Prep_ITW = st.selectbox("Prep ITW", Prep_ITW_opt , index=Prep_ITW_opt .index(selected_student['Prep ITW']) if selected_student['Prep ITW'] in Prep_ITW_opt else 0, key="Prep ITW", on_change=update_student_data)
+                    Prep_ITW = st.selectbox(
+                        "Prep ITW", 
+                        Prep_ITW_opt, 
+                        index=Prep_ITW_opt.index(selected_student['Prep ITW']) if selected_student['Prep ITW'] in Prep_ITW_opt else 0,
+                        key="Prep_ITW",  # Note the capitalization here
+                        on_change=update_student_data
+                    )
 
                 else:
                     st.write(f"**Address in the U.S:** {selected_student['ADDRESS in the U.S']}")
