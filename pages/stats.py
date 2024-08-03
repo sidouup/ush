@@ -25,13 +25,9 @@ def load_data(spreadsheet_id, sheet_name):
     return df
 
 def filter_data_by_date_range(data, start_date, end_date):
-    data['DATE'] = pd.to_datetime(data['DATE'], errors='coerce')
-    start_date = pd.to_datetime(start_date)
-    end_date = pd.to_datetime(end_date)
     return data[(data['DATE'] >= start_date) & (data['DATE'] <= end_date)]
 
 def filter_data_by_month_year(data, year, month):
-    data['DATE'] = pd.to_datetime(data['DATE'], errors='coerce')
     start_date = pd.Timestamp(year=year, month=month, day=1)
     end_date = start_date + pd.offsets.MonthEnd(1)
     return data[(data['DATE'] >= start_date) & (data['DATE'] <= end_date)]
@@ -67,25 +63,25 @@ def statistics_page():
     sheet_name = "ALL"
     data = load_data(spreadsheet_id, sheet_name)
 
-    # Remove duplicates based on all columns
-    data_deduped = data.drop_duplicates()
-
     # Convert 'DATE' column to datetime and handle NaT values
-    data_deduped['DATE'] = pd.to_datetime(data_deduped['DATE'], errors='coerce')
-    
-    # Identify rows with incorrect date format
-    incorrect_date_mask = data_deduped['DATE'].isna()
+    data['DATE'] = pd.to_datetime(data['DATE'], errors='coerce')
+
+    # Identify rows with incorrect date format in the original data
+    incorrect_date_mask = data['DATE'].isna()
     incorrect_date_count = incorrect_date_mask.sum()
     
     # Create a DataFrame with students having incorrect date format
-    students_with_incorrect_dates = data_deduped[incorrect_date_mask]
+    students_with_incorrect_dates = data[incorrect_date_mask]
 
     # Display warning and list of students with incorrect date format
-    st.warning(f"Number of unique students with incorrect date format: {incorrect_date_count}")
+    st.warning(f"Number of entries with incorrect date format: {incorrect_date_count}")
     if incorrect_date_count > 0:
-        st.subheader("Students with Incorrect Date Format")
+        st.subheader("Entries with Incorrect Date Format")
         st.dataframe(students_with_incorrect_dates[['Student Name', 'DATE', 'Chosen School', 'Agent']])
 
+    # Remove duplicates for analysis
+    data_deduped = data.drop_duplicates(subset=['Student Name', 'Chosen School'], keep='last')
+    
     # Remove rows with NaT values in the DATE column for further analysis
     data_clean = data_deduped.dropna(subset=['DATE'])
 
@@ -119,7 +115,7 @@ def statistics_page():
 
     with col1:
         total_students = len(filtered_data)
-        st.metric("Total Students", total_students)
+        st.metric("Total Unique Students", total_students)
 
     with col2:
         st.metric("Visa Approvals", visa_approved)
