@@ -103,6 +103,7 @@ def main():
             emergency_contact = st.text_input("🆘 Emergency Contact Number")
 
         with col2:
+            Age = st.text_input("👤 Age")
             school_options = ["University", "Community College", "CCLS Miami", "CCLS NY NJ", "Connect English",
                               "CONVERSE SCHOOL", "ELI San Francisco", "F2 Visa", "GT Chicago", "BEA Huston", "BIA Huston",
                               "OHLA Miami", "UCDEA", "HAWAII", "Not Partner", "Not yet"]
@@ -126,6 +127,7 @@ def main():
                 "DATE": date.strftime("%d/%m/%Y %H:%M:%S"),
                 "First Name": first_name,
                 "Last Name": last_name,
+                "Age": Age,
                 "Gender": gender,
                 "Phone N°": phone,
                 "Address": address,
