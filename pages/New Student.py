@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 from google.oauth2.service_account import Credentials
-from googleapiclient.discovery import build
 import gspread
 import time
 
@@ -16,13 +15,6 @@ SCOPES = ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/a
 @st.cache_resource
 def get_google_sheet_client():
     creds = Credentials.from_service_account_info(SERVICE_ACCOUNT_INFO, scopes=SCOPES)
-    return gspread.authorize(creds)
-
-
-# Set up Google Sheets authentication
-@st.cache_resource
-def get_google_sheet_client():
-    creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive'])
     return gspread.authorize(creds)
 
 # Function to add a new student to the Google Sheet
@@ -126,7 +118,7 @@ def main():
             emergency_contact = st.text_input("🆘 Emergency Contact Number")
 
         with col2:
-            Age = st.text_input("👤 Age")
+            age = st.text_input("👤 Age")
             school_options = ["University", "Community College", "CCLS Miami", "CCLS NY NJ", "Connect English",
                               "CONVERSE SCHOOL", "ELI San Francisco", "F2 Visa", "GT Chicago", "BEA Huston", "BIA Huston",
                               "OHLA Miami", "UCDEA", "HAWAII", "Not Partner", "Not yet"]
@@ -150,7 +142,7 @@ def main():
                 "DATE": date.strftime("%d/%m/%Y %H:%M:%S"),
                 "First Name": first_name,
                 "Last Name": last_name,
-                "Age": Age,
+                "Age": age,
                 "Gender": gender,
                 "Phone N°": phone,
                 "Address": address,
