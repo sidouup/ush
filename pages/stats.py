@@ -70,9 +70,18 @@ def statistics_page():
     # Convert 'DATE' column to datetime and handle NaT values
     data['DATE'] = pd.to_datetime(data['DATE'], errors='coerce')
     
-    # Count and display the number of rows with incorrect date format
-    incorrect_date_count = data['DATE'].isna().sum()
+    # Identify rows with incorrect date format
+    incorrect_date_mask = data['DATE'].isna()
+    incorrect_date_count = incorrect_date_mask.sum()
+    
+    # Create a DataFrame with students having incorrect date format
+    students_with_incorrect_dates = data[incorrect_date_mask]
+
+    # Display warning and list of students with incorrect date format
     st.warning(f"Number of students with incorrect date format: {incorrect_date_count}")
+    if incorrect_date_count > 0:
+        st.subheader("Students with Incorrect Date Format")
+        st.dataframe(students_with_incorrect_dates[['Student Name', 'DATE', 'Chosen School', 'Agent']])
 
     # Remove duplicates based on all columns
     data_deduped = data.drop_duplicates()
