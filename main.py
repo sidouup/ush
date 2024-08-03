@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -25,7 +24,13 @@ def load_data(spreadsheet_id, sheet_name):
     sheet = client.open_by_key(spreadsheet_id).worksheet(sheet_name)
     data = sheet.get_all_records()
     df = pd.DataFrame(data)
-    df['DATE'] = pd.to_datetime(df['DATE'], errors='coerce')
+    
+    # Convert 'DATE' column to datetime
+    df['DATE'] = pd.to_datetime(df['DATE'], errors='coerce', format='%d/%m/%Y %H:%M:%S')
+    
+    # Convert 'EMBASSY ITW. DATE' to datetime, handling potential errors
+    df['EMBASSY ITW. DATE'] = pd.to_datetime(df['EMBASSY ITW. DATE'], errors='coerce', format='%d/%m/%Y %H:%M:%S')
+    
     return df
 
 def main_dashboard():
@@ -114,7 +119,12 @@ def main_dashboard():
         """, unsafe_allow_html=True)
 
     with col4:
-        upcoming_interviews = len(data[(data['EMBASSY ITW. DATE'] > datetime.now()) & (data['EMBASSY ITW. DATE'] <= datetime.now() + timedelta(days=30))])
+        now = pd.Timestamp.now()
+        upcoming_interviews = len(data[
+            (data['EMBASSY ITW. DATE'] > now) & 
+            (data['EMBASSY ITW. DATE'] <= now + pd.Timedelta(days=30)) &
+            (~data['EMBASSY ITW. DATE'].isna())
+        ])
         st.markdown(f"""
         <div class='metric-card'>
             <p class='metric-value'>{upcoming_interviews}</p>
