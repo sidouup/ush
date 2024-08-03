@@ -172,26 +172,17 @@ def tasks_and_emergencies_page(df):
         st.markdown('<p class="small-font">✅ No duplicate students found.</p>')
     st.markdown('</div>', unsafe_allow_html=True)
 
-def main():
-    st.set_page_config(page_title="Student Application Tracker", layout="wide")
-    
-    # Add a new option in your sidebar or navigation
-    page = st.sidebar.selectbox("Choose a page", ["Student Tracker", "Tasks and Emergencies"])
-    
-    # Load the data once and pass it to both pages
-    spreadsheet_id = "1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI"
-    data = load_data(spreadsheet_id)
-    
-    if page == "Student Tracker":
-        student_tracker_page(data)  # Your existing main page function
-    elif page == "Tasks and Emergencies":
-        tasks_and_emergencies_page(data)
-def student_tracker_page(data):
-    # Placeholder
-    # Placeholder for the student tracker page
-    st.title("Student Tracker")
-    st.write("This page is under construction.")
-    # Implement the tracker page logic here
+    # Students without an agent
+    st.markdown('<div class="dashboard-item">', unsafe_allow_html=True)
+    st.markdown('<p class="medium-font">🔍 Students Without an Agent</p>', unsafe_allow_html=True)
+    no_agent = df[(df['AGENT'].isna()) & (df['STAGE'] != 'CLIENT')]
+    if not no_agent.empty:
+        st.dataframe(no_agent[['STUDENT_NAME', 'STAGE']], height=200)
+        st.markdown('<p class="small-font highlight">⚠️ These students do not have an assigned agent.</p>', unsafe_allow_html=True)
+    else:
+        st.markdown('<p class="small-font">✅ All students have an assigned agent.</p>')
+    st.markdown('</div>', unsafe_allow_html=True)
 
+# Call the main function to run the app
 if __name__ == "__main__":
     main()
