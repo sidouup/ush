@@ -230,26 +230,51 @@ def statistics_page():
                  title="Top 5 Agents by Number of Students")
     st.plotly_chart(fig, use_container_width=True)
 
-    st.header("💰 Payment Amount Statistics")
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+from google.oauth2.service_account import Credentials
+import gspread
+import streamlit as st
+from datetime import datetime
 
-    # Count the number of payments in each category
-    payment_counts = filtered_data['Payment Amount'].value_counts().sort_index()
+# ... [All previous functions remain unchanged] ...
 
-    # Create a bar chart for payment categories
+def statistics_page():
+    st.set_page_config(page_title="Student Recruitment Statistics", layout="wide")
+    
+    # ... [Previous styling code remains unchanged] ...
+
+    st.title("📊 Student Recruitment Statistics")
+
+    # Load and process data
+    # ... [Data loading and processing code remains unchanged] ...
+
+    # Display existing dashboard content
+    # ... [All the code for the original dashboard sections goes here, unchanged] ...
+
+    st.markdown("---")
+
+    # New Payment Amount Statistics Section
+    st.header("💰 Top 5 Payment Types")
+
+    # Count the number of payments in each category and get the top 5
+    payment_counts = filtered_data['Payment Amount'].value_counts().nlargest(5)
+
+    # Create a bar chart for top 5 payment categories
     fig = px.bar(x=payment_counts.index, y=payment_counts.values,
                  labels={'x': 'Payment Amount', 'y': 'Number of Payments'},
-                 title="Distribution of Payments by Fixed Price Categories")
+                 title="Top 5 Payment Types")
     fig.update_traces(text=payment_counts.values, textposition='outside')
-    fig.update_layout(xaxis_title="Payment Amount Categories",
+    fig.update_layout(xaxis_title="Payment Amount",
                       yaxis_title="Number of Payments",
                       bargap=0.2)
     
     st.plotly_chart(fig, use_container_width=True)
 
     # Display the data in a table format as well
-    st.subheader("Payment Category Distribution")
+    st.subheader("Top 5 Payment Types Distribution")
     payment_df = pd.DataFrame({'Payment Amount': payment_counts.index, 'Number of Payments': payment_counts.values})
-    st.table(payment_df)
 
 
 
