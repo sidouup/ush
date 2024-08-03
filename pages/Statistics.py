@@ -1,9 +1,8 @@
-import streamlit as st
 import pandas as pd
 import plotly.express as px
 from google.oauth2.service_account import Credentials
 import gspread
-from datetime import datetime, timedelta
+import streamlit as st
 
 # Use Streamlit secrets for service account info
 SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
@@ -18,96 +17,67 @@ def get_google_sheet_client():
     return gspread.authorize(creds)
 
 # Function to load data from Google Sheets
-@st.cache_data(ttl=600)
 def load_data(spreadsheet_id, sheet_name):
     client = get_google_sheet_client()
     sheet = client.open_by_key(spreadsheet_id).worksheet(sheet_name)
     data = sheet.get_all_records()
     df = pd.DataFrame(data)
-    
-    # Convert 'DATE' column to datetime
-    df['DATE'] = pd.to_datetime(df['DATE'], errors='coerce', format='%d/%m/%Y %H:%M:%S')
-    
-    # Convert 'EMBASSY ITW. DATE' to datetime, handling potential errors
-    df['EMBASSY ITW. DATE'] = pd.to_datetime(df['EMBASSY ITW. DATE'], errors='coerce', format='%d/%m/%Y %H:%M:%S')
-    
     return df
 
-def calculate_visa_approval_rate(data):
-    # Filter for applications where a decision has been made
-    decided_applications = data[data['Visa Result'].isin(['Visa Approved', 'Visa Denied'])]
-    
-    # Calculate total decided applications
-    total_decided = len(decided_applications)
-    
-    # Calculate number of approved visas
-    approved_visas = len(decided_applications[decided_applications['Visa Result'] == 'Visa Approved'])
-    
-    # Calculate approval rate
-    approval_rate = (approved_visas / total_decided * 100) if total_decided > 0 else 0
-    
-    return approval_rate, approved_visas, total_decided
+def filter_data_by_date_range(data, start_date, end_date):
+    return data[(data['DATE'] >= start_date) & (data['DATE'] <= end_date)]
 
-def main_dashboard():
-    st.set_page_config(page_title="The Us House - Dashboard", layout="wide")
+def filter_data_by_month_year(data, year, month):
+    start_date = pd.Timestamp(year=year, month=month, day=1)
+    end_date = start_date + pd.offsets.MonthEnd(1)
+    return data[(data['DATE'] >= start_date) & (data['DATE'] <= end_date)]
 
-    # Custom CSS for modern and elegant design
+def statistics_page():
+    st.set_page_config(page_title="Student Recruitment Statistics", layout="wide")
+    
     st.markdown("""
     <style>
-    .main-title {
-        font-size: 3rem;
-        font-weight: 700;
-        color: #1E3A8A;
-        text-align: center;
-        margin-bottom: 2rem;
-    }
-    .sub-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #3B82F6;
-        margin-top: 2rem;
-        margin-bottom: 1rem;
-    }
-    .metric-card {
-        background-color: #F3F4F6;
-        border-radius: 0.5rem;
-        padding: 1rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    }
-    .metric-value {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #1E3A8A;
-    }
-    .metric-label {
-        font-size: 1rem;
-        color: #6B7280;
-    }
-    .chart-container {
-        background-color: white;
-        border-radius: 0.5rem;
-        padding: 1rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    }
-    .stButton>button {
-        width: 100%;
-        height: 3rem;
-        font-size: 1.2rem;
-        font-weight: 600;
-        margin-bottom: 1rem;
-    }
+        .reportview-container {
+            background: #f0f2f6;
+        }
+        .main .block-container {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+        h1, h2, h3 {
+            color: #1E3A8A;
+        }
+        .stMetric {
+            background-color: #ffffff;
+            border-radius: 5px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
     </style>
     """, unsafe_allow_html=True)
 
-    # App title and logo
-    col1, col2, col3 = st.columns([1,2,1])
-    with col2:
-        st.image("https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=297,h=404,fit=crop/YBgonz9JJqHRMK43/blue-red-minimalist-high-school-logo-9-AVLN0K6MPGFK2QbL.png", width=150)
-        st.markdown("<h1 class='main-title'>The Us House Dashboard</h1>", unsafe_allow_html=True)
+    st.title("📊 Student Recruitment Statistics")
 
-    # Load data
+    # Load data from Google Sheets
     spreadsheet_id = "1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI"
-    data = load_data(spreadsheet_id, "ALL")
+    sheet_name = "ALL"
+    data = load_data(spreadsheet_id, sheet_name)
+
+    # Convert 'DATE' column to datetime and handle NaT values
+    data['DATE'] = pd.to_datetime(data['DATE'], errors='coerce')
+
+    # Identify rows with incorrect date format in the original data
+    incorrect_date_mask = data['DATE'].isna()
+    incorrect_date_count = incorrect_date_mask.sum()
+    
+    # Create a DataFrame with students having incorrect date format
+    students_with_incorrect_dates = data[incorrect_date_mask]
+
+    # Display warning and list of students with incorrect date format
+    st.warning(f"Number of entries with incorrect date format: {incorrect_date_count}")
+    if incorrect_date_count > 0:
+        st.subheader("Entries with Incorrect Date Format")
+        st.dataframe(students_with_incorrect_dates[['Student Name', 'DATE', 'Chosen School', 'Agent']])
 
     # Remove duplicates for analysis
     data_deduped = data.drop_duplicates(subset=['Student Name', 'Chosen School'], keep='last')
@@ -115,69 +85,115 @@ def main_dashboard():
     # Remove rows with NaT values in the DATE column for further analysis
     data_clean = data_deduped.dropna(subset=['DATE'])
 
-    # Key Metrics
-    st.markdown("<h2 class='sub-title'>Key Metrics</h2>", unsafe_allow_html=True)
+    min_date = data_clean['DATE'].min()
+    max_date = data_clean['DATE'].max()
+    years = list(range(min_date.year, max_date.year + 1))
+    months = list(range(1, 13))
+
+    # Filter selection
+    st.sidebar.subheader("Filter Options")
+    filter_option = st.sidebar.radio("Select Filter Method", ("Date Range", "Month and Year"))
+
+    if filter_option == "Date Range":
+        start_date = st.sidebar.date_input("Start Date", min_date if not pd.isna(min_date) else pd.Timestamp('2022-01-01'))
+        end_date = st.sidebar.date_input("End Date", max_date if not pd.isna(max_date) else pd.Timestamp('2022-12-31'))
+        filtered_data = filter_data_by_date_range(data_clean, start_date, end_date)
+    else:
+        selected_year = st.sidebar.selectbox("Year", years)
+        selected_month = st.sidebar.selectbox("Month", months, format_func=lambda x: pd.Timestamp(year=2023, month=x, day=1).strftime('%B'))
+        filtered_data = filter_data_by_month_year(data_clean, selected_year, selected_month)
+
+    # Calculate visa approval rate
+    visa_approved = len(filtered_data[filtered_data['Visa Result'] == 'Visa Approved'])
+    visa_denied = len(filtered_data[filtered_data['Visa Result'] == 'Visa Denied'])
+    visa_not_yet = len(filtered_data[filtered_data['Visa Result'] == '0 not yet'])
+    visa_not_our_school = len(filtered_data[filtered_data['Visa Result'] == 'not our school'])
+    total_decisions = visa_approved + visa_denied
+    visa_approval_rate = (visa_approved / total_decisions * 100) if total_decisions > 0 else 0
+
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        total_students = len(data_clean)
-        st.markdown(f"""
-        <div class='metric-card'>
-            <p class='metric-value'>{total_students}</p>
-            <p class='metric-label'>Total Unique Students</p>
-        </div>
-        """, unsafe_allow_html=True)
+        total_students = len(filtered_data)
+        st.metric("Total Unique Students", total_students)
 
     with col2:
-        overall_approval_rate, visa_approved, total_decisions = calculate_visa_approval_rate(data_clean)
-        st.markdown(f"""
-        <div class='metric-card'>
-            <p class='metric-value'>{visa_approved}</p>
-            <p class='metric-label'>Visa Approvals</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.metric("Visa Approvals", visa_approved)
 
     with col3:
-        st.markdown(f"""
-        <div class='metric-card'>
-            <p class='metric-value'>{overall_approval_rate:.2f}%</p>
-            <p class='metric-label'>Visa Approval Rate</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.metric("Visa Approval Rate", f"{visa_approval_rate:.2f}%")
 
+    st.markdown("---")
 
-    # Charts
-    st.markdown("<h2 class='sub-title'>Analytics</h2>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
 
     with col1:
-        st.markdown("<div class='chart-container'>", unsafe_allow_html=True)
         st.subheader("🏫 Top Chosen Schools")
-        school_counts = data_clean['Chosen School'].value_counts().head(10).reset_index()
+        school_counts = filtered_data['Chosen School'].value_counts().head(10).reset_index()
         school_counts.columns = ['School', 'Number of Students']
         fig = px.bar(school_counts, x='School', y='Number of Students',
                      labels={'Number of Students': 'Number of Students', 'School': 'School'},
                      title="Top 10 Chosen Schools")
         st.plotly_chart(fig, use_container_width=True)
-        st.markdown("</div>", unsafe_allow_html=True)
 
     with col2:
-        st.markdown("<div class='chart-container'>", unsafe_allow_html=True)
         st.subheader("🛂 Student Visa Approval")
-        visa_status = data_clean['Visa Result'].value_counts()
+        visa_status = filtered_data['Visa Result'].value_counts()
         colors = {'Visa Approved': 'blue', 'Visa Denied': 'red', '0 not yet': 'grey', 'not our school': 'lightblue'}
         fig = px.pie(values=visa_status.values, names=visa_status.index,
                      title="Visa Application Results", color=visa_status.index, 
                      color_discrete_map=colors)
         st.plotly_chart(fig, use_container_width=True)
-        st.markdown("</div>", unsafe_allow_html=True)
 
-    # Recent Activity
-    st.markdown("<h2 class='sub-title'>Recent Activity</h2>", unsafe_allow_html=True)
-    recent_activity = data_clean.sort_values('DATE', ascending=False).head(5)
-    st.markdown("<div class='chart-container'>", unsafe_allow_html=True)
-    st.dataframe(recent_activity[['DATE', 'Student Name', 'Chosen School', 'Stage']], hide_index=True)
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("---")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.subheader("📅 Applications Over Time")
+        monthly_apps = filtered_data.groupby(filtered_data['DATE'].dt.to_period("M")).size().reset_index(name='count')
+        monthly_apps['DATE'] = monthly_apps['DATE'].dt.to_timestamp()
+        fig = px.line(monthly_apps, x='DATE', y='count',
+                      labels={'count': 'Number of Applications', 'DATE': 'Date'},
+                      title="Monthly Application Trend")
+        st.plotly_chart(fig, use_container_width=True)
+
+    with col2:
+        st.subheader("💰 Payment Methods")
+        payment_counts = filtered_data['Payment Type'].value_counts()
+        fig = px.pie(values=payment_counts.values, names=payment_counts.index,
+                     title="Payment Method Distribution")
+        st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown("---")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.subheader("👥 Gender Distribution")
+        gender_counts = filtered_data['Gender'].value_counts()
+        fig = px.pie(values=gender_counts.values, names=gender_counts.index,
+                     title="Gender Distribution")
+        st.plotly_chart(fig, use_container_width=True)
+
+    with col2:
+        st.subheader("🔄 Application Attempts")
+        attempts_counts = filtered_data['Attempts'].value_counts().reset_index()
+        attempts_counts.columns = ['Attempt', 'Number of Students']
+        fig = px.bar(attempts_counts, x='Attempt', y='Number of Students',
+                     labels={'Number of Students': 'Number of Students', 'Attempt': 'Attempt'},
+                     title="Application Attempts Distribution")
+        st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown("---")
+
+    st.subheader("🏆 Top Performing Agents")
+    agent_performance = filtered_data['Agent'].value_counts().head(5).reset_index()
+    agent_performance.columns = ['Agent', 'Number of Students']
+    fig = px.bar(agent_performance, x='Agent', y='Number of Students',
+                 labels={'Number of Students': 'Number of Students', 'Agent': 'Agent'},
+                 title="Top 5 Agents by Number of Students")
+    st.plotly_chart(fig, use_container_width=True)
 
 if __name__ == "__main__":
-    main_dashboard()
+    statistics_page()
