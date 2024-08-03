@@ -67,30 +67,30 @@ def statistics_page():
     sheet_name = "ALL"
     data = load_data(spreadsheet_id, sheet_name)
 
+    # Remove duplicates based on all columns
+    data_deduped = data.drop_duplicates()
+
     # Convert 'DATE' column to datetime and handle NaT values
-    data['DATE'] = pd.to_datetime(data['DATE'], errors='coerce')
+    data_deduped['DATE'] = pd.to_datetime(data_deduped['DATE'], errors='coerce')
     
     # Identify rows with incorrect date format
-    incorrect_date_mask = data['DATE'].isna()
+    incorrect_date_mask = data_deduped['DATE'].isna()
     incorrect_date_count = incorrect_date_mask.sum()
     
     # Create a DataFrame with students having incorrect date format
-    students_with_incorrect_dates = data[incorrect_date_mask]
+    students_with_incorrect_dates = data_deduped[incorrect_date_mask]
 
     # Display warning and list of students with incorrect date format
-    st.warning(f"Number of students with incorrect date format: {incorrect_date_count}")
+    st.warning(f"Number of unique students with incorrect date format: {incorrect_date_count}")
     if incorrect_date_count > 0:
         st.subheader("Students with Incorrect Date Format")
         st.dataframe(students_with_incorrect_dates[['Student Name', 'DATE', 'Chosen School', 'Agent']])
 
-    # Remove duplicates based on all columns
-    data_deduped = data.drop_duplicates()
-    
-    # Remove rows with NaT values in the DATE column
-    data_deduped = data_deduped.dropna(subset=['DATE'])
+    # Remove rows with NaT values in the DATE column for further analysis
+    data_clean = data_deduped.dropna(subset=['DATE'])
 
-    min_date = data_deduped['DATE'].min()
-    max_date = data_deduped['DATE'].max()
+    min_date = data_clean['DATE'].min()
+    max_date = data_clean['DATE'].max()
     years = list(range(min_date.year, max_date.year + 1))
     months = list(range(1, 13))
 
@@ -101,11 +101,11 @@ def statistics_page():
     if filter_option == "Date Range":
         start_date = st.sidebar.date_input("Start Date", min_date if not pd.isna(min_date) else pd.Timestamp('2022-01-01'))
         end_date = st.sidebar.date_input("End Date", max_date if not pd.isna(max_date) else pd.Timestamp('2022-12-31'))
-        filtered_data = filter_data_by_date_range(data_deduped, start_date, end_date)
+        filtered_data = filter_data_by_date_range(data_clean, start_date, end_date)
     else:
         selected_year = st.sidebar.selectbox("Year", years)
         selected_month = st.sidebar.selectbox("Month", months, format_func=lambda x: pd.Timestamp(year=2023, month=x, day=1).strftime('%B'))
-        filtered_data = filter_data_by_month_year(data_deduped, selected_year, selected_month)
+        filtered_data = filter_data_by_month_year(data_clean, selected_year, selected_month)
 
     # Calculate visa approval rate
     visa_approved = len(filtered_data[filtered_data['Visa Result'] == 'Visa Approved'])
