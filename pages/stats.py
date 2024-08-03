@@ -232,63 +232,25 @@ def statistics_page():
 
     st.header("💰 Payment Amount Statistics")
 
-    # Convert Payment Amount to numeric, removing any non-numeric characters
-    filtered_data['Payment Amount'] = pd.to_numeric(filtered_data['Payment Amount'].replace(r'[^0-9.]', '', regex=True), errors='coerce')
+    # Count the number of payments in each category
+    payment_counts = filtered_data['Payment Amount'].value_counts().sort_index()
 
-    # Basic statistics
-    total_payment = filtered_data['Payment Amount'].sum()
-    average_payment = filtered_data['Payment Amount'].mean()
-    median_payment = filtered_data['Payment Amount'].median()
+    # Create a bar chart for payment categories
+    fig = px.bar(x=payment_counts.index, y=payment_counts.values,
+                 labels={'x': 'Payment Amount', 'y': 'Number of Payments'},
+                 title="Distribution of Payments by Fixed Price Categories")
+    fig.update_traces(text=payment_counts.values, textposition='outside')
+    fig.update_layout(xaxis_title="Payment Amount Categories",
+                      yaxis_title="Number of Payments",
+                      bargap=0.2)
+    
+    st.plotly_chart(fig, use_container_width=True)
 
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Total Payments", f"${total_payment:,.2f}")
-    col2.metric("Average Payment", f"${average_payment:,.2f}")
-    col3.metric("Median Payment", f"${median_payment:,.2f}")
+    # Display the data in a table format as well
+    st.subheader("Payment Category Distribution")
+    payment_df = pd.DataFrame({'Payment Amount': payment_counts.index, 'Number of Payments': payment_counts.values})
+    st.table(payment_df)
 
-    st.markdown("---")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        # Payment distribution
-        st.subheader("Payment Amount Distribution")
-        fig = px.histogram(filtered_data, x="Payment Amount", nbins=50,
-                           title="Distribution of Payment Amounts")
-        st.plotly_chart(fig, use_container_width=True)
-
-    with col2:
-        # Payment amount by visa result
-        st.subheader("Payment Amount by Visa Result")
-        visa_payments = filtered_data.groupby('Visa Result')['Payment Amount'].mean().sort_values(ascending=False)
-        fig = px.bar(visa_payments, x=visa_payments.index, y=visa_payments.values,
-                     labels={'y': 'Average Payment Amount', 'x': 'Visa Result'},
-                     title="Average Payment Amount by Visa Result")
-        fig.update_traces(text=visa_payments.values.round(2), texttemplate='$%{text:,.2f}', textposition='outside')
-        st.plotly_chart(fig, use_container_width=True)
-
-    st.markdown("---")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        # Payment amount by school
-        st.subheader("Average Payment Amount by School")
-        school_payments = filtered_data.groupby('Chosen School')['Payment Amount'].mean().sort_values(ascending=False).head(10)
-        fig = px.bar(school_payments, x=school_payments.index, y=school_payments.values,
-                     labels={'y': 'Average Payment Amount', 'x': 'School'},
-                     title="Top 10 Schools by Average Payment Amount")
-        fig.update_traces(text=school_payments.values.round(2), texttemplate='$%{text:,.2f}', textposition='outside')
-        st.plotly_chart(fig, use_container_width=True)
-
-    with col2:
-        # Payment amount over time
-        st.subheader("Payment Amount Trend Over Time")
-        payment_trend = filtered_data.groupby(filtered_data['DATE'].dt.to_period("M"))['Payment Amount'].mean().reset_index()
-        payment_trend['DATE'] = payment_trend['DATE'].dt.to_timestamp()
-        fig = px.line(payment_trend, x='DATE', y='Payment Amount',
-                      labels={'Payment Amount': 'Average Payment Amount', 'DATE': 'Date'},
-                      title="Average Payment Amount Trend")
-        st.plotly_chart(fig, use_container_width=True)
 
 
 if __name__ == "__main__":
