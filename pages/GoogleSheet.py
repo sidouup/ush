@@ -103,6 +103,7 @@ def main():
         if st.button("Save Changes"):
             save_data(edited_data, original_df_all, spreadsheet_id, sheet_name)
             st.success("Changes saved successfully!")
+            st.rerun()  # Rerun the script to show the updated data
     else:
         # Apply styling and display the dataframe
         styled_df = filtered_data.style.apply(highlight_agent, axis=1)
