@@ -165,7 +165,7 @@ def main_dashboard():
         st.markdown("</div>", unsafe_allow_html=True)
 
     # Recent Activity
-    st.markdown("<h2 class='sub-title'>Recent Activity</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 class='sub-title'>Recent Students</h2>", unsafe_allow_html=True)
     recent_activity = data_clean.sort_values('DATE', ascending=False).head(5)
     st.markdown("<div class='chart-container'>", unsafe_allow_html=True)
     st.dataframe(recent_activity[['DATE', 'Student Name', 'Chosen School', 'Stage']], hide_index=True)
