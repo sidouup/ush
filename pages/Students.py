@@ -95,7 +95,7 @@ def load_data(spreadsheet_id):
             'Payment Amount', 'Sevis payment ?', 'Application payment ?', 'DS-160 maker', 
             'Password DS-160', 'Secret Q.', 'School Entry Date', 'Entry Date in the US', 
             'ADDRESS in the U.S', 'E-MAIL RDV', 'PASSWORD RDV', 'EMBASSY ITW. DATE', 
-            'Attempts', 'Visa Result', 'Agent', 'Note', 'Stage','Gender','BANK','Age','Prep ITW','School Paid'
+            'Attempts', 'Visa Result', 'Agent', 'Note', 'Stage','Gender','BANK','Prep ITW','School Paid'
         ]
     }
     
