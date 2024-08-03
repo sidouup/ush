@@ -33,6 +33,21 @@ def load_data(spreadsheet_id, sheet_name):
     
     return df
 
+def calculate_visa_approval_rate(data):
+    # Filter for applications where a decision has been made
+    decided_applications = data[data['Visa Result'].isin(['Visa Approved', 'Visa Denied'])]
+    
+    # Calculate total decided applications
+    total_decided = len(decided_applications)
+    
+    # Calculate number of approved visas
+    approved_visas = len(decided_applications[decided_applications['Visa Result'] == 'Visa Approved'])
+    
+    # Calculate approval rate
+    approval_rate = (approved_visas / total_decided * 100) if total_decided > 0 else 0
+    
+    return approval_rate, approved_visas, total_decided
+
 def main_dashboard():
     st.set_page_config(page_title="The Us House - Dashboard", layout="wide")
 
@@ -87,48 +102,39 @@ def main_dashboard():
     spreadsheet_id = "1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI"
     data = load_data(spreadsheet_id, "ALL")
 
+    # Remove duplicates for analysis
+    data_deduped = data.drop_duplicates(subset=['Student Name', 'Chosen School'], keep='last')
+    
+    # Remove rows with NaT values in the DATE column for further analysis
+    data_clean = data_deduped.dropna(subset=['DATE'])
+
     # Key Metrics
     st.markdown("<h2 class='sub-title'>Key Metrics</h2>", unsafe_allow_html=True)
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
-        total_students = len(data)
+        total_students = len(data_clean)
         st.markdown(f"""
         <div class='metric-card'>
             <p class='metric-value'>{total_students}</p>
-            <p class='metric-label'>Total Students</p>
+            <p class='metric-label'>Total Unique Students</p>
         </div>
         """, unsafe_allow_html=True)
 
     with col2:
-        active_applications = len(data[data['Stage'] != 'CLIENTS'])
+        overall_approval_rate, visa_approved, total_decisions = calculate_visa_approval_rate(data_clean)
         st.markdown(f"""
         <div class='metric-card'>
-            <p class='metric-value'>{active_applications}</p>
-            <p class='metric-label'>Active Applications</p>
+            <p class='metric-value'>{visa_approved}</p>
+            <p class='metric-label'>Visa Approvals</p>
         </div>
         """, unsafe_allow_html=True)
 
     with col3:
-        visa_approved = len(data[data['Visa Result'] == 'Approved'])
         st.markdown(f"""
         <div class='metric-card'>
-            <p class='metric-value'>{visa_approved}</p>
-            <p class='metric-label'>Visas Approved</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-    with col4:
-        now = pd.Timestamp.now()
-        upcoming_interviews = len(data[
-            (data['EMBASSY ITW. DATE'] > now) & 
-            (data['EMBASSY ITW. DATE'] <= now + pd.Timedelta(days=30)) &
-            (~data['EMBASSY ITW. DATE'].isna())
-        ])
-        st.markdown(f"""
-        <div class='metric-card'>
-            <p class='metric-value'>{upcoming_interviews}</p>
-            <p class='metric-label'>Upcoming Interviews (30 days)</p>
+            <p class='metric-value'>{overall_approval_rate:.2f}%</p>
+            <p class='metric-label'>Visa Approval Rate</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -138,23 +144,29 @@ def main_dashboard():
 
     with col1:
         st.markdown("<div class='chart-container'>", unsafe_allow_html=True)
-        st.subheader("Application Stages")
-        stage_counts = data['Stage'].value_counts()
-        fig = px.pie(values=stage_counts.values, names=stage_counts.index, title="Application Stages")
+        st.subheader("🏫 Top Chosen Schools")
+        school_counts = data_clean['Chosen School'].value_counts().head(10).reset_index()
+        school_counts.columns = ['School', 'Number of Students']
+        fig = px.bar(school_counts, x='School', y='Number of Students',
+                     labels={'Number of Students': 'Number of Students', 'School': 'School'},
+                     title="Top 10 Chosen Schools")
         st.plotly_chart(fig, use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
     with col2:
         st.markdown("<div class='chart-container'>", unsafe_allow_html=True)
-        st.subheader("Top 5 Chosen Schools")
-        school_counts = data['Chosen School'].value_counts().nlargest(5)
-        fig = px.bar(x=school_counts.index, y=school_counts.values, title="Top 5 Chosen Schools")
+        st.subheader("🛂 Student Visa Approval")
+        visa_status = data_clean['Visa Result'].value_counts()
+        colors = {'Visa Approved': 'blue', 'Visa Denied': 'red', '0 not yet': 'grey', 'not our school': 'lightblue'}
+        fig = px.pie(values=visa_status.values, names=visa_status.index,
+                     title="Visa Application Results", color=visa_status.index, 
+                     color_discrete_map=colors)
         st.plotly_chart(fig, use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
     # Recent Activity
     st.markdown("<h2 class='sub-title'>Recent Activity</h2>", unsafe_allow_html=True)
-    recent_activity = data.sort_values('DATE', ascending=False).head(5)
+    recent_activity = data_clean.sort_values('DATE', ascending=False).head(5)
     st.markdown("<div class='chart-container'>", unsafe_allow_html=True)
     st.dataframe(recent_activity[['DATE', 'Student Name', 'Chosen School', 'Stage']], hide_index=True)
     st.markdown("</div>", unsafe_allow_html=True)
