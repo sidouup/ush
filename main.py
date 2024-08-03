@@ -89,33 +89,12 @@ def main_dashboard():
         padding: 1rem;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
-    .fancy-button {
-        display: inline-block;
-        padding: 12px 24px;
-        border: none;
-        border-radius: 50px;
-        background-image: linear-gradient(to right, #4776E6 0%, #8E54E9 51%, #4776E6 100%);
-        background-size: 200% auto;
-        color: white;
+    .stButton>button {
+        width: 100%;
+        height: 3rem;
         font-size: 1.2rem;
         font-weight: 600;
-        text-align: center;
-        text-decoration: none;
-        transition: 0.5s;
-        box-shadow: 0 4px 15px 0 rgba(65, 132, 234, 0.75);
-        width: 100%;
         margin-bottom: 1rem;
-    }
-    .fancy-button:hover {
-        background-position: right center;
-        color: #fff;
-        text-decoration: none;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px 0 rgba(65, 132, 234, 0.75);
-    }
-    .fancy-button:active {
-        transform: translateY(1px);
-        box-shadow: 0 2px 10px 0 rgba(65, 132, 234, 0.75);
     }
     </style>
     """, unsafe_allow_html=True)
@@ -169,28 +148,17 @@ def main_dashboard():
     # Quick Actions
     st.markdown("<h2 class='sub-title'>Quick Actions</h2>", unsafe_allow_html=True)
     col1, col2, col3, col4 = st.columns(4)
-    
-    # Function to create a fancy button
-    def fancy_button(label, key):
-        clicked = st.button(label, key=key, use_container_width=True)
-        st.markdown(f"""
-        <a href="#" class="fancy-button" onclick="document.querySelector('button[kind=secondary][data-testid={key}]').click();">
-            {label}
-        </a>
-        """, unsafe_allow_html=True)
-        return clicked
-
     with col1:
-        if fancy_button("📝 Add New Student", "add_student"):
+        if st.button("📝 Add New Student"):
             st.switch_page("pages/New_Student.py")
     with col2:
-        if fancy_button("👥 View Student List", "view_list"):
+        if st.button("👥 View Student List"):
             st.switch_page("pages/GoogleSheet.py")
     with col3:
-        if fancy_button("📊 View Statistics", "view_stats"):
+        if st.button("📊 View Statistics"):
             st.switch_page("pages/Statistics.py")
     with col4:
-        if fancy_button("🔍 Search Students", "search_students"):
+        if st.button("🔍 Search Students"):
             st.switch_page("pages/Students.py")
 
     # Charts
