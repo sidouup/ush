@@ -3,6 +3,7 @@ import plotly.express as px
 from google.oauth2.service_account import Credentials
 import gspread
 import streamlit as st
+
 # Use Streamlit secrets for service account info
 SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
 
@@ -68,8 +69,19 @@ def statistics_page():
 
     # Convert 'DATE' column to datetime and handle NaT values
     data['DATE'] = pd.to_datetime(data['DATE'], errors='coerce')
-    min_date = data['DATE'].min()
-    max_date = data['DATE'].max()
+    
+    # Count and display the number of rows with incorrect date format
+    incorrect_date_count = data['DATE'].isna().sum()
+    st.warning(f"Number of students with incorrect date format: {incorrect_date_count}")
+
+    # Remove duplicates based on all columns
+    data_deduped = data.drop_duplicates()
+    
+    # Remove rows with NaT values in the DATE column
+    data_deduped = data_deduped.dropna(subset=['DATE'])
+
+    min_date = data_deduped['DATE'].min()
+    max_date = data_deduped['DATE'].max()
     years = list(range(min_date.year, max_date.year + 1))
     months = list(range(1, 13))
 
@@ -80,11 +92,11 @@ def statistics_page():
     if filter_option == "Date Range":
         start_date = st.sidebar.date_input("Start Date", min_date if not pd.isna(min_date) else pd.Timestamp('2022-01-01'))
         end_date = st.sidebar.date_input("End Date", max_date if not pd.isna(max_date) else pd.Timestamp('2022-12-31'))
-        filtered_data = filter_data_by_date_range(data, start_date, end_date)
+        filtered_data = filter_data_by_date_range(data_deduped, start_date, end_date)
     else:
         selected_year = st.sidebar.selectbox("Year", years)
         selected_month = st.sidebar.selectbox("Month", months, format_func=lambda x: pd.Timestamp(year=2023, month=x, day=1).strftime('%B'))
-        filtered_data = filter_data_by_month_year(data, selected_year, selected_month)
+        filtered_data = filter_data_by_month_year(data_deduped, selected_year, selected_month)
 
     # Calculate visa approval rate
     visa_approved = len(filtered_data[filtered_data['Visa Result'] == 'Visa Approved'])
