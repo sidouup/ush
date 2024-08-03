@@ -166,16 +166,14 @@ def statistics_page():
     def school_approval_rate(group):
         return calculate_visa_approval_rate(group)[0]
     
-    school_visa_stats = filtered_data.groupby('Chosen School').apply(school_approval_rate).reset_index()
-    school_visa_stats.columns = ['School', 'Approval Rate']
-    school_visa_stats = school_visa_stats.rename(columns={0: 'Approval Rate'})
+    school_visa_stats = filtered_data.groupby('Chosen School').apply(school_approval_rate).reset_index(name='Approval Rate')
     
     # Sort by approval rate and get top 8
     top_8_schools = school_visa_stats.sort_values('Approval Rate', ascending=False).head(8)
     
-    fig = px.bar(top_8_schools, x='School', y='Approval Rate',
+    fig = px.bar(top_8_schools, x='Chosen School', y='Approval Rate',
                  text='Approval Rate',
-                 labels={'Approval Rate': 'Visa Approval Rate (%)', 'School': 'School'},
+                 labels={'Approval Rate': 'Visa Approval Rate (%)', 'Chosen School': 'School'},
                  title="Top 8 Schools by Visa Approval Rate")
     fig.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
     fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
@@ -253,8 +251,7 @@ def statistics_page():
     # Display the data in a table format as well
     st.subheader("Top 5 Payment Types Distribution")
     payment_df = pd.DataFrame({'Payment Amount': payment_counts.index, 'Number of Payments': payment_counts.values})
-
-
+    st.table(payment_df)
 
 if __name__ == "__main__":
     statistics_page()
