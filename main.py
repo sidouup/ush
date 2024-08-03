@@ -96,14 +96,22 @@ def main_dashboard():
         font-weight: 600;
         margin-bottom: 1rem;
     }
+    .centered-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
     </style>
     """, unsafe_allow_html=True)
 
     # App title and logo
-    col1, col2, col3 = st.columns([1,2,1])
-    with col2:
-        st.image("https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=297,h=404,fit=crop/YBgonz9JJqHRMK43/blue-red-minimalist-high-school-logo-9-AVLN0K6MPGFK2QbL.png", width=150)
-        st.markdown("<h1 class='main-title'>The Us House Dashboard</h1>", unsafe_allow_html=True)
+    st.markdown("""
+    <div class="centered-content">
+        <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=297,h=404,fit=crop/YBgonz9JJqHRMK43/blue-red-minimalist-high-school-logo-9-AVLN0K6MPGFK2QbL.png" width="150">
+        <h1 class='main-title'>The Us House Dashboard</h1>
+    </div>
+    """, unsafe_allow_html=True)
 
     # Load data
     spreadsheet_id = "1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI"
