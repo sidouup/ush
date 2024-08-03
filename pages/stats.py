@@ -17,9 +17,6 @@ def get_google_sheet_client():
     return gspread.authorize(creds)
     
 def filter_data_by_date_range(data, start_date, end_date):
-    # Convert start_date and end_date to pandas Timestamp objects
-    start_date = pd.Timestamp(start_date)
-    end_date = pd.Timestamp(end_date)
     return data[(data['DATE'] >= start_date) & (data['DATE'] <= end_date)]
 
 def filter_data_by_month_year(data, year, month):
@@ -105,13 +102,21 @@ def statistics_page():
     st.sidebar.subheader("Filter Options")
     filter_option = st.sidebar.radio("Select Filter Method", ("Date Range", "Month and Year"))
 
+    min_date = min_date.to_pydatetime() if not pd.isna(min_date) else datetime(2022, 1, 1)
+    max_date = max_date.to_pydatetime() if not pd.isna(max_date) else datetime(2022, 12, 31)
+
     if filter_option == "Date Range":
-        start_date = st.sidebar.date_input("Start Date", min_date.date() if not pd.isna(min_date) else pd.Timestamp('2022-01-01').date())
-        end_date = st.sidebar.date_input("End Date", max_date.date() if not pd.isna(max_date) else pd.Timestamp('2022-12-31').date())
+        start_date = st.sidebar.date_input("Start Date", min_date)
+        end_date = st.sidebar.date_input("End Date", max_date)
+        
+        # Convert date inputs to pandas Timestamp objects
+        start_date = pd.Timestamp(start_date)
+        end_date = pd.Timestamp(end_date)
+        
         filtered_data = filter_data_by_date_range(data_clean, start_date, end_date)
     else:
         selected_year = st.sidebar.selectbox("Year", years)
-        selected_month = st.sidebar.selectbox("Month", months, format_func=lambda x: pd.Timestamp(year=2023, month=x, day=1).strftime('%B'))
+        selected_month = st.sidebar.selectbox("Month", months, format_func=lambda x: datetime(2023, x, 1).strftime('%B'))
         filtered_data = filter_data_by_month_year(data_clean, selected_year, selected_month)
 
     # Calculate visa approval rate
