@@ -157,6 +157,29 @@ def statistics_page():
 
     st.markdown("---")
 
+    # New section for Visa Approval Rate by School
+    st.subheader("🏆 Top 5 Schools by Visa Approval Rate")
+    
+    # Calculate visa approval rate for each school
+    school_visa_stats = filtered_data.groupby('Chosen School').agg({
+        'Visa Result': lambda x: (x == 'Visa Approved').sum(),
+        'Student Name': 'count'
+    }).reset_index()
+    
+    school_visa_stats.columns = ['School', 'Visa Approved', 'Total Applications']
+    school_visa_stats['Approval Rate'] = school_visa_stats['Visa Approved'] / school_visa_stats['Total Applications'] * 100
+    
+    # Sort by approval rate and get top 5
+    top_5_schools = school_visa_stats.sort_values('Approval Rate', ascending=False).head(5)
+    
+    fig = px.bar(top_5_schools, x='School', y='Approval Rate',
+                 text='Approval Rate',
+                 labels={'Approval Rate': 'Visa Approval Rate (%)', 'School': 'School'},
+                 title="Top 5 Schools by Visa Approval Rate")
+    fig.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
+    fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+    st.plotly_chart(fig, use_container_width=True)
+
     col1, col2 = st.columns(2)
 
     with col1:
