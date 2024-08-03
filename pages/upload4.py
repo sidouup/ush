@@ -95,7 +95,7 @@ def load_data(spreadsheet_id):
             'Payment Amount', 'Sevis payment ?', 'Application payment ?', 'DS-160 maker', 
             'Password DS-160', 'Secret Q.', 'School Entry Date', 'Entry Date in the US', 
             'ADDRESS in the U.S', 'E-MAIL RDV', 'PASSWORD RDV', 'EMBASSY ITW. DATE', 
-            'Attempts', 'Visa Result', 'Agent', 'Note', 'Stage','Gender','BANK'
+            'Attempts', 'Visa Result', 'Agent', 'Note', 'Stage','Gender','BANK','Age','Prep ITW','School Paid'
         ]
     }
     
@@ -737,7 +737,10 @@ def main():
                               "CONVERSE SCHOOL", "ELI San Francisco", "F2 Visa", "GT Chicago","BEA Huston","BIA Huston","OHLA Miami", "UCDEA","HAWAII","Not Partner", "Not yet"]
             
             payment_amount_options = ["159.000 DZD", "152.000 DZD", "139.000 DZD", "132.000 DZD", "36.000 DZD", "20.000 DZD", "Giveaway", "No Paiement"]
-            
+            School_paid_opt = ["YES", "NO"]
+            Prep_ITW_opt = ["YES", "NO"]
+
+
             payment_type_options = ["Cash", "CCP", "Baridimob", "Bank"]
             compte_options = ["Mohamed", "Sid Ali"]
             yes_no_options = ["YES", "NO"]
@@ -751,6 +754,7 @@ def main():
                 if edit_mode:
                     first_name = st.text_input("First Name", selected_student['First Name'], key="first_name", on_change=update_student_data)
                     last_name = st.text_input("Last Name", selected_student['Last Name'], key="last_name", on_change=update_student_data)
+                    Age = st.text_input("Age", selected_student['Age'], key="Age", on_change=update_student_data)
                     Gender = st.selectbox(
                         "Gender", 
                         Gender_options, 
@@ -782,6 +786,7 @@ def main():
                 else:
                     st.write(f"**First Name:** {selected_student['First Name']}")
                     st.write(f"**Last Name:** {selected_student['Last Name']}")
+                    st.write(f"**Age:** {selected_student['Age']}")
                     st.write(f"**Gender:** {selected_student['Gender']}")
                     st.write(f"**Phone Number:** {selected_student['Phone N°']}")
                     st.write(f"**Email:** {selected_student['E-mail']}")
@@ -814,6 +819,7 @@ def main():
                             key="entry_date_in_us",
                             on_change=update_student_data
                         )
+                        School_Paid = st.selectbox("School Paid", School_Paid_opt, index=School_Paid_opt.index(selected_student['School Paid']) if selected_student['School Paid'] in School_Paid_opt else 0, key="School Paid", on_change=update_student_data)
                     else:
                         st.write(f"**Chosen School:** {selected_student['Chosen School']}")
                         st.write(f"**Specialite:** {selected_student['Specialite']}")
@@ -821,6 +827,7 @@ def main():
                         st.write(f"**Bank:** {selected_student['BANK']}")
                         st.write(f"**School Entry Date:** {format_date(selected_student['School Entry Date'])}")
                         st.write(f"**Entry Date in the US:** {format_date(selected_student['Entry Date in the US'])}")
+                        st.write(f"**School Paid:** {format_date(selected_student['School Paid'])}")
                     st.markdown('</div>', unsafe_allow_html=True)
             
             with tab3:
@@ -849,6 +856,8 @@ def main():
                     ds160_maker = st.text_input("DS-160 Maker", selected_student['DS-160 maker'], key="ds160_maker", on_change=update_student_data)
                     password_ds160 = st.text_input("Password DS-160", selected_student['Password DS-160'], key="password_ds160", on_change=update_student_data)
                     secret_q = st.text_input("Secret Question", selected_student['Secret Q.'], key="secret_q", on_change=update_student_data)
+                    Prep_ITW = st.selectbox("Prep ITW", Prep_ITW_opt , index=Prep_ITW_opt .index(selected_student['Prep ITW']) if selected_student['Prep ITW'] in Prep_ITW_opt else 0, key="Prep ITW", on_change=update_student_data)
+
                 else:
                     st.write(f"**Address in the U.S:** {selected_student['ADDRESS in the U.S']}")
                     st.write(f"**E-mail RDV:** {selected_student['E-MAIL RDV']}")
@@ -857,6 +866,7 @@ def main():
                     st.write(f"**DS-160 Maker:** {selected_student['DS-160 maker']}")
                     st.write(f"**Password DS-160:** {selected_student['Password DS-160']}")
                     st.write(f"**Secret Question:** {selected_student['Secret Q.']}")
+                    st.write(f"**ITW Prep:** {format_date(selected_student['Prep ITW'])}")
                 st.markdown('</div>', unsafe_allow_html=True)
             
             with tab4:
@@ -973,7 +983,9 @@ def main():
                     'Payment Amount': st.session_state.get('payment_method', ''),
                     'Payment Type': st.session_state.get('payment_type', ''),
                     'Compte': st.session_state.get('compte', ''),
-                    'Sevis payment ?': st.session_state.get('sevis_payment', ''),
+                    'School Paid': st.session_state.get('School_Paid', ''),
+                    'Prep ITW': st.session_state.get('Prep_ITW', ''),
+                    'Age': st.session_state.get('sevis_payment', ''),
                     'Application payment ?': st.session_state.get('application_payment', ''),
                 }
             
