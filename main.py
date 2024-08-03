@@ -158,7 +158,7 @@ def main_dashboard():
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         if st.button("📝 Add New Student"):
-            st.switch_page("pages/New_Student.py")
+            st.switch_page("New_Student.py")
     with col2:
         if st.button("👥 View Student List"):
             st.switch_page("pages/GoogleSheet.py")
