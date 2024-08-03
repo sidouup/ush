@@ -819,7 +819,7 @@ def main():
                             key="entry_date_in_us",
                             on_change=update_student_data
                         )
-                        School_Paid = st.selectbox("School Paid", School_Paid_opt, index=School_Paid_opt.index(selected_student['School Paid']) if selected_student['School Paid'] in School_Paid_opt else 0, key="School Paid", on_change=update_student_data)
+                        School_Paid = st.selectbox("School Paid", School_paid_opt, index=School_paid_opt.index(selected_student['School Paid']) if selected_student['School Paid'] in School_paid_opt else 0, key="School Paid", on_change=update_student_data)
                     else:
                         st.write(f"**Chosen School:** {selected_student['Chosen School']}")
                         st.write(f"**Specialite:** {selected_student['Specialite']}")
