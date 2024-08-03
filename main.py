@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -101,10 +100,12 @@ def main_dashboard():
     """, unsafe_allow_html=True)
 
     # App title and logo
-    col1, col2, col3 = st.columns([1,2,1])
-    with col2:
-        st.image("https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=297,h=404,fit=crop/YBgonz9JJqHRMK43/blue-red-minimalist-high-school-logo-9-AVLN0K6MPGFK2QbL.png", width=150)
-        st.markdown("<h1 class='main-title'>The Us House Dashboard</h1>", unsafe_allow_html=True)
+    st.markdown("""
+    <div style="display: flex; justify-content: center; align-items: center;">
+        <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=297,h=404,fit=crop/YBgonz9JJqHRMK43/blue-red-minimalist-high-school-logo-9-AVLN0K6MPGFK2QbL.png" style="width: 150px; margin-right: 20px;">
+        <h1 class="main-title">The Us House Dashboard</h1>
+    </div>
+    """, unsafe_allow_html=True)
 
     # Load data
     spreadsheet_id = "1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI"
