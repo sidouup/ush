@@ -185,4 +185,4 @@ def tasks_and_emergencies_page(df):
 
 # Call the main function to run the app
 if __name__ == "__main__":
-    main()
+    tasks_and_emergencies_page()
