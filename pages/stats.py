@@ -3,6 +3,7 @@ import plotly.express as px
 from google.oauth2.service_account import Credentials
 import gspread
 import streamlit as st
+from datetime import datetime
 
 # Use Streamlit secrets for service account info
 SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
@@ -15,14 +16,6 @@ SCOPES = ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/a
 def get_google_sheet_client():
     creds = Credentials.from_service_account_info(SERVICE_ACCOUNT_INFO, scopes=SCOPES)
     return gspread.authorize(creds)
-    
-def filter_data_by_date_range(data, start_date, end_date):
-    return data[(data['DATE'] >= start_date) & (data['DATE'] <= end_date)]
-
-def filter_data_by_month_year(data, year, month):
-    start_date = pd.Timestamp(year=year, month=month, day=1)
-    end_date = start_date + pd.offsets.MonthEnd(1)
-    return data[(data['DATE'] >= start_date) & (data['DATE'] <= end_date)]
 
 # Function to load data from Google Sheets
 def load_data(spreadsheet_id, sheet_name):
@@ -39,6 +32,21 @@ def filter_data_by_month_year(data, year, month):
     start_date = pd.Timestamp(year=year, month=month, day=1)
     end_date = start_date + pd.offsets.MonthEnd(1)
     return data[(data['DATE'] >= start_date) & (data['DATE'] <= end_date)]
+
+def calculate_visa_approval_rate(data):
+    # Filter for applications where a decision has been made
+    decided_applications = data[data['Visa Result'].isin(['Visa Approved', 'Visa Denied'])]
+    
+    # Calculate total decided applications
+    total_decided = len(decided_applications)
+    
+    # Calculate number of approved visas
+    approved_visas = len(decided_applications[decided_applications['Visa Result'] == 'Visa Approved'])
+    
+    # Calculate approval rate
+    approval_rate = (approved_visas / total_decided * 100) if total_decided > 0 else 0
+    
+    return approval_rate, approved_visas, total_decided
 
 def statistics_page():
     st.set_page_config(page_title="Student Recruitment Statistics", layout="wide")
@@ -81,6 +89,12 @@ def statistics_page():
     # Create a DataFrame with students having incorrect date format
     students_with_incorrect_dates = data[incorrect_date_mask]
 
+    # Display warning and list of students with incorrect date format
+    st.warning(f"Number of entries with incorrect date format: {incorrect_date_count}")
+    if incorrect_date_count > 0:
+        st.subheader("Entries with Incorrect Date Format")
+        st.dataframe(students_with_incorrect_dates[['Student Name', 'DATE', 'Chosen School', 'Agent']])
+
     # Remove duplicates for analysis
     data_deduped = data.drop_duplicates(subset=['Student Name', 'Chosen School'], keep='last')
     
@@ -113,13 +127,8 @@ def statistics_page():
         selected_month = st.sidebar.selectbox("Month", months, format_func=lambda x: datetime(2023, x, 1).strftime('%B'))
         filtered_data = filter_data_by_month_year(data_clean, selected_year, selected_month)
 
-    # Calculate visa approval rate
-    visa_approved = len(filtered_data[filtered_data['Visa Result'] == 'Visa Approved'])
-    visa_denied = len(filtered_data[filtered_data['Visa Result'] == 'Visa Denied'])
-    visa_not_yet = len(filtered_data[filtered_data['Visa Result'] == '0 not yet'])
-    visa_not_our_school = len(filtered_data[filtered_data['Visa Result'] == 'not our school'])
-    total_decisions = visa_approved + visa_denied
-    visa_approval_rate = (visa_approved / total_decisions * 100) if total_decisions > 0 else 0
+    # Calculate overall visa approval rate
+    overall_approval_rate, visa_approved, total_decisions = calculate_visa_approval_rate(filtered_data)
 
     col1, col2, col3 = st.columns(3)
 
@@ -131,7 +140,7 @@ def statistics_page():
         st.metric("Visa Approvals", visa_approved)
 
     with col3:
-        st.metric("Visa Approval Rate", f"{visa_approval_rate:.2f}%")
+        st.metric("Visa Approval Rate", f"{overall_approval_rate:.2f}%")
 
     st.markdown("---")
 
@@ -160,14 +169,11 @@ def statistics_page():
     # New section for Visa Approval Rate by School
     st.subheader("🏆 Top 5 Schools by Visa Approval Rate")
     
-    # Calculate visa approval rate for each school
-    school_visa_stats = filtered_data.groupby('Chosen School').agg({
-        'Visa Result': lambda x: (x == 'Visa Approved').sum(),
-        'Student Name': 'count'
-    }).reset_index()
+    def school_approval_rate(group):
+        return calculate_visa_approval_rate(group)[0]
     
-    school_visa_stats.columns = ['School', 'Visa Approved', 'Total Applications']
-    school_visa_stats['Approval Rate'] = school_visa_stats['Visa Approved'] / school_visa_stats['Total Applications'] * 100
+    school_visa_stats = filtered_data.groupby('Chosen School').apply(school_approval_rate).reset_index()
+    school_visa_stats.columns = ['School', 'Approval Rate']
     
     # Sort by approval rate and get top 5
     top_5_schools = school_visa_stats.sort_values('Approval Rate', ascending=False).head(5)
@@ -179,6 +185,8 @@ def statistics_page():
     fig.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
     fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
     st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown("---")
 
     col1, col2 = st.columns(2)
 
