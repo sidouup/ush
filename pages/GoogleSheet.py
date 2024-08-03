@@ -1,7 +1,7 @@
-import gspread
 import streamlit as st
 import pandas as pd
 from google.oauth2.service_account import Credentials
+import gspread
 
 # Use Streamlit secrets for service account info
 SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
@@ -24,29 +24,19 @@ def load_data(spreadsheet_id, sheet_name):
     df = df.astype(str)  # Convert all columns to strings
     return df
 
-# Function to apply filters
-def apply_filters(df, filters):
-    for column, value in filters.items():
-        if value != "All":
-            df = df[df[column] == value]
-    return df
-
 # Function to save data to Google Sheets
-def save_data(df, spreadsheet_id, sheet_name):
+def save_data(df, original_df, spreadsheet_id, sheet_name):
     client = get_google_sheet_client()
     sheet = client.open_by_key(spreadsheet_id).worksheet(sheet_name)
     df = df.where(pd.notnull(df), None)  # Replace NaNs with None for gspread
-    rows = df.values.tolist()
-    headers = df.columns.tolist()
-    sheet.clear()
-    sheet.update([headers] + rows)
+    
+    # Update only the modified rows in the original dataframe
+    for idx, row in df.iterrows():
+        for col in df.columns:
+            if row[col] != original_df.at[idx, col]:
+                sheet.update_cell(idx + 2, df.columns.get_loc(col) + 1, row[col])
 
 # Main function for the new page
-import streamlit as st
-import pandas as pd
-from google.oauth2.service_account import Credentials
-import gspread
-
 def main():
     st.set_page_config(page_title="Student List", layout="wide")
     st.title("Student List")
@@ -55,6 +45,7 @@ def main():
     spreadsheet_id = "1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI"
     sheet_name = "ALL"
     df_all = load_data(spreadsheet_id, sheet_name)
+    original_df_all = df_all.copy()  # Keep a copy of the original data
 
     # Define filter options
     current_steps = ["All"] + list(df_all['Stage'].unique())
@@ -110,7 +101,7 @@ def main():
     if edit_mode:
         edited_data = st.data_editor(filtered_data, num_rows="dynamic")
         if st.button("Save Changes"):
-            save_data(edited_data, spreadsheet_id, sheet_name)
+            save_data(edited_data, original_df_all, spreadsheet_id, sheet_name)
             st.success("Changes saved successfully!")
     else:
         # Apply styling and display the dataframe
