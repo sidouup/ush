@@ -72,6 +72,7 @@ st.markdown("""
 
     html, body, [class*="css"] {
         font-family: 'Roboto', sans-serif;
+        font-size: 12px;  /* Adjust base font size to zoom out */
     }
     
     .stApp {
@@ -88,12 +89,12 @@ st.markdown("""
     h1 {
         color: #1E88E5;
         font-weight: 700;
-        font-size: 2.5rem;
+        font-size: 1.8rem;  /* Adjust font size */
         margin-bottom: 20px;
     }
     
     .section-header {
-        font-size: 2rem;
+        font-size: 1.5rem;  /* Adjust font size */
         font-weight: 600;
         color: #1E88E5;
         margin: 20px 0;
@@ -103,27 +104,27 @@ st.markdown("""
         background-color: #ffffff;
         border: 1px solid #e0e0e0;
         border-radius: 10px;
-        padding: 20px;
+        padding: 15px;  /* Adjust padding */
         text-align: center;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         margin: 10px 0;
     }
     
     .metric-card h2 {
-        font-size: 1.5rem;
+        font-size: 1.2rem;  /* Adjust font size */
         font-weight: 700;
         margin-bottom: 10px;
         color: #1E88E5;
     }
     
     .metric-card p {
-        font-size: 2rem;
+        font-size: 1.5rem;  /* Adjust font size */
         font-weight: 700;
         color: #333;
     }
     
     .dataframe {
-        font-size: 0.9rem;
+        font-size: 0.8rem;  /* Adjust font size */
     }
     
     .dataframe th {
@@ -138,7 +139,7 @@ st.markdown("""
     }
     
     .icon {
-        font-size: 1.5rem;
+        font-size: 1.2rem;  /* Adjust font size */
         margin-right: 10px;
     }
 </style>
