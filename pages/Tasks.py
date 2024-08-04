@@ -201,4 +201,3 @@ with tab5:
     with col2:
         st.subheader("Embassy Interview Date Missing")
         st.dataframe(rule_5[['First Name','Last Name',  'DATE', 'Stage']], use_container_width=True)
-
