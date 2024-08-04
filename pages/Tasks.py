@@ -134,7 +134,7 @@ def tasks_and_emergencies_page(df):
     st.markdown('<div class="dashboard-item">', unsafe_allow_html=True)
     st.markdown('<p class="medium-font">🔍 Students Without an Agent</p>', unsafe_allow_html=True)
     
-    no_agent = df[df['AGENT']== "" & (df['STAGE'] != 'CLIENT')]
+    no_agent = df[df['AGENT']== '' & (df['STAGE'] != 'CLIENT')]
     if not no_agent.empty:
         st.dataframe(no_agent[['STUDENT_NAME', 'STAGE']], height=200)
         st.markdown('<p class="small-font highlight">⚠️ These students do not have an assigned agent.</p>', unsafe_allow_html=True)
