@@ -64,6 +64,17 @@ rule_5 = data[(data['DATE'] <= today - timedelta(days=14)) & (data['EMBASSY ITW.
 # New Rule: EMBASSY ITW. DATE is passed today and Visa Result is empty
 rule_6 = data[(data['EMBASSY ITW. DATE'] < today) & (data['Visa Result'].isna())].sort_values(by='EMBASSY ITW. DATE').reset_index(drop=True)
 
+# Function to determine card color based on value
+def get_card_color(value):
+    if value < 5:
+        return '#28a745'  # Green
+    elif 5 <= value < 10:
+        return '#ffc107'  # Yellow
+    elif 10 <= value < 15:
+        return '#fd7e14'  # Orange
+    else:
+        return '#dc3545'  # Red
+
 # Custom CSS for a modern look
 st.markdown("""
 <style>
@@ -105,7 +116,8 @@ st.markdown("""
         padding: 20px;
         text-align: center;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        margin: 10px 0;
+        margin: 10px;
+        width: 100%;
     }
     
     .metric-card h2 {
@@ -150,8 +162,9 @@ st.markdown("### Overview")
 col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
 
 def metric_card(title, value, icon):
+    color = get_card_color(value)
     return f"""
-    <div class="metric-card">
+    <div class="metric-card" style="background-color: {color};">
         <h2>{icon} {title}</h2>
         <p>{value}</p>
     </div>
