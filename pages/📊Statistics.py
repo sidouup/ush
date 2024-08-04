@@ -6,15 +6,7 @@ import streamlit as st
 from datetime import datetime
 
 
-def check_password():
-    password = st.text_input("Enter the password:", type="password")
-    if password == st.secrets["general"]["password"]:
-        return True
-    else:
-        st.warning("Incorrect password")
-        return False
-if check_password():
-    # Use Streamlit secrets for service account info
+def Statistic():
     SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
     
     # Define the scopes
@@ -267,5 +259,5 @@ if check_password():
         payment_df = pd.DataFrame({'Payment Amount': payment_counts.index, 'Number of Payments': payment_counts.values})
         st.dataframe(payment_df)
     
-    if __name__ == "__main__":
-        statistics_page()
+if __name__ == "__main__":
+    Statistic()
