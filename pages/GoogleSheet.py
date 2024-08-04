@@ -3,6 +3,8 @@ import pandas as pd
 from google.oauth2.service_account import Credentials
 import gspread
 
+st.set_page_config(page_title="Student List", layout="wide",
+    initial_sidebar_state="collapsed" )
 # Use Streamlit secrets for service account info
 SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
 
@@ -39,7 +41,7 @@ def save_data(df, original_df, spreadsheet_id, sheet_name):
 
 # Main function for the new page
 def main():
-    st.set_page_config(page_title="Student List", layout="wide")
+
     st.title("Student List")
 
     # Load data from Google Sheets
