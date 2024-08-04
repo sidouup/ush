@@ -97,7 +97,7 @@ def tasks_and_emergencies_page(df):
             urgent_ds160 = df[
                 (df['EMBASSY_ITW_DATE'] <= thirty_days) &
                 (df['EMBASSY_ITW_DATE'] >= today) &
-                (df['STAGE'].isin(['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV']))
+                (df['STAGE'].isin(['PAYMENT_MAIL', 'APPLICATION', 'SCAN_SEND', 'ARAMEX_RDV']))
             ]
             st.dataframe(urgent_ds160[['STUDENT_NAME', 'EMBASSY_ITW_DATE', 'STAGE']], height=200)
             st.markdown('</div>', unsafe_allow_html=True)
@@ -176,16 +176,12 @@ def tasks_and_emergencies_page(df):
     st.markdown('<div class="dashboard-item">', unsafe_allow_html=True)
     st.markdown('<p class="medium-font">🔍 Students Without an Agent</p>', unsafe_allow_html=True)
     
-    # Check if 'AGENT' column exists and handle missing column
-    if 'AGENT' not in df.columns:
-        st.error("The column 'AGENT' does not exist in the dataset.")
+    no_agent = df[df['AGENT'].isna() & (df['STAGE'] != 'CLIENT')]
+    if not no_agent.empty:
+        st.dataframe(no_agent[['STUDENT_NAME', 'STAGE']], height=200)
+        st.markdown('<p class="small-font highlight">⚠️ These students do not have an assigned agent.</p>', unsafe_allow_html=True)
     else:
-        no_agent = df[(df['AGENT'].isna()) & (df['STAGE'] != 'CLIENT')]
-        if not no_agent.empty:
-            st.dataframe(no_agent[['STUDENT_NAME', 'STAGE']], height=200)
-            st.markdown('<p class="small-font highlight">⚠️ These students do not have an assigned agent.</p>', unsafe_allow_html=True)
-        else:
-            st.markdown('<p class="small-font">✅ All students have an assigned agent.</p>')
+        st.markdown('<p class="small-font">✅ All students have an assigned agent.</p>')
     st.markdown('</div>', unsafe_allow_html=True)
 
 def main():
