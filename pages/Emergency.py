@@ -7,6 +7,29 @@ import gspread
 # Set page config at the very beginning
 st.set_page_config(layout="wide", page_title="Student Visa CRM Dashboard",
     initial_sidebar_state="collapsed")
+# Custom CSS to "zoom out" the entire app
+st.markdown("""
+<style>
+    .reportview-container .main .block-container {
+        max-width: 95%;
+        padding-top: 5rem;
+        padding-right: 5rem;
+        padding-left: 5rem;
+        padding-bottom: 5rem;
+    }
+    .reportview-container .main {
+        color: #333;
+        background-color: white;
+    }
+    .stApp > header {
+        background-color: transparent;
+    }
+    .stMetric {
+        transform: scale(0.85);  /* Adjust this value to change the zoom level */
+        transform-origin: left top;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # Use Streamlit secrets for service account info
 SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
