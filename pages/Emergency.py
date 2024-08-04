@@ -117,18 +117,20 @@ st.markdown("""
         text-align: center;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         margin: 10px;
-        width: 100%;
+        width: 150px;
+        height: 150px;
+        display: inline-block;
     }
     
     .metric-card h2 {
-        font-size: 1.5rem;
+        font-size: 1.2rem;
         font-weight: 700;
         margin-bottom: 10px;
         color: #1E88E5;
     }
     
     .metric-card p {
-        font-size: 2rem;
+        font-size: 1.5rem;
         font-weight: 700;
         color: #333;
     }
@@ -149,7 +151,7 @@ st.markdown("""
     }
     
     .icon {
-        font-size: 1.5rem;
+        font-size: 1.2rem;
         margin-right: 10px;
     }
 </style>
