@@ -50,12 +50,12 @@ def calculate_visa_approval_rate(data):
 
 def statistics_page():
     if check_password():
-    st.markdown("""
-    <div style="display: flex; justify-content: center; align-items: center;">
-        <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=297,h=404,fit=crop/YBgonz9JJqHRMK43/blue-red-minimalist-high-school-logo-9-AVLN0K6MPGFK2QbL.png" style="width: 150px; margin-right: 20px;">
-        <h1 class="main-title">The Us House Dashboard</h1>
-    </div>
-    """, unsafe_allow_html=True)
+        st.markdown("""
+        <div style="display: flex; justify-content: center; align-items: center;">
+            <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=297,h=404,fit=crop/YBgonz9JJqHRMK43/blue-red-minimalist-high-school-logo-9-AVLN0K6MPGFK2QbL.png" style="width: 150px; margin-right: 20px;">
+            <h1 class="main-title">The Us House Dashboard</h1>
+        </div>
+        """, unsafe_allow_html=True)
         st.set_page_config(page_title="Student Recruitment Statistics", layout="wide")
         
         st.markdown("""
