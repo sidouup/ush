@@ -75,95 +75,72 @@ def get_card_color(value):
     else:
         return 'rgba(220, 53, 69, 0.5)'  # Red
 
-st.markdown("""
-<style>
-    .metric-card {
-        background-color: #ffffff;
-        border: 1px solid #e0e0e0;
-        border-radius: 10px;
-        padding: 15px;
-        text-align: center;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    .metric-icon {
-        font-size: 2rem;
-        margin-bottom: 10px;
-    }
-    .metric-title {
-        font-size: 0.9rem;
-        font-weight: 500;
-        color: #333;
-        margin-bottom: 5px;
-    }
-    .metric-value {
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: #1E88E5;
-    }
-</style>
-""", unsafe_allow_html=True)
+# Custom function to create a metric card
+def metric_card(label, value, icon):
+    st.container()
+    col1, col2, col3 = st.columns([1,3,1])
+    with col1:
+        st.write(f"# {icon}")
+    with col2:
+        st.metric(label=label, value=value)
 
+# Main dashboard
 st.title("Student Visa CRM Dashboard")
 
 # Overview metrics
-st.markdown("### Overview")
+st.header("Overview")
 
-# Create a row with 7 columns for the metrics
-col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
+col1, col2, col3, col4 = st.columns(4)
 
-# Define a function to create a metric card
-def metric_card(col, title, value, icon):
-    with col:
-        st.markdown(f'<div class="metric-card">', unsafe_allow_html=True)
-        st.markdown(f'<div class="metric-icon">{icon}</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="metric-title">{title}</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="metric-value">{value}</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-
-# Create metric cards
-metric_card(col1, "School Payments Due", len(rule_1), "📅")
-metric_card(col2, "Emergency DS-160", len(rule_2), "📝")
-metric_card(col3, "Emergency Interviews", len(rule_3a), "🎤")
-metric_card(col4, "Emergency SEVIS Payment", len(rule_3b), "💳")
-metric_card(col5, "Visa Result Needed", len(rule_6), "❓")
-metric_card(col6, "I-20s Needed", len(rule_4), "📄")
-metric_card(col7, "Embassy Interviews Needed", len(rule_5), "📅")
-
-st.title("Student Visa CRM Dashboard")
-
-# Overview metrics
-st.markdown("### Overview")
-
-def metric_card(title, value, icon):
-    return f"""
-    <div class="metric-card">
-        <div class="icon">{icon}</div>
-        <h2>{title}</h2>
-        <p>{value}</p>
-    </div>
-    """
-
-metrics_html = """
-<div class="metrics-container">
-    <div class="metric-wrapper">{}</div>
-    <div class="metric-wrapper">{}</div>
-    <div class="metric-wrapper">{}</div>
-    <div class="metric-wrapper">{}</div>
-    <div class="metric-wrapper">{}</div>
-    <div class="metric-wrapper">{}</div>
-    <div class="metric-wrapper">{}</div>
-</div>
-""".format(
-    metric_card("School Payments Due", len(rule_1), "📅"),
-    metric_card("Emergency DS-160", len(rule_2), "📝"),
-    metric_card("Emergency Interviews", len(rule_3a), "🎤"),
-    metric_card("Emergency SEVIS Payment", len(rule_3b), "💳"),
-    metric_card("Visa Result Needed", len(rule_6), "❓"),
-    metric_card("I-20s Needed", len(rule_4), "📄"),
+with col1:
+    metric_card("School Payments Due", len(rule_1), "📅")
+    metric_card("Emergency SEVIS Payment", len(rule_3b), "💳")
+with col2:
+    metric_card("Emergency DS-160", len(rule_2), "📝")
+    metric_card("Visa Result Needed", len(rule_6), "❓")
+with col3:
+    metric_card("Emergency Interviews", len(rule_3a), "🎤")
+    metric_card("I-20s Needed", len(rule_4), "📄")
+with col4:
     metric_card("Embassy Interviews Needed", len(rule_5), "📅")
-)
 
-st.markdown(metrics_html, unsafe_allow_html=True)
+# Detailed Information
+st.header("Detailed Information")
+
+# School Payment Due Soon
+st.subheader("📅 School Payment Due Soon")
+st.write("These students need to complete their school payment at least 50 days before their school entry date.")
+st.dataframe(rule_1[['First Name', 'Last Name', 'DATE', 'School Payment Due', 'Stage', 'Agent']])
+
+# DS-160 Step Due Soon
+st.subheader("📝 DS-160 Step Due Soon")
+st.write("These students need to complete the DS-160 step within 30 days before their embassy interview date.")
+st.dataframe(rule_2[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']])
+
+# Upcoming Embassy Interviews (Need Prep)
+st.subheader("🎤 Upcoming Embassy Interviews (Need Prep)")
+st.write("These students have embassy interviews scheduled within the next 14 days and they are not prepared yet.")
+st.dataframe(rule_3a[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']])
+
+# Need SEVIS Payment
+st.subheader("💳 Need SEVIS Payment")
+st.write("These students have embassy interviews scheduled within the next 14 days and they did not pay the SEVIS.")
+st.dataframe(rule_3b[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']])
+
+# I-20 and School Registration Needed
+st.subheader("📄 I-20 and School Registration Needed")
+st.write("These students do not have a school entry date recorded one week after the Payment date. They need an I-20 and must mention their entry date in the database.")
+st.dataframe(rule_4[['First Name', 'Last Name', 'DATE', 'Stage', 'Agent']])
+
+# Embassy Interview Date Missing (After Two Weeks)
+st.subheader("📅 Embassy Interview Date Missing (After Two Weeks)")
+st.write("These students do not have an embassy interview date recorded two weeks after the initial date, and their stage is not CLIENTS.")
+st.dataframe(rule_5[['First Name', 'Last Name', 'DATE', 'Stage', 'Agent']])
+
+# Visa Result Needed
+st.subheader("❓ Visa Result Needed")
+st.write("These students have passed their embassy interview date and still do not have a recorded visa result. Please update their visa result.")
+st.dataframe(rule_6[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']])
 
 
 
