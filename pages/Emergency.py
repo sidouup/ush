@@ -5,8 +5,7 @@ from google.oauth2.service_account import Credentials
 import gspread
 
 # Set page config at the very beginning
-st.set_page_config(layout="wide", page_title="Student Visa CRM Dashboard",
-    initial_sidebar_state="collapsed")
+st.set_page_config(layout="wide", page_title="Student Visa CRM Dashboard")
 
 # Use Streamlit secrets for service account info
 SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
@@ -100,8 +99,8 @@ st.markdown("""
     }
     
     .metrics-overview {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        display: flex;
+        flex-wrap: wrap;
         gap: 10px;
         margin-bottom: 20px;
     }
@@ -113,6 +112,7 @@ st.markdown("""
         padding: 10px;
         text-align: center;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        flex: 1 1 150px;
     }
     
     .metric-card h2 {
