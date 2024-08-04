@@ -65,6 +65,8 @@ rule_5 = data[(data['DATE'] <= today - timedelta(days=14)) & (data['EMBASSY ITW.
 # New Rule: EMBASSY ITW. DATE is passed today and Visa Result is empty
 rule_6 = data[(data['EMBASSY ITW. DATE'] < today) & (data['Visa Result'].isna())].sort_values(by='EMBASSY ITW. DATE').reset_index(drop=True)
 
+rule_7 = data[(data['Agent'].isna() | data['Agent'] == '') & (data['Stage'] != 'CLIENT') & (data['Stage'] != 'CLIENTS')].sort_values(by='DATE').reset_index(drop=True)
+
 
 
 st.markdown("""
@@ -192,7 +194,8 @@ tabs = st.tabs([
     "💳 SEVIS Payment",
     "📄 I-20 & Registration",
     "📆 ITW Date",
-    "🔍 Visa Result"
+    "🔍 Visa Result",
+    "👤 Unassigned Students"  # New tab
 ])
 
 with tabs[0]:
@@ -229,6 +232,12 @@ with tabs[6]:
     st.markdown('<div class="section-header">🔍 Visa Result Needed</div>', unsafe_allow_html=True)
     st.write("These students have passed their embassy interview date and still do not have a recorded visa result. Please update their visa result.")
     st.dataframe(rule_6[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']], use_container_width=True)
+
+with tabs[7]:
+    st.markdown('<div class="section-header">👤 Unassigned Students</div>', unsafe_allow_html=True)
+    st.write("These students are not assigned an agent and their stage is not 'CLIENT'. They need to be assigned to an agent.")
+    st.dataframe(rule_7[['First Name', 'Last Name', 'DATE', 'Stage']], use_container_width=True)
+
 
 # Add a footer
 st.markdown("---")
