@@ -99,8 +99,8 @@ st.markdown("""
     }
     
     .metrics-overview {
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         gap: 10px;
         margin-bottom: 20px;
     }
@@ -109,22 +109,20 @@ st.markdown("""
         background-color: #ffffff;
         border: 1px solid #e0e0e0;
         border-radius: 10px;
-        padding: 15px;
+        padding: 10px;
         text-align: center;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        flex: 1 1 calc(33.333% - 20px);
-        margin: 10px 0;
     }
     
     .metric-card h2 {
-        font-size: 1.2rem;
+        font-size: 1rem;
         font-weight: 600;
         margin-bottom: 5px;
         color: #1E88E5;
     }
     
     .metric-card p {
-        font-size: 1.5rem;
+        font-size: 1.2rem;
         font-weight: 700;
         color: #333;
     }
@@ -145,8 +143,8 @@ st.markdown("""
     }
     
     .icon {
-        font-size: 1.5rem;
-        margin-right: 10px;
+        font-size: 1.2rem;
+        margin-right: 5px;
     }
 </style>
 """, unsafe_allow_html=True)
