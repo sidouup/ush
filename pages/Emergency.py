@@ -159,19 +159,19 @@ def metric_card(title, value, icon):
     """
 
 with col1:
-    st.markdown(metric_card("School Payments Due", len(rule_1), "📅"), unsafe_allow_html=True)
+    st.markdown(metric_card("School Pay", len(rule_1), "📅"), unsafe_allow_html=True)
 with col2:
-    st.markdown(metric_card("Emergency DS-160", len(rule_2), "📝"), unsafe_allow_html=True)
+    st.markdown(metric_card("DS-160", len(rule_2), "📝"), unsafe_allow_html=True)
 with col3:
-    st.markdown(metric_card("Emergency Interviews", len(rule_3a), "🎤"), unsafe_allow_html=True)
+    st.markdown(metric_card("Prep ITW", len(rule_3a), "🎤"), unsafe_allow_html=True)
 with col4:
-    st.markdown(metric_card("Emergency SEVIS Payment", len(rule_3b), "💳"), unsafe_allow_html=True)
+    st.markdown(metric_card("SEVIS", len(rule_3b), "💳"), unsafe_allow_html=True)
 with col5:
-    st.markdown(metric_card("Visa Result Needed", len(rule_6), "❓"), unsafe_allow_html=True)
+    st.markdown(metric_card("Visa Result", len(rule_6), "❓"), unsafe_allow_html=True)
 with col6:
-    st.markdown(metric_card("I-20s Needed", len(rule_4), "📄"), unsafe_allow_html=True)
+    st.markdown(metric_card("I-20", len(rule_4), "📄"), unsafe_allow_html=True)
 with col7:
-    st.markdown(metric_card("Embassy Interviews Needed", len(rule_5), "📅"), unsafe_allow_html=True)
+    st.markdown(metric_card("ITW Date", len(rule_5), "📅"), unsafe_allow_html=True)
 
 # Detailed sections
 st.markdown("### Detailed Information")
