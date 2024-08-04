@@ -4,6 +4,8 @@ from google.oauth2.service_account import Credentials
 import gspread
 import streamlit as st
 from datetime import datetime
+from auth import check_password  # Assuming check_password is defined in auth.py
+
 
 
 def Statistic():
