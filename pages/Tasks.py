@@ -71,7 +71,7 @@ st.header("Upcoming Embassy Interviews (Need Prep)")
 st.write("These students have embassy interviews scheduled within the next 14 days and they are not prepared yet.")
 st.dataframe(rule_3a)
 
-st.header("Upcoming Embassy Interviews (SEVIS Payment NO)")
+st.header("Need SEVIS Payment")
 st.write("These students have embassy interviews scheduled within the next 14 days and they did not pay the SEVIS.")
 st.dataframe(rule_3b)
 
