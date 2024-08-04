@@ -65,10 +65,6 @@ def assign_agents(df):
     
     return assignments
 
-import streamlit as st
-import pandas as pd
-from datetime import datetime, timedelta
-
 def assign_agents(df):
     # Identify students without agents
     students_without_agents = df[df['Agent'].isna() & (df['STAGE'] != 'CLIENT')]
