@@ -7,7 +7,7 @@ import gspread
 # Set page config at the very beginning
 st.set_page_config(layout="wide", page_title="Student Visa CRM Dashboard")
 
-st.title("🏠 Main Dashboard")
+
 # Use Streamlit secrets for service account info
 SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
 
