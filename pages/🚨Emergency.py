@@ -66,7 +66,19 @@ rule_5 = data[(data['DATE'] <= today - timedelta(days=14)) & (data['EMBASSY ITW.
 rule_6 = data[(data['EMBASSY ITW. DATE'] < today) & (data['Visa Result'].isna())].sort_values(by='EMBASSY ITW. DATE').reset_index(drop=True)
 
 
-rule_7 = data[(data['Agent'].isna() | data['Agent'] == '') &  (data['Stage'] != 'CLIENTS')].sort_values(by='DATE').reset_index(drop=True)
+rule_7 = data[
+    (
+        (data['Agent'].isna()) | 
+        (data['Agent'].str.strip() == '') | 
+        (data['Agent'].str.lower() == 'nan')
+    ) & 
+    (data['Stage'].str.strip().str.upper() != 'CLIENT') & 
+    (data['Stage'].str.strip().str.upper() != 'CLIENTS')
+].sort_values(by='DATE').reset_index(drop=True)
+
+# Add this diagnostic print
+st.sidebar.write(f"Number of rows in rule_7: {len(rule_7)}")
+
 
 
 
@@ -236,8 +248,18 @@ with tabs[6]:
 
 with tabs[7]:
     st.markdown('<div class="section-header">👤 Unassigned Students</div>', unsafe_allow_html=True)
-    st.write("These students are not assigned an agent and their stage is not 'CLIENT'. They need to be assigned to an agent.")
-    st.dataframe(rule_7[['First Name', 'Last Name', 'DATE', 'Stage']], use_container_width=True)
+    st.write("These students are not assigned an agent and their stage is not 'CLIENT' or 'CLIENTS'. They need to be assigned to an agent.")
+    
+    if len(rule_7) > 0:
+        st.dataframe(rule_7[['First Name', 'Last Name', 'DATE', 'Stage', 'Agent']], use_container_width=True)
+    else:
+        st.write("No unassigned students found. This could mean all students are properly assigned, or there might be an issue with the data or filtering condition.")
+    
+    # Add these diagnostic prints in the tab
+    st.write("Diagnostic Information:")
+    st.write(f"Total rows in dataset: {len(data)}")
+    st.write(f"Rows with empty 'Agent': {len(data[data['Agent'].isna() | (data['Agent'].str.strip() == '')])}")
+    st.write(f"Rows with 'Stage' not 'CLIENT' or 'CLIENTS': {len(data[~data['Stage'].str.strip().str.upper().isin(['CLIENT', 'CLIENTS'])])}")
 
 
 # Add a footer
