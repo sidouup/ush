@@ -68,7 +68,7 @@ def main():
     # Sidebar for agent color reference
     st.sidebar.header("Agent Color Reference")
     for agent, color in agent_colors.items():
-        st.sidebar.markdown(f"<div style='{color};padding: 10px;'>{agent}</div>", unsafe_allow_html=True)
+        st.sidebar.markdown(f"<div style='{color};padding: 5px;'>{agent}</div>", unsafe_allow_html=True)
 
     # Filter buttons for stages
     st.markdown('<div class="stCard" style="display: flex; justify-content: space-between;">', unsafe_allow_html=True)
@@ -118,6 +118,86 @@ def main():
         # Apply styling and display the dataframe
         styled_df = filtered_data.style.apply(highlight_agent, axis=1)
         st.dataframe(styled_df)
+
+# Custom CSS to zoom out
+st.markdown("""
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap');
+
+    html, body, [class*="css"] {
+        font-family: 'Roboto', sans-serif;
+        font-size: 10px;  /* Reduce base font size to zoom out */
+    }
+    
+    .stApp {
+        background-color: #f0f2f6;
+    }
+    
+    .main {
+        background-color: #ffffff;
+        border-radius: 10px;
+        padding: 15px;  /* Adjust padding */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    h1 {
+        color: #1E88E5;
+        font-weight: 700;
+        font-size: 1.5rem;  /* Adjust font size */
+        margin-bottom: 15px;
+    }
+    
+    .section-header {
+        font-size: 1.2rem;  /* Adjust font size */
+        font-weight: 600;
+        color: #1E88E5;
+        margin: 15px 0;
+    }
+    
+    .metric-card {
+        background-color: #ffffff;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 10px;  /* Adjust padding */
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin: 10px 0;
+    }
+    
+    .metric-card h2 {
+        font-size: 1rem;  /* Adjust font size */
+        font-weight: 700;
+        margin-bottom: 5px;
+        color: #1E88E5;
+    }
+    
+    .metric-card p {
+        font-size: 1.2rem;  /* Adjust font size */
+        font-weight: 700;
+        color: #333;
+    }
+    
+    .dataframe {
+        font-size: 0.7rem;  /* Adjust font size */
+    }
+    
+    .dataframe th {
+        background-color: #1E88E5;
+        color: white;
+        font-weight: 500;
+        text-align: left;
+    }
+    
+    .dataframe td {
+        background-color: #ffffff;
+    }
+    
+    .icon {
+        font-size: 1rem;  /* Adjust font size */
+        margin-right: 5px;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
