@@ -7,7 +7,7 @@ from datetime import datetime
 
 # Use Streamlit secrets for service account info
 SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
-
+st.set_page_config(page_title="Student Recruitment Statistics", layout="wide")
 # Define the scopes
 SCOPES = ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/spreadsheets']
 
@@ -56,7 +56,7 @@ def statistics_page():
             <h1 class="main-title">The Us House Dashboard</h1>
         </div>
         """, unsafe_allow_html=True)
-        st.set_page_config(page_title="Student Recruitment Statistics", layout="wide")
+        
         
         st.markdown("""
         <style>
