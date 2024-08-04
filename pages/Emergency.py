@@ -67,13 +67,13 @@ rule_6 = data[(data['EMBASSY ITW. DATE'] < today) & (data['Visa Result'].isna())
 # Function to determine card color based on value
 def get_card_color(value):
     if value < 5:
-        return '#28a745'  # Green
+        return 'rgba(40, 167, 69, 0.5)'  # Green
     elif 5 <= value < 10:
-        return '#ffc107'  # Yellow
+        return 'rgba(255, 193, 7, 0.5)'  # Yellow
     elif 10 <= value < 15:
-        return '#fd7e14'  # Orange
+        return 'rgba(253, 126, 20, 0.5)'  # Orange
     else:
-        return '#dc3545'  # Red
+        return 'rgba(220, 53, 69, 0.5)'  # Red
 
 # Custom CSS for a modern look
 st.markdown("""
@@ -164,7 +164,7 @@ col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
 def metric_card(title, value, icon):
     color = get_card_color(value)
     return f"""
-    <div class="metric-card" style="background-color: {color};">
+    <div class="metric-card" style="background-color: {color}; opacity: 0.85;">
         <h2>{icon} {title}</h2>
         <p>{value}</p>
     </div>
