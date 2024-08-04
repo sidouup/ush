@@ -77,12 +77,15 @@ def get_card_color(value):
 
 # Custom function to create a metric card
 def metric_card(label, value, icon):
-    st.container()
-    col1, col2, col3 = st.columns([1,3,1])
-    with col1:
-        st.write(f"# {icon}")
-    with col2:
-        st.metric(label=label, value=value)
+    card_color = get_card_color(value)
+    card_html = f"""
+    <div style="background-color: {card_color}; padding: 20px; border-radius: 10px; text-align: center; margin: 10px;">
+        <div style="font-size: 30px;">{icon}</div>
+        <div style="font-size: 24px; font-weight: bold;">{label}</div>
+        <div style="font-size: 22px;">{value}</div>
+    </div>
+    """
+    st.markdown(card_html, unsafe_allow_html=True)
 
 # Main dashboard
 st.title("Student Visa CRM Dashboard")
@@ -141,43 +144,3 @@ st.dataframe(rule_5[['First Name', 'Last Name', 'DATE', 'Stage', 'Agent']])
 st.subheader("❓ Visa Result Needed")
 st.write("These students have passed their embassy interview date and still do not have a recorded visa result. Please update their visa result.")
 st.dataframe(rule_6[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']])
-
-
-
-# Detailed sections
-st.markdown("### Detailed Information")
-
-# School Payment Due Soon
-st.markdown('<div class="section-header">📅 School Payment Due Soon</div>', unsafe_allow_html=True)
-st.write("These students need to complete their school payment at least 50 days before their school entry date.")
-st.dataframe(rule_1[['First Name', 'Last Name', 'DATE', 'School Payment Due', 'Stage', 'Agent']], use_container_width=True)
-
-# DS-160 Step Due Soon
-st.markdown('<div class="section-header">📝 DS-160 Step Due Soon</div>', unsafe_allow_html=True)
-st.write("These students need to complete the DS-160 step within 30 days before their embassy interview date.")
-st.dataframe(rule_2[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']], use_container_width=True)
-
-# Upcoming Embassy Interviews (Need Prep)
-st.markdown('<div class="section-header">🎤 Upcoming Embassy Interviews (Need Prep)</div>', unsafe_allow_html=True)
-st.write("These students have embassy interviews scheduled within the next 14 days and they are not prepared yet.")
-st.dataframe(rule_3a[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']], use_container_width=True)
-
-# Need SEVIS Payment
-st.markdown('<div class="section-header">💳 Need SEVIS Payment</div>', unsafe_allow_html=True)
-st.write("These students have embassy interviews scheduled within the next 14 days and they did not pay the SEVIS.")
-st.dataframe(rule_3b[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']], use_container_width=True)
-
-# I-20 and School Registration Needed
-st.markdown('<div class="section-header">❓ I-20 and School Registration Needed</div>', unsafe_allow_html=True)
-st.write("These students do not have a school entry date recorded one week after the Payment date. They need an I-20 and must mention their entry date in the database.")
-st.dataframe(rule_4[['First Name', 'Last Name', 'DATE', 'Stage', 'Agent']], use_container_width=True)
-
-# Embassy Interview Date Missing (After Two Weeks)
-st.markdown('<div class="section-header">❓ Embassy Interview Date Missing (After Two Weeks)</div>', unsafe_allow_html=True)
-st.write("These students do not have an embassy interview date recorded two weeks after the initial date, and their stage is not CLIENTS.")
-st.dataframe(rule_5[['First Name', 'Last Name', 'DATE', 'Stage', 'Agent']], use_container_width=True)
-
-# Visa Result Needed
-st.markdown('<div class="section-header">❓ Visa Result Needed</div>', unsafe_allow_html=True)
-st.write("These students have passed their embassy interview date and still do not have a recorded visa result. Please update their visa result.")
-st.dataframe(rule_6[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']], use_container_width=True)
