@@ -77,97 +77,28 @@ def get_card_color(value):
 
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap');
-
-    html, body, [class*="css"] {
-        font-family: 'Roboto', sans-serif;
-    }
-    
-    .stApp {
-        background-color: #f0f2f6;
-    }
-    
-    .main {
-        background-color: #ffffff;
-        border-radius: 10px;
-        padding: 20px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    
-    h1 {
-        color: #1E88E5;
-        font-weight: 700;
-        font-size: 2.5rem;
-        margin-bottom: 20px;
-    }
-    
-    .section-header {
-        font-size: 2rem;
-        font-weight: 600;
-        color: #1E88E5;
-        margin: 20px 0;
-    }
-    
-    .metrics-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: stretch;
-        flex-wrap: nowrap;
-        margin: 0 -5px;
-    }
-    
     .metric-card {
-        flex: 1;
         background-color: #ffffff;
         border: 1px solid #e0e0e0;
         border-radius: 10px;
-        padding: 15px 10px;
+        padding: 15px;
         text-align: center;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        margin: 0 5px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        align-items: center;
-        min-width: 0;
     }
-    
-    .metric-card .icon {
+    .metric-icon {
         font-size: 2rem;
-        margin-bottom: 5px;
+        margin-bottom: 10px;
     }
-    
-    .metric-card h2 {
-        font-size: 0.8rem;
+    .metric-title {
+        font-size: 0.9rem;
         font-weight: 500;
-        margin-bottom: 5px;
         color: #333;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        width: 100%;
+        margin-bottom: 5px;
     }
-    
-    .metric-card p {
-        font-size: 1.5rem;
+    .metric-value {
+        font-size: 1.8rem;
         font-weight: 700;
         color: #1E88E5;
-        margin: 0;
-    }
-    
-    .dataframe {
-        font-size: 0.9rem;
-    }
-    
-    .dataframe th {
-        background-color: #1E88E5;
-        color: white;
-        font-weight: 500;
-        text-align: left;
-    }
-    
-    .dataframe td {
-        background-color: #ffffff;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -177,36 +108,26 @@ st.title("Student Visa CRM Dashboard")
 # Overview metrics
 st.markdown("### Overview")
 
-def metric_card(title, value, icon):
-    return f"""
-    <div class="metric-card">
-        <div class="icon">{icon}</div>
-        <h2>{title}</h2>
-        <p>{value}</p>
-    </div>
-    """
+# Create a row with 7 columns for the metrics
+col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
 
-metrics_html = """
-<div class="metrics-container">
-    {0}
-    {1}
-    {2}
-    {3}
-    {4}
-    {5}
-    {6}
-</div>
-""".format(
-    metric_card("School Payments Due", len(rule_1), "📅"),
-    metric_card("Emergency DS-160", len(rule_2), "📝"),
-    metric_card("Emergency Interviews", len(rule_3a), "🎤"),
-    metric_card("Emergency SEVIS Payment", len(rule_3b), "💳"),
-    metric_card("Visa Result Needed", len(rule_6), "❓"),
-    metric_card("I-20s Needed", len(rule_4), "📄"),
-    metric_card("Embassy Interviews Needed", len(rule_5), "📅")
-)
+# Define a function to create a metric card
+def metric_card(col, title, value, icon):
+    with col:
+        st.markdown(f'<div class="metric-card">', unsafe_allow_html=True)
+        st.markdown(f'<div class="metric-icon">{icon}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="metric-title">{title}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="metric-value">{value}</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
-st.markdown(metrics_html, unsafe_allow_html=True)
+# Create metric cards
+metric_card(col1, "School Payments Due", len(rule_1), "📅")
+metric_card(col2, "Emergency DS-160", len(rule_2), "📝")
+metric_card(col3, "Emergency Interviews", len(rule_3a), "🎤")
+metric_card(col4, "Emergency SEVIS Payment", len(rule_3b), "💳")
+metric_card(col5, "Visa Result Needed", len(rule_6), "❓")
+metric_card(col6, "I-20s Needed", len(rule_4), "📄")
+metric_card(col7, "Embassy Interviews Needed", len(rule_5), "📅")
 
 st.title("Student Visa CRM Dashboard")
 
