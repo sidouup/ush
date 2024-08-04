@@ -178,27 +178,27 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs(["School Payments", "DS-160", "Interview 
 
 with tab1:
     st.header("School Payment Due Soon")
-    st.dataframe(rule_1[['NAME', 'DATE', 'School Payment Due', 'Stage']], use_container_width=True)
+    st.dataframe(rule_1[['First Name','Last Name',  'DATE', 'School Payment Due', 'Stage']], use_container_width=True)
 
 with tab2:
     st.header("DS-160 Step Due Soon")
-    st.dataframe(rule_2[['NAME', 'DATE', 'EMBASSY ITW. DATE', 'Stage']], use_container_width=True)
+    st.dataframe(rule_2[['First Name','Last Name',  'DATE', 'EMBASSY ITW. DATE', 'Stage']], use_container_width=True)
 
 with tab3:
     st.header("Upcoming Embassy Interviews (Need Prep)")
-    st.dataframe(rule_3a[['NAME', 'DATE', 'EMBASSY ITW. DATE', 'Stage']], use_container_width=True)
+    st.dataframe(rule_3a[['First Name','Last Name',  'DATE', 'EMBASSY ITW. DATE', 'Stage']], use_container_width=True)
 
 with tab4:
     st.header("Need SEVIS Payment")
-    st.dataframe(rule_3b[['NAME', 'DATE', 'EMBASSY ITW. DATE', 'Stage']], use_container_width=True)
+    st.dataframe(rule_3b[['First Name','Last Name',  'DATE', 'EMBASSY ITW. DATE', 'Stage']], use_container_width=True)
 
 with tab5:
     st.header("Missing Information")
     col1, col2 = st.columns(2)
     with col1:
         st.subheader("I-20 and School Registration Needed")
-        st.dataframe(rule_4[['NAME', 'DATE', 'Stage']], use_container_width=True)
+        st.dataframe(rule_4[['First Name','Last Name',  'DATE', 'Stage']], use_container_width=True)
     with col2:
         st.subheader("Embassy Interview Date Missing")
-        st.dataframe(rule_5[['NAME', 'DATE', 'Stage']], use_container_width=True)
+        st.dataframe(rule_5[['First Name','Last Name',  'DATE', 'Stage']], use_container_width=True)
 
