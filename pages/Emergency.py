@@ -78,10 +78,10 @@ def get_card_color(value):
 # Custom CSS for a modern look
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap');
 
     html, body, [class*="css"] {
-        font-family: 'Poppins', sans-serif;
+        font-family: 'Roboto', sans-serif;
     }
     
     .stApp {
@@ -90,176 +90,101 @@ st.markdown("""
     
     .main {
         background-color: #ffffff;
-        border-radius: 15px;
-        padding: 30px;
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
     
     h1 {
-        color: #2c3e50;
+        color: #1E88E5;
         font-weight: 700;
-        font-size: 2.8rem;
-        margin-bottom: 30px;
-        text-align: center;
-        text-transform: uppercase;
-        letter-spacing: 2px;
+        font-size: 2.5rem;
+        margin-bottom: 20px;
     }
     
     .section-header {
-        font-size: 2.2rem;
+        font-size: 2rem;
         font-weight: 600;
-        color: #3498db;
-        margin: 30px 0 20px;
-        padding-bottom: 10px;
-        border-bottom: 3px solid #3498db;
+        color: #1E88E5;
+        margin: 20px 0;
     }
     
     .metric-card {
         background-color: #ffffff;
-        border: none;
-        border-radius: 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
         padding: 20px;
         text-align: center;
-        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-        margin: 15px;
-        width: 180px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin: 10px 0;
         height: 180px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
     
-    .metric-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+    .metric-card .icon {
+        font-size: 3rem;
+        margin-bottom: 10px;
     }
     
     .metric-card h2 {
-        font-size: 1.1rem;
-        font-weight: 600;
+        font-size: 1rem;
+        font-weight: 500;
         margin-bottom: 10px;
-        color: #34495e;
+        color: #333;
     }
     
     .metric-card p {
-        font-size: 2.5rem;
+        font-size: 2rem;
         font-weight: 700;
-        color: #2c3e50;
-        margin: 0;
-    }
-    
-    /* More vibrant colors for metric cards */
-    .metric-card.red {
-        background-color: #ff6b6b;
-    }
-    .metric-card.green {
-        background-color: #51cf66;
-    }
-    .metric-card.yellow {
-        background-color: #feca57;
-    }
-    
-    .metric-card.red h2, .metric-card.green h2, .metric-card.yellow h2 {
-        color: #ffffff;
-    }
-    
-    .metric-card.red p, .metric-card.green p, .metric-card.yellow p {
-        color: #ffffff;
+        color: #1E88E5;
     }
     
     .dataframe {
-        font-size: 0.95rem;
-        border-collapse: separate;
-        border-spacing: 0;
-        width: 100%;
-        border: 1px solid #e0e0e0;
-        border-radius: 10px;
-        overflow: hidden;
+        font-size: 0.9rem;
     }
     
     .dataframe th {
-        background-color: #3498db;
+        background-color: #1E88E5;
         color: white;
-        font-weight: 600;
+        font-weight: 500;
         text-align: left;
-        padding: 12px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
     }
     
     .dataframe td {
         background-color: #ffffff;
-        padding: 12px;
-        border-top: 1px solid #e0e0e0;
-    }
-    
-    .dataframe tr:nth-child(even) td {
-        background-color: #f8f9fa;
-    }
-    
-    .dataframe tr:hover td {
-        background-color: #e8f4f8;
-    }
-    
-    .icon {
-        font-size: 1.4rem;
-        margin-right: 10px;
-        vertical-align: middle;
-    }
-    
-    /* Custom scrollbar */
-    ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-    }
-    
-    ::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 10px;
-    }
-    
-    ::-webkit-scrollbar-thumb {
-        background: #888;
-        border-radius: 10px;
-    }
-    
-    ::-webkit-scrollbar-thumb:hover {
-        background: #555;
     }
 </style>
-
 """, unsafe_allow_html=True)
 
 st.title("Student Visa CRM Dashboard")
 
 # Overview metrics
 st.markdown("### Overview")
-col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
+col1, col2, col3, col4 = st.columns(4)
 
 def metric_card(title, value, icon):
-    color = get_card_color(value)
     return f"""
-    <div class="metric-card" style="background-color: {color}; opacity: 0.85;">
-        <h2>{icon} {title}</h2>
+    <div class="metric-card">
+        <div class="icon">{icon}</div>
+        <h2>{title}</h2>
         <p>{value}</p>
     </div>
     """
 
 with col1:
     st.markdown(metric_card("School Payments Due", len(rule_1), "📅"), unsafe_allow_html=True)
+    st.markdown(metric_card("Emergency SEVIS Payment", len(rule_3b), "💳"), unsafe_allow_html=True)
 with col2:
     st.markdown(metric_card("Emergency DS-160", len(rule_2), "📝"), unsafe_allow_html=True)
+    st.markdown(metric_card("Visa Result Needed", len(rule_6), "❓"), unsafe_allow_html=True)
 with col3:
     st.markdown(metric_card("Emergency Interviews", len(rule_3a), "🎤"), unsafe_allow_html=True)
-with col4:
-    st.markdown(metric_card("Emergency SEVIS Payment", len(rule_3b), "💳"), unsafe_allow_html=True)
-with col5:
-    st.markdown(metric_card("Visa Result Needed", len(rule_6), "❓"), unsafe_allow_html=True)
-with col6:
     st.markdown(metric_card("I-20s Needed", len(rule_4), "📄"), unsafe_allow_html=True)
-with col7:
+with col4:
     st.markdown(metric_card("Embassy Interviews Needed", len(rule_5), "📅"), unsafe_allow_html=True)
+
 
 # Detailed sections
 st.markdown("### Detailed Information")
