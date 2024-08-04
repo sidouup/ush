@@ -157,11 +157,11 @@ def metric_card(title, value, icon):
 with col1:
     st.markdown(metric_card("School Payments Due", len(rule_1), "📅"), unsafe_allow_html=True)
 with col2:
-    st.markdown(metric_card("DS-160 Due", len(rule_2), "📝"), unsafe_allow_html=True)
+    st.markdown(metric_card("Emergency DS-160", len(rule_2), "📝"), unsafe_allow_html=True)
 with col3:
-    st.markdown(metric_card("Upcoming Interviews", len(rule_3a), "🎤"), unsafe_allow_html=True)
+    st.markdown(metric_card("Emergency Interviews", len(rule_3a), "🎤"), unsafe_allow_html=True)
 with col4:
-    st.markdown(metric_card("Need SEVIS Payment", len(rule_3b), "💳"), unsafe_allow_html=True)
+    st.markdown(metric_card("Emergency SEVIS Payment", len(rule_3b), "💳"), unsafe_allow_html=True)
 
 # Detailed sections
 st.markdown("### Detailed Information")
