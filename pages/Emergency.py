@@ -147,7 +147,7 @@ st.title("Student Visa CRM Dashboard")
 
 # Overview metrics
 st.markdown("### Overview")
-col1, col2, col3, col4, col5 = st.columns(5)
+col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
 
 def metric_card(title, value, icon):
     return f"""
@@ -167,6 +167,10 @@ with col4:
     st.markdown(metric_card("Emergency SEVIS Payment", len(rule_3b), "💳"), unsafe_allow_html=True)
 with col5:
     st.markdown(metric_card("Visa Result Needed", len(rule_6), "❓"), unsafe_allow_html=True)
+with col6:
+    st.markdown(metric_card("I-20s Needed", len(rule_4), "📄"), unsafe_allow_html=True)
+with col7:
+    st.markdown(metric_card("Embassy Interviews Needed", len(rule_5), "📅"), unsafe_allow_html=True)
 
 # Detailed sections
 st.markdown("### Detailed Information")
