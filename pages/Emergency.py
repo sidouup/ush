@@ -66,108 +66,96 @@ rule_5 = data[(data['DATE'] <= today - timedelta(days=14)) & (data['EMBASSY ITW.
 rule_6 = data[(data['EMBASSY ITW. DATE'] < today) & (data['Visa Result'].isna())].sort_values(by='EMBASSY ITW. DATE').reset_index(drop=True)
 
 
-# Custom CSS for a modern and beautiful design
+# Custom CSS for a modern and beautiful design, zoomed out to 75%
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
     
-    html, body, [class*="css"] {
-        font-family: 'Poppins', sans-serif;
+    html {
+        font-size: 12px; /* Base font size reduced to 75% of 16px */
+    }
+    
+    body {
+        zoom: 0.75;
+        -moz-transform: scale(0.75);
+        -moz-transform-origin: 0 0;
     }
     
     .stApp {
         background-color: #f0f4f8;
     }
     
-    h1, h2, h3, h4, h5, h6 {
-        color: #1a237e;
-    }
+    h1 { font-size: 2.5rem; }
+    h2 { font-size: 2rem; }
+    h3 { font-size: 1.75rem; }
+    h4 { font-size: 1.5rem; }
+    h5 { font-size: 1.25rem; }
+    h6 { font-size: 1rem; }
     
     .stTabs {
         background-color: #ffffff;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        padding: 20px;
-        margin-bottom: 20px;
+        border-radius: 8px;
+        box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+        padding: 15px;
+        margin-bottom: 15px;
     }
     
     .stTabs [data-baseweb="tab-list"] {
-        gap: 10px;
-        border-bottom: none;
+        gap: 8px;
     }
     
     .stTabs [data-baseweb="tab"] {
-        border-radius: 30px;
-        padding: 10px 20px;
-        font-weight: 600;
-        background-color: #e8eaf6;
-        color: #3f51b5;
-        border: none;
-        transition: all 0.3s ease;
-    }
-    
-    .stTabs [aria-selected="true"] {
-        background-color: #3f51b5;
-        color: #ffffff;
+        border-radius: 23px;
+        padding: 8px 15px;
+        font-size: 0.9rem;
     }
     
     .metric-card {
         background-color: #ffffff;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        padding: 20px;
-        text-align: center;
-        transition: transform 0.3s ease;
-    }
-    
-    .metric-card:hover {
-        transform: translateY(-5px);
+        border-radius: 8px;
+        box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+        padding: 15px;
     }
     
     .metric-value {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: #3f51b5;
+        font-size: 2rem;
     }
     
     .metric-label {
-        font-size: 1rem;
-        color: #757575;
-        margin-top: 5px;
+        font-size: 0.9rem;
+        margin-top: 4px;
     }
     
     .dataframe {
-        font-size: 0.9rem;
+        font-size: 0.8rem;
     }
     
-    .dataframe th {
-        background-color: #3f51b5;
-        color: white;
-        font-weight: 600;
-        text-align: left;
-        padding: 12px;
-    }
-    
-    .dataframe td {
-        background-color: #ffffff;
-        padding: 12px;
-    }
-    
-    .dataframe tr:nth-child(even) {
-        background-color: #f8f8f8;
+    .dataframe th, .dataframe td {
+        padding: 9px;
     }
     
     .section-header {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #1a237e;
-        margin: 20px 0;
-        padding-bottom: 10px;
-        border-bottom: 2px solid #e0e0e0;
+        font-size: 1.3rem;
+        margin: 15px 0;
+        padding-bottom: 8px;
+    }
+    
+    /* Adjust Streamlit's default elements */
+    .stButton > button {
+        font-size: 0.9rem;
+    }
+    
+    .stSelectbox > div > div {
+        font-size: 0.9rem;
+    }
+    
+    .stTextInput > div > div > input {
+        font-size: 0.9rem;
     }
 </style>
 """, unsafe_allow_html=True)
 
+# The rest of your Streamlit code remains the same
 # Title and introduction
 st.title("📊 Student Visa CRM Dashboard")
 st.markdown("Welcome to the modern and user-friendly Student Visa CRM Dashboard. Here you can track and manage various stages of the student visa process.")
@@ -239,4 +227,8 @@ with tabs[6]:
     st.markdown('<div class="section-header">❓ Visa Result Needed</div>', unsafe_allow_html=True)
     st.write("These students have passed their embassy interview date and still do not have a recorded visa result. Please update their visa result.")
     st.dataframe(rule_6[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']], use_container_width=True)
+
+# Add a footer
+st.markdown("---")
+st.markdown("© 2023 Student Visa CRM Dashboard. All rights reserved.")
 
