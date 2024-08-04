@@ -42,9 +42,9 @@ data['EMBASSY ITW. DATE'] = pd.to_datetime(data['EMBASSY ITW. DATE'], format=dat
 today = datetime.now()
 
 # Apply rules (as in your original code)
-# Rule 1: School payment 40 days before school entry
-data['School Payment Due'] = data['School Entry Date'] - timedelta(days=40)
-rule_1 = data[(data['School Paid'] != 'Yes') & (data['School Payment Due'] > today)].sort_values(by='DATE').reset_index(drop=True)
+# Rule 1: School payment 40 days before school entry, exclude students with Visa Denied
+data['School Payment Due'] = data['School Entry Date'] - timedelta(days=50)
+rule_1 = data[(data['School Paid'] != 'Yes') & (data['School Payment Due'] > today) & (data['Visa Result'] != 'Visa Denied')].sort_values(by='DATE').reset_index(drop=True)
 
 # Rule 2: DS-160 step within 30 days before embassy interview
 ds_160_stages = ['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV', 'DS-160', 'ITW Prep', 'CLIENTS']
@@ -168,7 +168,7 @@ st.markdown("### Detailed Information")
 
 # School Payment Due Soon
 st.markdown('<div class="section-header">📅 School Payment Due Soon</div>', unsafe_allow_html=True)
-st.write("These students need to complete their school payment at least 40 days before their school entry date.")
+st.write("These students need to complete their school payment at least 50 days before their school entry date.")
 st.dataframe(rule_1[['First Name', 'Last Name', 'DATE', 'School Payment Due', 'Stage']], use_container_width=True)
 
 # DS-160 Step Due Soon
