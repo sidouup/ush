@@ -783,6 +783,13 @@ def main():
                         key="attempts", 
                         on_change=update_student_data
                     )
+                        agent = st.selectbox(
+                        "Agent", 
+                        agents, 
+                        index=agents.index(selected_student['Agent']) if selected_student['Agent'] in attempts_options else 0,
+                        key="Agent", 
+                        on_change=update_student_data
+                    )
                 else:
                     st.write(f"**First Name:** {selected_student['First Name']}")
                     st.write(f"**Last Name:** {selected_student['Last Name']}")
@@ -793,6 +800,7 @@ def main():
                     st.write(f"**Emergency Contact Number:** {selected_student['Emergency contact N°']}")
                     st.write(f"**Address:** {selected_student['Address']}")
                     st.write(f"**Attempts:** {selected_student['Attempts']}")
+                    st.write(f"**Agent:** {selected_student['Agent']}")
                 st.markdown('</div>', unsafe_allow_html=True)
                     
                 with tab2:
@@ -998,6 +1006,8 @@ def main():
                     'School Paid': st.session_state.get('School_Paid', ''),
                     'Prep ITW': st.session_state.get('Prep_ITW', ''),
                     'Age': st.session_state.get('Age', ''),
+                    'Sevis payment ?': st.session_state.get('sevis_payment', ''),
+                    'Agent': st.session_state.get('Agent', ''),
                     'Application payment ?': st.session_state.get('application_payment', ''),
                 }
             
