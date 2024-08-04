@@ -67,7 +67,6 @@ rule_6 = data[(data['EMBASSY ITW. DATE'] < today) & (data['Visa Result'].isna())
 
 
 
-# Custom CSS for a modern and beautiful design, zoomed to 85%
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -98,7 +97,7 @@ st.markdown("""
         border-radius: 9px;
         box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
         padding: 17px;
-        margin-bottom: 17px;
+        margin-top: 30px; /* Added space above the tabs */
     }
     
     .stTabs [data-baseweb="tab-list"] {
@@ -156,7 +155,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# The rest of your Streamlit code remains the same
 # Title and introduction
 st.title("📊 Student Visa CRM Dashboard")
 st.markdown("Welcome to the modern and user-friendly Student Visa CRM Dashboard. Here you can track and manage various stages of the student visa process.")
@@ -183,15 +181,18 @@ with col3:
 with col4:
     st.markdown(metric_card("Need SEVIS Payment", len(rule_3b), "💳"), unsafe_allow_html=True)
 
-# Detailed sections in tabs
+# Add some space before the tabs
+st.markdown("<br>", unsafe_allow_html=True)
+
+# Detailed sections in tabs with emojis
 tabs = st.tabs([
-    "School Payment",
-    "DS-160",
-    "Interviews",
-    "SEVIS Payment",
-    "I-20 & Registration",
-    "ITW Date",
-    "Visa Result"
+    "📅 School Payment",
+    "📝 DS-160",
+    "🎤 Interviews",
+    "💳 SEVIS Payment",
+    "📄 I-20 & Registration",
+    "📆 ITW Date",
+    "🔍 Visa Result"
 ])
 
 with tabs[0]:
@@ -220,15 +221,16 @@ with tabs[4]:
     st.dataframe(rule_4[['First Name', 'Last Name', 'DATE', 'Stage', 'Agent']], use_container_width=True)
 
 with tabs[5]:
-    st.markdown('<div class="section-header">📅 ITW Date Needed</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">📆 ITW Date Needed</div>', unsafe_allow_html=True)
     st.write("These students do not have an embassy interview date recorded two weeks after their initial registration date. They need to schedule their interview and update the database.")
     st.dataframe(rule_5[['First Name', 'Last Name', 'DATE', 'Stage', 'Agent']], use_container_width=True)
 
 with tabs[6]:
-    st.markdown('<div class="section-header">❓ Visa Result Needed</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">🔍 Visa Result Needed</div>', unsafe_allow_html=True)
     st.write("These students have passed their embassy interview date and still do not have a recorded visa result. Please update their visa result.")
     st.dataframe(rule_6[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']], use_container_width=True)
 
 # Add a footer
 st.markdown("---")
 st.markdown("© 2023 Student Visa CRM Dashboard. All rights reserved.")
+
