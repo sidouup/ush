@@ -248,7 +248,7 @@ with tabs[6]:
 
 with tabs[7]:
     st.markdown('<div class="section-header">👤 Unassigned Students</div>', unsafe_allow_html=True)
-    st.write("These students are not assigned an agent and their stage is not 'CLIENT' or 'CLIENTS'. They need to be assigned to an agent.")
+    st.write("These students are not assigned an agent .")
     
     if len(rule_7) > 0:
         st.dataframe(rule_7[['First Name', 'Last Name', 'DATE', 'Stage', 'Agent']], use_container_width=True)
