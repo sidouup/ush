@@ -642,7 +642,7 @@ def main():
             with col1:
                 st.subheader("Application Status")
                 selected_student = filtered_data[filtered_data['Student Name'] == search_query].iloc[0]
-                steps = ['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'SEVIS', 'CLIENTS ']
+                steps = ['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV', 'DS-160', 'ITW Prep.',  'CLIENTS ']
                 current_step = selected_student['Stage']
                 step_index = steps.index(current_step) if current_step in steps else 0
                 progress = ((step_index + 1) / len(steps)) * 100
@@ -946,7 +946,7 @@ def main():
                 st.subheader("🚩 Current Stage")
             
                 # Define the stages
-                stages = ['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'SEVIS', 'CLIENTS']
+                stages = ['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV', 'DS-160', 'ITW Prep.',  'CLIENTS']
             
                 if edit_mode:
                     current_stage = st.selectbox(
