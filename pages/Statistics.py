@@ -57,17 +57,22 @@ def statistics_page():
             background: #f0f2f6;
         }
         .main .block-container {
-            padding-top: 2rem;
-            padding-bottom: 2rem;
+            padding-top: 1rem;
+            padding-bottom: 1rem;
         }
         h1, h2, h3 {
             color: #1E3A8A;
+            font-size: 1.2rem; /* Adjust font size */
         }
         .stMetric {
             background-color: #ffffff;
             border-radius: 5px;
-            padding: 15px;
+            padding: 10px; /* Adjust padding */
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-size: 0.8rem; /* Adjust font size */
+        }
+        .stMarkdown {
+            font-size: 0.8rem; /* Adjust font size */
         }
     </style>
     """, unsafe_allow_html=True)
@@ -169,10 +174,10 @@ def statistics_page():
     school_visa_stats = filtered_data.groupby('Chosen School').apply(school_approval_rate).reset_index()
     school_visa_stats.columns = ['School', 'Approval Rate']
     
-    # Sort by approval rate and get top 5
-    top_5_schools = school_visa_stats.sort_values('Approval Rate', ascending=False).head(8)
+    # Sort by approval rate and get top 8
+    top_8_schools = school_visa_stats.sort_values('Approval Rate', ascending=False).head(8)
     
-    fig = px.bar(top_5_schools, x='School', y='Approval Rate',
+    fig = px.bar(top_8_schools, x='School', y='Approval Rate',
                  text='Approval Rate',
                  labels={'Approval Rate': 'Visa Approval Rate (%)', 'School': 'School'},
                  title="Top 8 Schools by Visa Approval Rate")
@@ -252,8 +257,7 @@ def statistics_page():
     # Display the data in a table format as well
     st.subheader("Top 5 Payment Types Distribution")
     payment_df = pd.DataFrame({'Payment Amount': payment_counts.index, 'Number of Payments': payment_counts.values})
-
-
+    st.dataframe(payment_df)
 
 if __name__ == "__main__":
     statistics_page()
