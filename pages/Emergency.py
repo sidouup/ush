@@ -78,10 +78,10 @@ def get_card_color(value):
 # Custom CSS for a modern look
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
     html, body, [class*="css"] {
-        font-family: 'Roboto', sans-serif;
+        font-family: 'Poppins', sans-serif;
     }
     
     .stApp {
@@ -90,69 +90,120 @@ st.markdown("""
     
     .main {
         background-color: #ffffff;
-        border-radius: 10px;
-        padding: 20px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
     }
     
     h1 {
-        color: #1E88E5;
+        color: #2c3e50;
         font-weight: 700;
-        font-size: 2.5rem;
-        margin-bottom: 20px;
+        font-size: 2.8rem;
+        margin-bottom: 30px;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 2px;
     }
     
     .section-header {
-        font-size: 2rem;
+        font-size: 2.2rem;
         font-weight: 600;
-        color: #1E88E5;
-        margin: 20px 0;
+        color: #3498db;
+        margin: 30px 0 20px;
+        padding-bottom: 10px;
+        border-bottom: 3px solid #3498db;
     }
     
     .metric-card {
         background-color: #ffffff;
-        border: 1px solid #e0e0e0;
-        border-radius: 10px;
-        padding: 20px;
+        border: none;
+        border-radius: 15px;
+        padding: 25px;
         text-align: center;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        margin: 10px;
-        width: 150px;
-        height: 150px;
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        margin: 15px;
+        width: 180px;
+        height: 180px;
         display: inline-block;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
     }
     
     .metric-card h2 {
-        font-size: 1.2rem;
-        font-weight: 700;
-        margin-bottom: 10px;
-        color: #1E88E5;
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: #34495e;
     }
     
     .metric-card p {
-        font-size: 1.5rem;
+        font-size: 2rem;
         font-weight: 700;
-        color: #333;
+        color: #2c3e50;
     }
     
     .dataframe {
-        font-size: 0.9rem;
+        font-size: 0.95rem;
+        border-collapse: separate;
+        border-spacing: 0;
+        width: 100%;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        overflow: hidden;
     }
     
     .dataframe th {
-        background-color: #1E88E5;
+        background-color: #3498db;
         color: white;
-        font-weight: 500;
+        font-weight: 600;
         text-align: left;
+        padding: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
     
     .dataframe td {
         background-color: #ffffff;
+        padding: 12px;
+        border-top: 1px solid #e0e0e0;
+    }
+    
+    .dataframe tr:nth-child(even) td {
+        background-color: #f8f9fa;
+    }
+    
+    .dataframe tr:hover td {
+        background-color: #e8f4f8;
     }
     
     .icon {
-        font-size: 1.2rem;
+        font-size: 1.4rem;
         margin-right: 10px;
+        vertical-align: middle;
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: #555;
     }
 </style>
 """, unsafe_allow_html=True)
