@@ -64,83 +64,148 @@ rule_5 = data[(data['DATE'] <= today - timedelta(days=14)) & (data['EMBASSY ITW.
 # New Rule: EMBASSY ITW. DATE is passed today and Visa Result is empty
 rule_6 = data[(data['EMBASSY ITW. DATE'] < today) & (data['Visa Result'].isna())].sort_values(by='EMBASSY ITW. DATE').reset_index(drop=True)
 
-# Function to determine card color based on value
-def get_card_color(value):
-    if value < 5:
-        return 'rgba(40, 167, 69, 0.5)'  # Green
-    elif 5 <= value < 10:
-        return 'rgba(255, 193, 7, 0.5)'  # Yellow
-    elif 10 <= value < 15:
-        return 'rgba(253, 126, 20, 0.5)'  # Orange
-    else:
-        return 'rgba(220, 53, 69, 0.5)'  # Red
+# Custom CSS for a modern look
+st.markdown("""
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap');
 
-# Custom function to create a metric card
-def metric_card(label, value, icon):
-    card_color = get_card_color(value)
-    card_html = f"""
-    <div style="background-color: {card_color}; padding: 20px; border-radius: 10px; text-align: center; margin: 10px;">
-        <div style="font-size: 30px;">{icon}</div>
-        <div style="font-size: 24px; font-weight: bold;">{label}</div>
-        <div style="font-size: 22px;">{value}</div>
-    </div>
-    """
-    st.markdown(card_html, unsafe_allow_html=True)
+    html, body, [class*="css"] {
+        font-family: 'Roboto', sans-serif;
+    }
+    
+    .stApp {
+        background-color: #f0f2f6;
+    }
+    
+    .main {
+        background-color: #ffffff;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    h1 {
+        color: #1E88E5;
+        font-weight: 700;
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+    }
+    
+    .section-header {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #1E88E5;
+        margin: 20px 0;
+    }
+    
+    .metric-card {
+        background-color: #ffffff;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin: 10px 0;
+    }
+    
+    .metric-card h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: #1E88E5;
+    }
+    
+    .metric-card p {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #333;
+    }
+    
+    .dataframe {
+        font-size: 0.9rem;
+    }
+    
+    .dataframe th {
+        background-color: #1E88E5;
+        color: white;
+        font-weight: 500;
+        text-align: left;
+    }
+    
+    .dataframe td {
+        background-color: #ffffff;
+    }
+    
+    .icon {
+        font-size: 1.5rem;
+        margin-right: 10px;
+    }
+</style>
+""", unsafe_allow_html=True)
 
-# Main dashboard
 st.title("Student Visa CRM Dashboard")
 
 # Overview metrics
-st.header("Overview")
+st.markdown("### Overview")
+col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
 
-col1, col2, col3, col4 = st.columns(4)
+def metric_card(title, value, icon):
+    return f"""
+    <div class="metric-card">
+        <h2>{icon} {title}</h2>
+        <p>{value}</p>
+    </div>
+    """
 
 with col1:
-    metric_card("School Payments Due", len(rule_1), "📅")
-    metric_card("Emergency SEVIS Payment", len(rule_3b), "💳")
+    st.markdown(metric_card("School Payments Due", len(rule_1), "📅"), unsafe_allow_html=True)
 with col2:
-    metric_card("Emergency DS-160", len(rule_2), "📝")
-    metric_card("Visa Result Needed", len(rule_6), "❓")
+    st.markdown(metric_card("Emergency DS-160", len(rule_2), "📝"), unsafe_allow_html=True)
 with col3:
-    metric_card("Emergency Interviews", len(rule_3a), "🎤")
-    metric_card("I-20s Needed", len(rule_4), "📄")
+    st.markdown(metric_card("Emergency Interviews", len(rule_3a), "🎤"), unsafe_allow_html=True)
 with col4:
-    metric_card("Embassy Interviews Needed", len(rule_5), "📅")
+    st.markdown(metric_card("Emergency SEVIS Payment", len(rule_3b), "💳"), unsafe_allow_html=True)
+with col5:
+    st.markdown(metric_card("Visa Result Needed", len(rule_6), "❓"), unsafe_allow_html=True)
+with col6:
+    st.markdown(metric_card("I-20s Needed", len(rule_4), "📄"), unsafe_allow_html=True)
+with col7:
+    st.markdown(metric_card("Embassy Interviews Needed", len(rule_5), "📅"), unsafe_allow_html=True)
 
-# Detailed Information
-st.header("Detailed Information")
+# Detailed sections
+st.markdown("### Detailed Information")
 
 # School Payment Due Soon
-st.subheader("📅 School Payment Due Soon")
+st.markdown('<div class="section-header">📅 School Payment Due Soon</div>', unsafe_allow_html=True)
 st.write("These students need to complete their school payment at least 50 days before their school entry date.")
-st.dataframe(rule_1[['First Name', 'Last Name', 'DATE', 'School Payment Due', 'Stage', 'Agent']])
+st.dataframe(rule_1[['First Name', 'Last Name', 'DATE', 'School Payment Due', 'Stage', 'Agent']], use_container_width=True)
 
 # DS-160 Step Due Soon
-st.subheader("📝 DS-160 Step Due Soon")
+st.markdown('<div class="section-header">📝 DS-160 Step Due Soon</div>', unsafe_allow_html=True)
 st.write("These students need to complete the DS-160 step within 30 days before their embassy interview date.")
-st.dataframe(rule_2[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']])
+st.dataframe(rule_2[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']], use_container_width=True)
 
 # Upcoming Embassy Interviews (Need Prep)
-st.subheader("🎤 Upcoming Embassy Interviews (Need Prep)")
+st.markdown('<div class="section-header">🎤 Upcoming Embassy Interviews (Need Prep)</div>', unsafe_allow_html=True)
 st.write("These students have embassy interviews scheduled within the next 14 days and they are not prepared yet.")
-st.dataframe(rule_3a[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']])
+st.dataframe(rule_3a[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']], use_container_width=True)
 
 # Need SEVIS Payment
-st.subheader("💳 Need SEVIS Payment")
+st.markdown('<div class="section-header">💳 Need SEVIS Payment</div>', unsafe_allow_html=True)
 st.write("These students have embassy interviews scheduled within the next 14 days and they did not pay the SEVIS.")
-st.dataframe(rule_3b[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']])
+st.dataframe(rule_3b[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']], use_container_width=True)
 
 # I-20 and School Registration Needed
-st.subheader("📄 I-20 and School Registration Needed")
+st.markdown('<div class="section-header">❓ I-20 and School Registration Needed</div>', unsafe_allow_html=True)
 st.write("These students do not have a school entry date recorded one week after the Payment date. They need an I-20 and must mention their entry date in the database.")
-st.dataframe(rule_4[['First Name', 'Last Name', 'DATE', 'Stage', 'Agent']])
+st.dataframe(rule_4[['First Name', 'Last Name', 'DATE', 'Stage', 'Agent']], use_container_width=True)
 
 # Embassy Interview Date Missing (After Two Weeks)
-st.subheader("📅 Embassy Interview Date Missing (After Two Weeks)")
+st.markdown('<div class="section-header">❓ Embassy Interview Date Missing (After Two Weeks)</div>', unsafe_allow_html=True)
 st.write("These students do not have an embassy interview date recorded two weeks after the initial date, and their stage is not CLIENTS.")
-st.dataframe(rule_5[['First Name', 'Last Name', 'DATE', 'Stage', 'Agent']])
+st.dataframe(rule_5[['First Name', 'Last Name', 'DATE', 'Stage', 'Agent']], use_container_width=True)
 
 # Visa Result Needed
-st.subheader("❓ Visa Result Needed")
+st.markdown('<div class="section-header">❓ Visa Result Needed</div>', unsafe_allow_html=True)
 st.write("These students have passed their embassy interview date and still do not have a recorded visa result. Please update their visa result.")
-st.dataframe(rule_6[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']])
+st.dataframe(rule_6[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']], use_container_width=True)
