@@ -139,7 +139,7 @@ def tasks_and_emergencies_page(df):
         st.dataframe(no_agent[['STUDENT_NAME', 'STAGE']], height=200)
         st.markdown('<p class="small-font highlight">⚠️ These students do not have an assigned agent.</p>', unsafe_allow_html=True)
     else:
-        st.markdown('<p class="small-font">✅ All students have an assigned agent.</p>')
+        st.markdown('<p class="small-font">✅ All students who are not in the CLIENT stage have an assigned agent.</p>')
     st.markdown('</div>', unsafe_allow_html=True)
 
 def main():
