@@ -564,7 +564,7 @@ def main():
     if not data.empty:
         current_steps = ["All"] + list(data['Stage'].unique())
         agents = ["All", "Nesrine", "Hamza", "Djazila"]
-        school_options = ["All", "University", "Community College", "CCLS Miami", "CCLS NY NJ", "Connect English",
+        school_options = ["All", "University", "Community College", "CCLS Miami", "CCLS NY NJ", "Connect English ",
                           "CONVERSE SCHOOL", "ELI San Francisco", "F2 Visa", "GT Chicago", "BEA Huston", "BIA Huston",
                           "OHLA Miami", "UCDEA", "HAWAII", "Not Partner", "Not yet"]
         attempts_options = ["All", "1 st Try", "2 nd Try", "3 rd Try"]
