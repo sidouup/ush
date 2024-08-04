@@ -98,25 +98,33 @@ st.markdown("""
         margin: 20px 0;
     }
     
+    .metrics-overview {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
     .metric-card {
         background-color: #ffffff;
         border: 1px solid #e0e0e0;
         border-radius: 10px;
-        padding: 20px;
+        padding: 15px;
         text-align: center;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        flex: 1 1 calc(33.333% - 20px);
         margin: 10px 0;
     }
     
     .metric-card h2 {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin-bottom: 10px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 5px;
         color: #1E88E5;
     }
     
     .metric-card p {
-        font-size: 2rem;
+        font-size: 1.5rem;
         font-weight: 700;
         color: #333;
     }
@@ -147,7 +155,7 @@ st.title("Student Visa CRM Dashboard")
 
 # Overview metrics
 st.markdown("### Overview")
-col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
+st.markdown('<div class="metrics-overview">', unsafe_allow_html=True)
 
 def metric_card(title, value, icon):
     return f"""
@@ -157,20 +165,15 @@ def metric_card(title, value, icon):
     </div>
     """
 
-with col1:
-    st.markdown(metric_card("School Payments Due", len(rule_1), "📅"), unsafe_allow_html=True)
-with col2:
-    st.markdown(metric_card("Emergency DS-160", len(rule_2), "📝"), unsafe_allow_html=True)
-with col3:
-    st.markdown(metric_card("Emergency Interviews", len(rule_3a), "🎤"), unsafe_allow_html=True)
-with col4:
-    st.markdown(metric_card("Emergency SEVIS Payment", len(rule_3b), "💳"), unsafe_allow_html=True)
-with col5:
-    st.markdown(metric_card("Visa Result Needed", len(rule_6), "❓"), unsafe_allow_html=True)
-with col6:
-    st.markdown(metric_card("I-20s Needed", len(rule_4), "📄"), unsafe_allow_html=True)
-with col7:
-    st.markdown(metric_card("Embassy Interviews Needed", len(rule_5), "📅"), unsafe_allow_html=True)
+st.markdown(metric_card("School Payments Due", len(rule_1), "📅"), unsafe_allow_html=True)
+st.markdown(metric_card("Emergency DS-160", len(rule_2), "📝"), unsafe_allow_html=True)
+st.markdown(metric_card("Emergency Interviews", len(rule_3a), "🎤"), unsafe_allow_html=True)
+st.markdown(metric_card("Emergency SEVIS Payment", len(rule_3b), "💳"), unsafe_allow_html=True)
+st.markdown(metric_card("Visa Result Needed", len(rule_6), "❓"), unsafe_allow_html=True)
+st.markdown(metric_card("I-20s Needed", len(rule_4), "📄"), unsafe_allow_html=True)
+st.markdown(metric_card("Embassy Interviews Needed", len(rule_5), "📅"), unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
 
 # Detailed sections
 st.markdown("### Detailed Information")
