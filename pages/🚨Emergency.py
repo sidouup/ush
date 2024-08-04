@@ -254,12 +254,6 @@ with tabs[7]:
         st.dataframe(rule_7[['First Name', 'Last Name', 'DATE', 'Stage', 'Agent']], use_container_width=True)
     else:
         st.write("No unassigned students found. This could mean all students are properly assigned, or there might be an issue with the data or filtering condition.")
-    
-    # Add these diagnostic prints in the tab
-    st.write("Diagnostic Information:")
-    st.write(f"Total rows in dataset: {len(data)}")
-    st.write(f"Rows with empty 'Agent': {len(data[data['Agent'].isna() | (data['Agent'].str.strip() == '')])}")
-    st.write(f"Rows with 'Stage' not 'CLIENT' or 'CLIENTS': {len(data[~data['Stage'].str.strip().str.upper().isin(['CLIENT', 'CLIENTS'])])}")
 
 
 # Add a footer
