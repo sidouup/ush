@@ -98,7 +98,8 @@ def main():
     if month_filter != "All":
         filtered_data = filtered_data[filtered_data['Month'] == month_filter]
 
-    student_names = filtered_data['Student Name'].tolist()
+    # Sort by DATE and reset index
+    filtered_data = filtered_data.sort_values(by='DATE').reset_index(drop=True)
 
     # Function to apply colors
     def highlight_agent(row):
@@ -114,11 +115,6 @@ def main():
             st.success("Changes saved successfully!")
             st.rerun()  # Rerun the script to show the updated data
     else:
-        # Option to sort by date
-        sort_dates = st.checkbox("Sort by Date")
-        if sort_dates:
-            filtered_data = filtered_data.sort_values(by='DATE')
-
         # Apply styling and display the dataframe
         styled_df = filtered_data.style.apply(highlight_agent, axis=1)
         st.dataframe(styled_df)
