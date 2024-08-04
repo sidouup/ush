@@ -66,12 +66,6 @@ rule_5 = data[(data['DATE'] <= today - timedelta(days=14)) & (data['EMBASSY ITW.
 rule_6 = data[(data['EMBASSY ITW. DATE'] < today) & (data['Visa Result'].isna())].sort_values(by='EMBASSY ITW. DATE').reset_index(drop=True)
 
 
-import streamlit as st
-import pandas as pd
-from datetime import datetime, timedelta
-
-# Set page config
-st.set_page_config(layout="wide", page_title="Student Visa CRM Dashboard")
 
 # Custom CSS for a modern and beautiful design, zoomed to 85%
 st.markdown("""
