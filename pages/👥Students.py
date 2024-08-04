@@ -18,6 +18,9 @@ import string
 import time
 import re
 
+
+def format_func(option):
+    return option if option else "Not set"
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
