@@ -168,26 +168,30 @@ st.markdown("### Detailed Information")
 
 # School Payment Due Soon
 st.markdown('<div class="section-header">📅 School Payment Due Soon</div>', unsafe_allow_html=True)
-st.dataframe(rule_1[['First Name','Last Name', 'DATE', 'School Payment Due', 'Stage']], use_container_width=True)
+st.write("These students need to complete their school payment at least 40 days before their school entry date.")
+st.dataframe(rule_1[['First Name', 'Last Name', 'DATE', 'School Payment Due', 'Stage']], use_container_width=True)
 
 # DS-160 Step Due Soon
 st.markdown('<div class="section-header">📝 DS-160 Step Due Soon</div>', unsafe_allow_html=True)
-st.dataframe(rule_2[['First Name','Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage']], use_container_width=True)
+st.write("These students need to complete the DS-160 step within 30 days before their embassy interview date.")
+st.dataframe(rule_2[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage']], use_container_width=True)
 
 # Upcoming Embassy Interviews (Need Prep)
 st.markdown('<div class="section-header">🎤 Upcoming Embassy Interviews (Need Prep)</div>', unsafe_allow_html=True)
-st.dataframe(rule_3a[['First Name','Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage']], use_container_width=True)
+st.write("These students have embassy interviews scheduled within the next 14 days and they are not prepared yet.")
+st.dataframe(rule_3a[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage']], use_container_width=True)
 
 # Need SEVIS Payment
 st.markdown('<div class="section-header">💳 Need SEVIS Payment</div>', unsafe_allow_html=True)
-st.dataframe(rule_3b[['First Name','Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage']], use_container_width=True)
+st.write("These students have embassy interviews scheduled within the next 14 days and they did not pay the SEVIS.")
+st.dataframe(rule_3b[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage']], use_container_width=True)
 
-# Missing Information
-st.markdown('<div class="section-header">❓ Missing Information</div>', unsafe_allow_html=True)
-col1, col2 = st.columns(2)
-with col1:
-    st.subheader("I-20 and School Registration Needed")
-    st.dataframe(rule_4[['First Name','Last Name', 'DATE', 'Stage']], use_container_width=True)
-with col2:
-    st.subheader("Embassy Interview Date Missing")
-    st.dataframe(rule_5[['First Name','Last Name', 'DATE', 'Stage']], use_container_width=True)
+# I-20 and School Registration Needed
+st.markdown('<div class="section-header">❓ I-20 and School Registration Needed</div>', unsafe_allow_html=True)
+st.write("These students do not have a school entry date recorded one week after the Payment date. They need an I-20 and must mention their entry date in the database.")
+st.dataframe(rule_4[['First Name', 'Last Name', 'DATE', 'Stage']], use_container_width=True)
+
+# Embassy Interview Date Missing (After Two Weeks)
+st.markdown('<div class="section-header">❓ Embassy Interview Date Missing (After Two Weeks)</div>', unsafe_allow_html=True)
+st.write("These students do not have an embassy interview date recorded two weeks after the initial date, and their stage is not CLIENTS.")
+st.dataframe(rule_5[['First Name', 'Last Name', 'DATE', 'Stage']], use_container_width=True)
