@@ -65,16 +65,6 @@ rule_5 = data[(data['DATE'] <= today - timedelta(days=14)) & (data['EMBASSY ITW.
 # New Rule: EMBASSY ITW. DATE is passed today and Visa Result is empty
 rule_6 = data[(data['EMBASSY ITW. DATE'] < today) & (data['Visa Result'].isna())].sort_values(by='EMBASSY ITW. DATE').reset_index(drop=True)
 
-# Custom CSS for a modern look with 3D effect
-import streamlit as st
-
-# Custom CSS for improved tab styling
-import streamlit as st
-import pandas as pd
-from datetime import datetime, timedelta
-
-# Set page config
-st.set_page_config(layout="wide", page_title="Student Visa CRM Dashboard")
 
 # Custom CSS for a modern and beautiful design
 st.markdown("""
