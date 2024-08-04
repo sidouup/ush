@@ -142,33 +142,13 @@ def tasks_and_emergencies_page(df):
         st.markdown('<p class="small-font">✅ All students have an assigned agent.</p>')
     st.markdown('</div>', unsafe_allow_html=True)
 
-def student_tracker_page(df):
-    st.markdown("""
-    <style>
-    .tracker-item { background-color: #E3F2FD; border-radius: 10px; padding: 10px; margin-bottom: 10px; }
-    </style>
-    """, unsafe_allow_html=True)
-    
-    st.title("Student Tracker")
-    st.markdown('<div class="tracker-item">', unsafe_allow_html=True)
-    st.dataframe(df, height=500)
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Additional tracker page logic here
-
 def main():
-    st.set_page_config(page_title="Student Application Tracker", layout="wide")
+    st.set_page_config(page_title="Tasks and Emergencies Dashboard", layout="wide")
     
-    page = st.sidebar.selectbox("Choose a page", ["Student Tracker", "Tasks and Emergencies"])
     spreadsheet_id = "1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI"
-
     data = load_data(spreadsheet_id)
     
-    if page == "Student Tracker":
-        student_tracker_page(data)
-    elif page == "Tasks and Emergencies":
-        tasks_and_emergencies_page(data)
+    tasks_and_emergencies_page(data)
 
 if __name__ == "__main__":
     main()
-
