@@ -7,6 +7,83 @@ import gspread
 # Set page config at the very beginning
 st.set_page_config(layout="wide", page_title="Student Visa CRM Dashboard")
 
+# Custom CSS for styling, including the emergency button
+st.markdown("""
+<style>
+    .sidebar .sidebar-content {
+        background-color: #f0f4f8;
+    }
+    .sidebar .sidebar-content .stRadio > label {
+        font-weight: bold;
+        color: #1E1E1E;
+    }
+    .emergency-button {
+        background-color: #ff4b4b;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 5px;
+        font-weight: bold;
+        text-align: center;
+        margin: 10px 0;
+        cursor: pointer;
+    }
+    .emergency-button:hover {
+        background-color: #ff0000;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# Sidebar
+st.sidebar.title("📊 Dashboard Menu")
+
+# Add emoji to sidebar options
+sidebar_options = {
+    "🏠 Main": "main",
+    "📊 Statistics": "statistics",
+    "👥 Students": "students",
+    "➕ New Student": "new_student",
+    "📝 GoogleSheet": "google_sheet",
+}
+
+# Create radio buttons in the sidebar with emojis
+selected_option = st.sidebar.radio("Navigation", list(sidebar_options.keys()))
+
+# Emergency button
+st.sidebar.markdown(
+    """
+    <div class="emergency-button" onclick="alert('Emergency function triggered!')">
+        🚨 EMERGENCY
+    </div>
+    """, 
+    unsafe_allow_html=True
+)
+
+# Main content
+if sidebar_options[selected_option] == "main":
+    st.title("🏠 Main Dashboard")
+    st.markdown("Welcome to the main dashboard. Here you can see an overview of all key metrics.")
+    # Add your main dashboard content here
+
+elif sidebar_options[selected_option] == "statistics":
+    st.title("📊 Statistics")
+    st.markdown("View detailed statistics and analytics here.")
+    # Add your statistics content here
+
+elif sidebar_options[selected_option] == "students":
+    st.title("👥 Students")
+    st.markdown("Manage and view all student information.")
+    # Add your student management content here
+
+elif sidebar_options[selected_option] == "new_student":
+    st.title("➕ New Student")
+    st.markdown("Add a new student to the system.")
+    # Add your new student form or process here
+
+elif sidebar_options[selected_option] == "google_sheet":
+    st.title("📝 GoogleSheet")
+    st.markdown("Access and manage GoogleSheet data.")
+    # Add your GoogleSheet integration content here
+
 # Use Streamlit secrets for service account info
 SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
 
