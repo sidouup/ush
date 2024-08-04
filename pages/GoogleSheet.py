@@ -22,6 +22,7 @@ def load_data(spreadsheet_id, sheet_name):
     data = sheet.get_all_records()
     df = pd.DataFrame(data)
     df = df.astype(str)  # Convert all columns to strings
+    df['DATE'] = pd.to_datetime(df['DATE'], format='%d/%m/%Y %H:%M:%S')  # Convert 'DATE' column to datetime
     return df
 
 # Function to save data to Google Sheets
@@ -47,6 +48,10 @@ def main():
     df_all = load_data(spreadsheet_id, sheet_name)
     original_df_all = df_all.copy()  # Keep a copy of the original data
 
+    # Extract month and year for filtering
+    df_all['Month'] = df_all['DATE'].dt.strftime('%Y-%m')
+    months = ["All"] + sorted(df_all['Month'].unique())
+
     # Define filter options
     current_steps = ["All"] + list(df_all['Stage'].unique())
     agents = ["All", "Nesrine", "Hamza", "Djazila"]
@@ -70,13 +75,15 @@ def main():
     stage_filter = st.selectbox("Filter by Stage", current_steps, key="stage_filter")
 
     # Filter widgets
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
         agent_filter = st.selectbox("Filter by Agent", agents, key="agent_filter")
     with col2:
         school_filter = st.selectbox("Filter by School", school_options, key="school_filter")
     with col3:
         attempts_filter = st.selectbox("Filter by Attempts", attempts_options, key="attempts_filter")
+    with col4:
+        month_filter = st.selectbox("Filter by Month", months, key="month_filter")
 
     # Apply filters
     filtered_data = df_all
@@ -88,6 +95,8 @@ def main():
         filtered_data = filtered_data[filtered_data['Chosen School'] == school_filter]
     if attempts_filter != "All":
         filtered_data = filtered_data[filtered_data['Attempts'] == attempts_filter]
+    if month_filter != "All":
+        filtered_data = filtered_data[filtered_data['Month'] == month_filter]
 
     student_names = filtered_data['Student Name'].tolist()
 
@@ -105,6 +114,11 @@ def main():
             st.success("Changes saved successfully!")
             st.rerun()  # Rerun the script to show the updated data
     else:
+        # Option to sort by date
+        sort_dates = st.checkbox("Sort by Date")
+        if sort_dates:
+            filtered_data = filtered_data.sort_values(by='DATE')
+
         # Apply styling and display the dataframe
         styled_df = filtered_data.style.apply(highlight_agent, axis=1)
         st.dataframe(styled_df)
