@@ -47,7 +47,7 @@ data['DS-160 Due'] = data['EMBASSY ITW. DATE'] - timedelta(days=30)
 rule_2 = data[(data['Stage'].isin(ds_160_stages[:5])) & (data['DS-160 Due'] > today)].sort_values(by='DATE').reset_index(drop=True)
 
 # Rule 3: Embassy interview in less than 7 days and stage is not CLIENT or SEVIS payment is NO
-rule_3a = data[(data['EMBASSY ITW. DATE'] > today) & (data['EMBASSY ITW. DATE'] <= today + timedelta(days=14)) & (data['Stage'] != 'CLIENT') & (data['Stage'] != 'CLIENTS')].sort_values(by='EMBASSY ITW. DATE').reset_index(drop=True)
+rule_3a = data[(data['EMBASSY ITW. DATE'] > today) & (data['EMBASSY ITW. DATE'] <= today + timedelta(days=7)) & (data['Stage'] != 'CLIENT') & (data['Stage'] != 'CLIENTS')].sort_values(by='EMBASSY ITW. DATE').reset_index(drop=True)
 rule_3b = data[(data['EMBASSY ITW. DATE'] > today) & (data['EMBASSY ITW. DATE'] <= today + timedelta(days=7)) & (data['Sevis payment ?'] == 'NO')].sort_values(by='EMBASSY ITW. DATE').reset_index(drop=True)
 
 # Rule 4: One week after DATE and School Entry Date is still empty, exclude clients with stage 'CLIENTS'
@@ -59,21 +59,26 @@ rule_5 = data[(data['DATE'] <= today - timedelta(days=14)) & (data['EMBASSY ITW.
 # Streamlit UI
 st.title("Task Dashboard")
 
-st.header("Tasks Due")
-st.subheader("Rule 1: School payment due")
+st.header("School Payment Due Soon")
+st.write("These students need to complete their school payment at least 40 days before their school entry date.")
 st.dataframe(rule_1)
 
-st.subheader("Rule 2: DS-160 step due")
+st.header("DS-160 Step Due Soon")
+st.write("These students need to complete the DS-160 step at least 30 days before their embassy interview date.")
 st.dataframe(rule_2)
 
-st.subheader("Rule 3a: Embassy interview soon (Stage is not CLIENT)")
+st.header("Upcoming Embassy Interviews (Stage Not CLIENT)")
+st.write("These students have embassy interviews scheduled within the next 7 days and their stage is not CLIENT.")
 st.dataframe(rule_3a)
 
-st.subheader("Rule 3b: Embassy interview soon (Sevis payment is NO)")
+st.header("Upcoming Embassy Interviews (SEVIS Payment NO)")
+st.write("These students have embassy interviews scheduled within the next 7 days and their SEVIS payment status is NO.")
 st.dataframe(rule_3b)
 
-st.subheader("Rule 4: School Entry Date missing after one week")
+st.header("School Entry Date Missing (After One Week)")
+st.write("These students do not have a school entry date recorded one week after the initial date, and their stage is not CLIENTS.")
 st.dataframe(rule_4)
 
-st.subheader("Rule 5: Embassy interview date missing after two weeks")
+st.header("Embassy Interview Date Missing (After Two Weeks)")
+st.write("These students do not have an embassy interview date recorded two weeks after the initial date, and their stage is not CLIENTS.")
 st.dataframe(rule_5)
