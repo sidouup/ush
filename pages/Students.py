@@ -783,13 +783,13 @@ def main():
                         key="attempts", 
                         on_change=update_student_data
                     )
-                        agent = st.selectbox(
-                        "Agent", 
-                        agents, 
-                        index=agents.index(selected_student['Agent']) if selected_student['Agent'] in attempts_options else 0,
-                        key="Agent", 
-                        on_change=update_student_data
-                    )
+                    agentss = st.selectbox(
+                    "Agent", 
+                    agents, 
+                    index=agents.index(selected_student['Agent']) if selected_student['Agent'] in attempts_options else 0,
+                    key="Agent", 
+                    on_change=update_student_data
+                )
                 else:
                     st.write(f"**First Name:** {selected_student['First Name']}")
                     st.write(f"**Last Name:** {selected_student['Last Name']}")
