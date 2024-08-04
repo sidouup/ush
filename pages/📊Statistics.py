@@ -10,7 +10,7 @@ from auth import check_password  # Assuming check_password is defined in auth.py
 
 def Statistic():
     if check_password():
-
+        import streamlit as st
         SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
         
         # Define the scopes
