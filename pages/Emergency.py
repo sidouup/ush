@@ -66,171 +66,85 @@ rule_5 = data[(data['DATE'] <= today - timedelta(days=14)) & (data['EMBASSY ITW.
 rule_6 = data[(data['EMBASSY ITW. DATE'] < today) & (data['Visa Result'].isna())].sort_values(by='EMBASSY ITW. DATE').reset_index(drop=True)
 
 # Custom CSS for a modern look with 3D effect
+import streamlit as st
+
+# Custom CSS for improved tab styling
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap');
-
-    html, body, [class*="css"] {
-        font-family: 'Roboto', sans-serif;
-        font-size: 10px;  /* Further reduce base font size to zoom out */
-    }
-    
-    .stApp {
+    .stTabs {
         background-color: #f0f2f6;
-    }
-    
-    .main {
-        background-color: #ffffff;
         border-radius: 10px;
-        padding: 15px;  /* Adjust padding */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 10px;
+        margin-bottom: 20px;
     }
-    
-    h1 {
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 10px;
+        border-bottom: 2px solid #e0e0e0;
+        padding-bottom: 10px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        height: auto;
+        white-space: normal;
+        background-color: #ffffff;
+        border-radius: 5px;
         color: #1E88E5;
-        font-weight: 700;
-        font-size: 1.5rem;  /* Adjust font size */
-        margin-bottom: 15px;
-    }
-    
-    .section-header {
-        font-size: 1.2rem;  /* Adjust font size */
+        font-size: 0.9rem;
         font-weight: 600;
-        color: #1E88E5;
-        margin: 15px 0;
-    }
-    
-    .metric-card {
-        background-color: #ffffff;
-        border: 1px solid #e0e0e0;
-        border-radius: 10px;
-        padding: 10px;  /* Adjust padding */
-        text-align: center;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        margin: 10px 0;
-        transition: transform 0.3s ease;
-    }
-    
-    .metric-card:hover {
-        transform: translateY(-5px);
-    }
-    
-    .metric-card h2 {
-        font-size: 1rem;  /* Adjust font size */
-        font-weight: 700;
-        margin-bottom: 5px;
-        color: #1E88E5;
-    }
-    
-    .metric-card p {
-        font-size: 1.2rem;  /* Adjust font size */
-        font-weight: 700;
-        color: #333;
-    }
-    
-    .dataframe {
-        font-size: 0.6rem;  /* Adjust font size */
-    }
-    
-    .dataframe th {
-        background-color: #1E88E5;
-        color: white;
-        font-weight: 500;
-        text-align: left;
-    }
-    
-    .dataframe td {
-        background-color: #ffffff;
-    }
-    
-    .icon {
-        font-size: 1rem;  /* Adjust font size */
-        margin-right: 5px;
-    }
-
-    /* Custom CSS for tabs */
-    .stTabs [role="tablist"] button {
-        font-size: 1rem;
-        padding: 10px 20px;
-        margin: 0 5px;
-        color: #ffffff;
-        background-color: #1E88E5;
         border: none;
-        border-radius: 10px;
-        transition: background-color 0.3s ease, color 0.3s ease;
+        padding: 8px 16px;
+        transition: all 0.3s ease;
     }
-    
-    .stTabs [role="tablist"] button[aria-selected="true"] {
-        background-color: #ffffff;
-        color: #1E88E5;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .stTabs [role="tablist"] button:hover {
-        background-color: #ffffff;
-        color: #1E88E5;
+    .stTabs [aria-selected="true"] {
+        background-color: #1E88E5;
+        color: #ffffff;
     }
 </style>
 """, unsafe_allow_html=True)
 
-st.title("Student Visa CRM Dashboard")
+# Create tabs with improved styling
+tabs = st.tabs([
+    "📅 School Payment Due Soon",
+    "📝 DS-160 Step Due Soon",
+    "🎤 Upcoming Embassy Interviews",
+    "💳 Need SEVIS Payment",
+    "📄 I-20 and School Registration Needed",
+    "📅 ITW Date Needed",
+    "❓ Visa Result Needed"
+])
 
-# Overview metrics
-st.markdown("### Overview")
-col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
-
-def metric_card(title, value, icon):
-    return f"""
-    <div class="metric-card">
-        <h2>{icon} {title}</h2>
-        <p>{value}</p>
-    </div>
-    """
-
-with col1:
-    st.markdown(metric_card("School Pay", len(rule_1), "📅"), unsafe_allow_html=True)
-with col2:
-    st.markdown(metric_card("DS-160", len(rule_2), "📝"), unsafe_allow_html=True)
-with col3:
-    st.markdown(metric_card("Prep ITW", len(rule_3a), "🎤"), unsafe_allow_html=True)
-with col4:
-    st.markdown(metric_card("SEVIS", len(rule_3b), "💳"), unsafe_allow_html=True)
-with col5:
-    st.markdown(metric_card("Visa Result", len(rule_6), "❓"), unsafe_allow_html=True)
-with col6:
-    st.markdown(metric_card("I-20", len(rule_4), "📄"), unsafe_allow_html=True)
-with col7:
-    st.markdown(metric_card("ITW Date", len(rule_5), "📅"), unsafe_allow_html=True)
-
-# Detailed sections in tabs
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["📅 School Payment Due Soon", "📝 DS-160 Step Due Soon", "🎤 Upcoming Embassy Interviews", "💳 Need SEVIS Payment", "❓ I-20 and School Registration Needed", "❓ Visa Result Needed"])
-
-with tab1:
+# Content for each tab
+with tabs[0]:
     st.markdown('<div class="section-header">📅 School Payment Due Soon</div>', unsafe_allow_html=True)
     st.write("These students need to complete their school payment at least 50 days before their school entry date.")
     st.dataframe(rule_1[['First Name', 'Last Name', 'DATE', 'School Payment Due', 'Stage', 'Agent']], use_container_width=True)
 
-with tab2:
+with tabs[1]:
     st.markdown('<div class="section-header">📝 DS-160 Step Due Soon</div>', unsafe_allow_html=True)
     st.write("These students need to complete the DS-160 step within 30 days before their embassy interview date.")
     st.dataframe(rule_2[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']], use_container_width=True)
 
-with tab3:
+with tabs[2]:
     st.markdown('<div class="section-header">🎤 Upcoming Embassy Interviews (Need Prep)</div>', unsafe_allow_html=True)
     st.write("These students have embassy interviews scheduled within the next 14 days and they are not prepared yet.")
     st.dataframe(rule_3a[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']], use_container_width=True)
 
-with tab4:
+with tabs[3]:
     st.markdown('<div class="section-header">💳 Need SEVIS Payment</div>', unsafe_allow_html=True)
     st.write("These students have embassy interviews scheduled within the next 14 days and they did not pay the SEVIS.")
     st.dataframe(rule_3b[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']], use_container_width=True)
 
-with tab5:
-    st.markdown('<div class="section-header">❓ I-20 and School Registration Needed</div>', unsafe_allow_html=True)
+with tabs[4]:
+    st.markdown('<div class="section-header">📄 I-20 and School Registration Needed</div>', unsafe_allow_html=True)
     st.write("These students do not have a school entry date recorded one week after the Payment date. They need an I-20 and must mention their entry date in the database.")
     st.dataframe(rule_4[['First Name', 'Last Name', 'DATE', 'Stage', 'Agent']], use_container_width=True)
 
-with tab6:
+with tabs[5]:
+    st.markdown('<div class="section-header">📅 ITW Date Needed</div>', unsafe_allow_html=True)
+    st.write("These students do not have an embassy interview date recorded two weeks after their initial registration date. They need to schedule their interview and update the database.")
+    st.dataframe(rule_5[['First Name', 'Last Name', 'DATE', 'Stage', 'Agent']], use_container_width=True)
+
+with tabs[6]:
     st.markdown('<div class="section-header">❓ Visa Result Needed</div>', unsafe_allow_html=True)
     st.write("These students have passed their embassy interview date and still do not have a recorded visa result. Please update their visa result.")
     st.dataframe(rule_6[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']], use_container_width=True)
+
