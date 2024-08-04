@@ -69,50 +69,152 @@ rule_6 = data[(data['EMBASSY ITW. DATE'] < today) & (data['Visa Result'].isna())
 import streamlit as st
 
 # Custom CSS for improved tab styling
+import streamlit as st
+import pandas as pd
+from datetime import datetime, timedelta
+
+# Set page config
+st.set_page_config(layout="wide", page_title="Student Visa CRM Dashboard")
+
+# Custom CSS for a modern and beautiful design
 st.markdown("""
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    
+    html, body, [class*="css"] {
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    .stApp {
+        background-color: #f0f4f8;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+        color: #1a237e;
+    }
+    
     .stTabs {
-        background-color: #f0f2f6;
+        background-color: #ffffff;
         border-radius: 10px;
-        padding: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 20px;
         margin-bottom: 20px;
     }
+    
     .stTabs [data-baseweb="tab-list"] {
         gap: 10px;
-        border-bottom: 2px solid #e0e0e0;
-        padding-bottom: 10px;
+        border-bottom: none;
     }
+    
     .stTabs [data-baseweb="tab"] {
-        height: auto;
-        white-space: normal;
-        background-color: #ffffff;
-        border-radius: 5px;
-        color: #1E88E5;
-        font-size: 0.9rem;
+        border-radius: 30px;
+        padding: 10px 20px;
         font-weight: 600;
+        background-color: #e8eaf6;
+        color: #3f51b5;
         border: none;
-        padding: 8px 16px;
         transition: all 0.3s ease;
     }
+    
     .stTabs [aria-selected="true"] {
-        background-color: #1E88E5;
+        background-color: #3f51b5;
         color: #ffffff;
+    }
+    
+    .metric-card {
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        text-align: center;
+        transition: transform 0.3s ease;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .metric-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #3f51b5;
+    }
+    
+    .metric-label {
+        font-size: 1rem;
+        color: #757575;
+        margin-top: 5px;
+    }
+    
+    .dataframe {
+        font-size: 0.9rem;
+    }
+    
+    .dataframe th {
+        background-color: #3f51b5;
+        color: white;
+        font-weight: 600;
+        text-align: left;
+        padding: 12px;
+    }
+    
+    .dataframe td {
+        background-color: #ffffff;
+        padding: 12px;
+    }
+    
+    .dataframe tr:nth-child(even) {
+        background-color: #f8f8f8;
+    }
+    
+    .section-header {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #1a237e;
+        margin: 20px 0;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e0e0e0;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Create tabs with improved styling
+# Title and introduction
+st.title("📊 Student Visa CRM Dashboard")
+st.markdown("Welcome to the modern and user-friendly Student Visa CRM Dashboard. Here you can track and manage various stages of the student visa process.")
+
+# Function to create a metric card
+def metric_card(label, value, icon):
+    return f"""
+    <div class="metric-card">
+        <div class="metric-value">{value}</div>
+        <div class="metric-label">{icon} {label}</div>
+    </div>
+    """
+
+# Overview metrics
+st.markdown("## Overview")
+col1, col2, col3, col4 = st.columns(4)
+
+with col1:
+    st.markdown(metric_card("School Payment Due", len(rule_1), "📅"), unsafe_allow_html=True)
+with col2:
+    st.markdown(metric_card("DS-160 Due", len(rule_2), "📝"), unsafe_allow_html=True)
+with col3:
+    st.markdown(metric_card("Upcoming Interviews", len(rule_3a), "🎤"), unsafe_allow_html=True)
+with col4:
+    st.markdown(metric_card("Need SEVIS Payment", len(rule_3b), "💳"), unsafe_allow_html=True)
+
+# Detailed sections in tabs
 tabs = st.tabs([
-    "📅 School Payment Due Soon",
-    "📝 DS-160 Step Due Soon",
-    "🎤 Upcoming Embassy Interviews",
-    "💳 Need SEVIS Payment",
-    "📄 I-20 and School Registration Needed",
-    "📅 ITW Date Needed",
-    "❓ Visa Result Needed"
+    "School Payment",
+    "DS-160",
+    "Interviews",
+    "SEVIS Payment",
+    "I-20 & Registration",
+    "ITW Date",
+    "Visa Result"
 ])
 
-# Content for each tab
 with tabs[0]:
     st.markdown('<div class="section-header">📅 School Payment Due Soon</div>', unsafe_allow_html=True)
     st.write("These students need to complete their school payment at least 50 days before their school entry date.")
