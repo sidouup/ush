@@ -913,10 +913,10 @@ def main():
                     sevis_payment = st.selectbox(
                         "Sevis Payment", 
                         [""] + yes_no_options,  # Add an empty option
-                        index=[""] + yes_no_options.index(selected_student['Sevis payment ?']) if selected_student['Sevis payment ?'] in yes_no_options else 0,
+                        index=([""] + yes_no_options).index(selected_student['Sevis payment ?']) if selected_student['Sevis payment ?'] in yes_no_options else 0,
                         format_func=format_func,
                         key="sevis_payment", 
-                        on_change=update_student_data)  
+                        on_change=update_student_data)
                     application_payment = st.selectbox("Application Payment", yes_no_options, index=yes_no_options.index(selected_student['Application payment ?']) if selected_student['Application payment ?'] in yes_no_options else 0, key="application_payment", on_change=update_student_data)
                 else:
                     st.write(f"**Payment Date:** {format_date(selected_student['DATE'])}")
