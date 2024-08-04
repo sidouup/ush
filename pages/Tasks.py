@@ -1,8 +1,11 @@
+import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
 from google.oauth2.service_account import Credentials
 import gspread
-import streamlit as st
+
+# Set page config at the very beginning
+st.set_page_config(layout="wide", page_title="Student Visa CRM Dashboard")
 
 # Use Streamlit secrets for service account info
 SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
@@ -29,10 +32,11 @@ spreadsheet_id = "1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI"
 sheet_name = "ALL"
 data = load_data(spreadsheet_id, sheet_name)
 
-# Convert DATE columns to datetime
-data['DATE'] = pd.to_datetime(data['DATE'], errors='coerce')
-data['School Entry Date'] = pd.to_datetime(data['School Entry Date'], errors='coerce')
-data['EMBASSY ITW. DATE'] = pd.to_datetime(data['EMBASSY ITW. DATE'], errors='coerce')
+# Convert DATE columns to datetime with explicit format
+date_format = "%d/%m/%Y %H:%M:%S"
+data['DATE'] = pd.to_datetime(data['DATE'], format=date_format, errors='coerce')
+data['School Entry Date'] = pd.to_datetime(data['School Entry Date'], format=date_format, errors='coerce')
+data['EMBASSY ITW. DATE'] = pd.to_datetime(data['EMBASSY ITW. DATE'], format=date_format, errors='coerce')
 
 # Get today's date
 today = datetime.now()
@@ -56,9 +60,6 @@ rule_4 = data[(data['DATE'] <= today - timedelta(days=7)) & (data['School Entry 
 
 # Rule 5: Two weeks after DATE and EMBASSY ITW. DATE is still empty, exclude clients with stage 'CLIENTS'
 rule_5 = data[(data['DATE'] <= today - timedelta(days=14)) & (data['EMBASSY ITW. DATE'].isna()) & (data['Stage'] != 'CLIENTS')].sort_values(by='DATE').reset_index(drop=True)
-
-# Streamlit UI
-st.set_page_config(layout="wide", page_title="Student Visa CRM Dashboard")
 
 # Custom CSS for a modern look
 st.markdown("""
@@ -200,3 +201,4 @@ with tab5:
     with col2:
         st.subheader("Embassy Interview Date Missing")
         st.dataframe(rule_5[['NAME', 'DATE', 'Stage']], use_container_width=True)
+
