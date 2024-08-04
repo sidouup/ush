@@ -1,8 +1,8 @@
-import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
 from google.oauth2.service_account import Credentials
 import gspread
+import streamlit as st
 
 # Use Streamlit secrets for service account info
 SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
@@ -10,230 +10,70 @@ SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
 # Define the scopes
 SCOPES = ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/spreadsheets']
 
+# Authenticate and build the Google Sheets service
 @st.cache_resource
 def get_google_sheet_client():
     creds = Credentials.from_service_account_info(SERVICE_ACCOUNT_INFO, scopes=SCOPES)
     return gspread.authorize(creds)
 
-def load_data(spreadsheet_id):
-    try:
-        client = get_google_sheet_client()
-        sheet = client.open_by_key(spreadsheet_id).worksheet('ALL')
-        data = sheet.get_all_records()
-        df = pd.DataFrame(data)
-        
-        # Create Student Name column
-        df['Student Name'] = df['First Name'] + " " + df['Last Name']
-        
-        # Standardize column names
-        df.columns = df.columns.str.strip().str.upper().str.replace('.', '').str.replace(' ', '_')
-        
-        # Parse dates
-        date_columns = ['DATE', 'SCHOOL_ENTRY_DATE', 'ENTRY_DATE_IN_THE_US', 'EMBASSY_ITW_DATE']
-        for col in date_columns:
-            if col in df.columns:
-                df[col] = pd.to_datetime(df[col], errors='coerce', dayfirst=True)
-        
-        return df
-    except Exception as e:
-        st.error(f"An error occurred: {str(e)}")
-        return pd.DataFrame()
+# Function to load data from Google Sheets
+def load_data(spreadsheet_id, sheet_name):
+    client = get_google_sheet_client()
+    sheet = client.open_by_key(spreadsheet_id).worksheet(sheet_name)
+    data = sheet.get_all_records()
+    df = pd.DataFrame(data)
+    return df
 
-def tasks_and_emergencies_page(df):
-    st.markdown("""
-    <style>
-    .stApp {
-        background-color: #f0f2f6;
-    }
-    .big-font {
-        font-size: 36px !important;
-        font-weight: bold;
-        color: #1E88E5;
-        text-align: center;
-        margin-bottom: 30px;
-    }
-    .medium-font {
-        font-size: 24px !important;
-        font-weight: bold;
-        color: #43A047;
-        margin-bottom: 15px;
-    }
-    .small-font {
-        font-size: 16px !important;
-        color: #212121;
-    }
-    .highlight {
-        background-color: #FFF176;
-        padding: 5px;
-        border-radius: 5px;
-    }
-    .dashboard-item {
-        background-color: white;
-        border-radius: 10px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    .stat-box {
-        background-color: #f8f9fa;
-        border-radius: 10px;
-        padding: 15px;
-        text-align: center;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    }
-    .stat-number {
-        font-size: 28px;
-        font-weight: bold;
-        color: #1E88E5;
-    }
-    .stat-label {
-        font-size: 14px;
-        color: #616161;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+# Load data
+spreadsheet_id = "1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI"
+sheet_name = "ALL"
+data = load_data(spreadsheet_id, sheet_name)
 
-    st.markdown('<p class="big-font">📋 Tasks and Emergencies Dashboard</p>', unsafe_allow_html=True)
+# Convert DATE columns to datetime
+data['DATE'] = pd.to_datetime(data['DATE'], errors='coerce')
+data['School Entry Date'] = pd.to_datetime(data['School Entry Date'], errors='coerce')
+data['EMBASSY ITW. DATE'] = pd.to_datetime(data['EMBASSY ITW. DATE'], errors='coerce')
 
-    today = datetime.now()
+# Get today's date
+today = datetime.now()
 
-    # Key Statistics
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        st.markdown('<div class="stat-box">', unsafe_allow_html=True)
-        st.markdown(f'<p class="stat-number">{len(df)}</p>', unsafe_allow_html=True)
-        st.markdown('<p class="stat-label">Total Students</p>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-    
-    with col2:
-        urgent_count = len(df[(df['EMBASSY_ITW_DATE'] <= today + timedelta(days=30)) & 
-                              (df['EMBASSY_ITW_DATE'] >= today) & 
-                              (df['STAGE'].isin(['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV']))])
-        st.markdown('<div class="stat-box">', unsafe_allow_html=True)
-        st.markdown(f'<p class="stat-number">{urgent_count}</p>', unsafe_allow_html=True)
-        st.markdown('<p class="stat-label">Urgent DS-160</p>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-    
-    with col3:
-        upcoming_interviews_count = len(df[(df['EMBASSY_ITW_DATE'] <= today + timedelta(days=15)) & 
-                                           (df['EMBASSY_ITW_DATE'] >= today)])
-        st.markdown('<div class="stat-box">', unsafe_allow_html=True)
-        st.markdown(f'<p class="stat-number">{upcoming_interviews_count}</p>', unsafe_allow_html=True)
-        st.markdown('<p class="stat-label">Upcoming Interviews</p>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-    
-    with col4:
-        no_agent_count = len(df[(df['AGENT'].isna() | (df['AGENT'] == '')) & (df['STAGE'] != 'CLIENTS')])
-        st.markdown('<div class="stat-box">', unsafe_allow_html=True)
-        st.markdown(f'<p class="stat-number">{no_agent_count}</p>', unsafe_allow_html=True)
-        st.markdown('<p class="stat-label">Without Agent</p>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+# Rule 1: School payment 40 days before school entry
+data['School Payment Due'] = data['School Entry Date'] - timedelta(days=40)
+rule_1 = data[(data['School Paid'] != 'Yes') & (data['School Payment Due'] <= today)]
 
-    # Urgent Matters and Upcoming Interviews
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown('<div class="dashboard-item">', unsafe_allow_html=True)
-        st.markdown('<p class="medium-font">🚨 Urgent Matters</p>', unsafe_allow_html=True)
-        thirty_days = today + timedelta(days=30)
-        urgent_ds160 = df[
-            (df['EMBASSY_ITW_DATE'] <= thirty_days) &
-            (df['EMBASSY_ITW_DATE'] >= today) &
-            (df['STAGE'].isin(['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV']))
-        ]
-        st.dataframe(urgent_ds160[['STUDENT_NAME', 'EMBASSY_ITW_DATE', 'STAGE']], height=200)
-        st.markdown('</div>', unsafe_allow_html=True)
+# Rule 2: DS-160 step 30 days before embassy interview
+ds_160_stages = ['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV', 'DS-160', 'ITW Prep', 'CLIENTS']
+data['DS-160 Due'] = data['EMBASSY ITW. DATE'] - timedelta(days=30)
+rule_2 = data[(data['Stage'].isin(ds_160_stages[:5])) & (data['DS-160 Due'] <= today)]
 
-    with col2:
-        st.markdown('<div class="dashboard-item">', unsafe_allow_html=True)
-        st.markdown('<p class="medium-font">🗓️ Upcoming Embassy Interviews (Next 15 Days)</p>', unsafe_allow_html=True)
-        fifteen_days = today + timedelta(days=15)
-        upcoming_interviews = df[
-            (df['EMBASSY_ITW_DATE'] <= fifteen_days) &
-            (df['EMBASSY_ITW_DATE'] >= today)
-        ]
-        st.dataframe(upcoming_interviews[['STUDENT_NAME', 'EMBASSY_ITW_DATE', 'STAGE']], height=200)
-        st.markdown('</div>', unsafe_allow_html=True)
+# Rule 3: Embassy interview in less than 7 days and stage is not CLIENT or SEVIS payment is NO
+rule_3a = data[(data['EMBASSY ITW. DATE'] <= today + timedelta(days=7)) & (data['Stage'] != 'CLIENT')]
+rule_3b = data[(data['EMBASSY ITW. DATE'] <= today + timedelta(days=7)) & (data['Sevis payment ?'] == 'NO')]
 
-    # Students with School Entry Date and Final Stages
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown('<div class="dashboard-item">', unsafe_allow_html=True)
-        st.markdown('<p class="medium-font">🏫 Students with School Entry Date in the Next 40 Days</p>', unsafe_allow_html=True)
-        forty_days = today + timedelta(days=40)
-        upcoming_entry = df[
-            (df['SCHOOL_ENTRY_DATE'] > today) &
-            (df['SCHOOL_ENTRY_DATE'] <= forty_days)
-        ].sort_values('SCHOOL_ENTRY_DATE')
-        st.dataframe(upcoming_entry[['STUDENT_NAME', 'SCHOOL_ENTRY_DATE', 'CHOSEN_SCHOOL', 'STAGE']], height=200)
-        st.markdown('</div>', unsafe_allow_html=True)
+# Rule 4: One week after DATE and School Entry Date is still empty
+rule_4 = data[(data['DATE'] <= today - timedelta(days=7)) & (data['School Entry Date'].isna())]
 
-    with col2:
-        st.markdown('<div class="dashboard-item">', unsafe_allow_html=True)
-        st.markdown('<p class="medium-font">🏁 Students in Final Stages Without Visa Results</p>', unsafe_allow_html=True)
-        final_stages = df[
-            (df['STAGE'].isin(['ITW Prep', 'SEVIS'])) &
-            (df['VISA_RESULT'].isna() | (df['VISA_RESULT'] == ''))
-        ]
-        st.dataframe(final_stages[['STUDENT_NAME', 'STAGE', 'EMBASSY_ITW_DATE']], height=200)
-        st.markdown('</div>', unsafe_allow_html=True)
+# Rule 5: Two weeks after DATE and EMBASSY ITW. DATE is still empty
+rule_5 = data[(data['DATE'] <= today - timedelta(days=14)) & (data['EMBASSY ITW. DATE'].isna())]
 
-    # All Upcoming Events
-    st.markdown('<div class="dashboard-item">', unsafe_allow_html=True)
-    st.markdown('<p class="medium-font">📅 All Upcoming Events</p>', unsafe_allow_html=True)
-    tab1, tab2, tab3 = st.tabs(["Embassy Appointments", "School Entry Dates", "Missing Information"])
-    
-    with tab1:
-        embassy_sorted = df[df['EMBASSY_ITW_DATE'] > today].sort_values('EMBASSY_ITW_DATE')
-        st.dataframe(embassy_sorted[['STUDENT_NAME', 'EMBASSY_ITW_DATE', 'STAGE']], height=300)
-    
-    with tab2:
-        school_sorted = df[df['SCHOOL_ENTRY_DATE'] > today].sort_values('SCHOOL_ENTRY_DATE')
-        st.dataframe(school_sorted[['STUDENT_NAME', 'SCHOOL_ENTRY_DATE', 'CHOSEN_SCHOOL']], height=300)
-    
-    with tab3:
-        no_entry_date = df[df['SCHOOL_ENTRY_DATE'].isna()]
-        st.dataframe(no_entry_date[['STUDENT_NAME', 'CHOSEN_SCHOOL', 'STAGE']], height=300)
-    
-    st.markdown('</div>', unsafe_allow_html=True)
+# Streamlit UI
+st.title("Task Dashboard")
 
-    # Duplicate Students and Students Without an Agent
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown('<div class="dashboard-item">', unsafe_allow_html=True)
-        st.markdown('<p class="medium-font">👥 Duplicate Students</p>', unsafe_allow_html=True)
-        duplicates = df[df.duplicated(subset=['STUDENT_NAME'], keep=False)]
-        if not duplicates.empty:
-            st.dataframe(duplicates[['STUDENT_NAME', 'DATE', 'STAGE']], height=200)
-            st.markdown('<p class="small-font highlight">⚠️ Please review and resolve these duplicate entries in the "ALL" sheet.</p>', unsafe_allow_html=True)
-        else:
-            st.markdown('<p class="small-font">✅ No duplicate students found.</p>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+st.header("Tasks Due")
+st.subheader("Rule 1: School payment due")
+st.dataframe(rule_1)
 
-    with col2:
-        st.markdown('<div class="dashboard-item">', unsafe_allow_html=True)
-        st.markdown('<p class="medium-font">🔍 Students Without an Agent</p>', unsafe_allow_html=True)
-        if 'AGENT' in df.columns and 'STAGE' in df.columns:
-            no_agent = df[(df['AGENT'].isna() | (df['AGENT'] == '')) & (df['STAGE'] != 'CLIENTS')]
-            if not no_agent.empty:
-                st.dataframe(no_agent[['STUDENT_NAME', 'STAGE']], height=200)
-                st.markdown('<p class="small-font highlight">⚠️ These students do not have an assigned agent.</p>', unsafe_allow_html=True)
-            else:
-                st.markdown('<p class="small-font">✅ All students who are not in the CLIENT stage have an assigned agent.</p>', unsafe_allow_html=True)
-        else:
-            st.error("Required columns 'AGENT' or 'STAGE' not found in the dataframe.")
-        st.markdown('</div>', unsafe_allow_html=True)
+st.subheader("Rule 2: DS-160 step due")
+st.dataframe(rule_2)
 
-def main():
-    st.set_page_config(page_title="Tasks and Emergencies Dashboard", layout="wide")
-    
-    spreadsheet_id = "1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI"
-    data = load_data(spreadsheet_id)
-    
-    if not data.empty:
-        tasks_and_emergencies_page(data)
-    else:
-        st.error("Failed to load data. Please check your Google Sheets connection and try again.")
+st.subheader("Rule 3a: Embassy interview soon (Stage is not CLIENT)")
+st.dataframe(rule_3a)
 
-if __name__ == "__main__":
-    main()
+st.subheader("Rule 3b: Embassy interview soon (Sevis payment is NO)")
+st.dataframe(rule_3b)
 
+st.subheader("Rule 4: School Entry Date missing after one week")
+st.dataframe(rule_4)
+
+st.subheader("Rule 5: Embassy interview date missing after two weeks")
+st.dataframe(rule_5)
