@@ -5,7 +5,8 @@ from google.oauth2.service_account import Credentials
 import gspread
 
 # Set page config at the very beginning
-st.set_page_config(layout="wide", page_title="Student Visa CRM Dashboard")
+st.set_page_config(layout="wide", page_title="Student Visa CRM Dashboard",
+    initial_sidebar_state="collapsed")
 
 # Use Streamlit secrets for service account info
 SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
@@ -71,7 +72,7 @@ st.markdown("""
 
     html, body, [class*="css"] {
         font-family: 'Roboto', sans-serif;
-        font-size: 12px;  /* Adjust base font size to zoom out */
+        font-size: 10px;  /* Further reduce base font size to zoom out */
     }
     
     .stApp {
@@ -81,49 +82,49 @@ st.markdown("""
     .main {
         background-color: #ffffff;
         border-radius: 10px;
-        padding: 20px;
+        padding: 15px;  /* Adjust padding */
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
     
     h1 {
         color: #1E88E5;
         font-weight: 700;
-        font-size: 1.8rem;  /* Adjust font size */
-        margin-bottom: 20px;
+        font-size: 1.5rem;  /* Adjust font size */
+        margin-bottom: 15px;
     }
     
     .section-header {
-        font-size: 1.5rem;  /* Adjust font size */
+        font-size: 1.2rem;  /* Adjust font size */
         font-weight: 600;
         color: #1E88E5;
-        margin: 20px 0;
+        margin: 15px 0;
     }
     
     .metric-card {
         background-color: #ffffff;
         border: 1px solid #e0e0e0;
         border-radius: 10px;
-        padding: 15px;  /* Adjust padding */
+        padding: 10px;  /* Adjust padding */
         text-align: center;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         margin: 10px 0;
     }
     
     .metric-card h2 {
-        font-size: 1.2rem;  /* Adjust font size */
+        font-size: 1rem;  /* Adjust font size */
         font-weight: 700;
-        margin-bottom: 10px;
+        margin-bottom: 5px;
         color: #1E88E5;
     }
     
     .metric-card p {
-        font-size: 1.5rem;  /* Adjust font size */
+        font-size: 1.2rem;  /* Adjust font size */
         font-weight: 700;
         color: #333;
     }
     
     .dataframe {
-        font-size: 0.8rem;  /* Adjust font size */
+        font-size: 0.6rem;  /* Adjust font size */
     }
     
     .dataframe th {
@@ -138,8 +139,8 @@ st.markdown("""
     }
     
     .icon {
-        font-size: 1.2rem;  /* Adjust font size */
-        margin-right: 10px;
+        font-size: 1rem;  /* Adjust font size */
+        margin-right: 5px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -176,37 +177,42 @@ with col7:
 # Detailed sections
 st.markdown("### Detailed Information")
 
-# School Payment Due Soon
-st.markdown('<div class="section-header">📅 School Payment Due Soon</div>', unsafe_allow_html=True)
-st.write("These students need to complete their school payment at least 50 days before their school entry date.")
-st.dataframe(rule_1[['First Name', 'Last Name', 'DATE', 'School Payment Due', 'Stage', 'Agent']], use_container_width=True)
+# Arrange detailed tables in two columns
+col1, col2 = st.columns(2)
 
-# DS-160 Step Due Soon
-st.markdown('<div class="section-header">📝 DS-160 Step Due Soon</div>', unsafe_allow_html=True)
-st.write("These students need to complete the DS-160 step within 30 days before their embassy interview date.")
-st.dataframe(rule_2[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']], use_container_width=True)
+with col1:
+    # School Payment Due Soon
+    st.markdown('<div class="section-header">📅 School Payment Due Soon</div>', unsafe_allow_html=True)
+    st.write("These students need to complete their school payment at least 50 days before their school entry date.")
+    st.dataframe(rule_1[['First Name', 'Last Name', 'DATE', 'School Payment Due', 'Stage', 'Agent']], use_container_width=True)
 
-# Upcoming Embassy Interviews (Need Prep)
-st.markdown('<div class="section-header">🎤 Upcoming Embassy Interviews (Need Prep)</div>', unsafe_allow_html=True)
-st.write("These students have embassy interviews scheduled within the next 14 days and they are not prepared yet.")
-st.dataframe(rule_3a[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']], use_container_width=True)
+    # DS-160 Step Due Soon
+    st.markdown('<div class="section-header">📝 DS-160 Step Due Soon</div>', unsafe_allow_html=True)
+    st.write("These students need to complete the DS-160 step within 30 days before their embassy interview date.")
+    st.dataframe(rule_2[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']], use_container_width=True)
 
-# Need SEVIS Payment
-st.markdown('<div class="section-header">💳 Need SEVIS Payment</div>', unsafe_allow_html=True)
-st.write("These students have embassy interviews scheduled within the next 14 days and they did not pay the SEVIS.")
-st.dataframe(rule_3b[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']], use_container_width=True)
+    # Upcoming Embassy Interviews (Need Prep)
+    st.markdown('<div class="section-header">🎤 Upcoming Embassy Interviews (Need Prep)</div>', unsafe_allow_html=True)
+    st.write("These students have embassy interviews scheduled within the next 14 days and they are not prepared yet.")
+    st.dataframe(rule_3a[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']], use_container_width=True)
 
-# I-20 and School Registration Needed
-st.markdown('<div class="section-header">❓ I-20 and School Registration Needed</div>', unsafe_allow_html=True)
-st.write("These students do not have a school entry date recorded one week after the Payment date. They need an I-20 and must mention their entry date in the database.")
-st.dataframe(rule_4[['First Name', 'Last Name', 'DATE', 'Stage', 'Agent']], use_container_width=True)
+with col2:
+    # Need SEVIS Payment
+    st.markdown('<div class="section-header">💳 Need SEVIS Payment</div>', unsafe_allow_html=True)
+    st.write("These students have embassy interviews scheduled within the next 14 days and they did not pay the SEVIS.")
+    st.dataframe(rule_3b[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']], use_container_width=True)
 
-# Embassy Interview Date Missing (After Two Weeks)
-st.markdown('<div class="section-header">❓ Embassy Interview Date Missing (After Two Weeks)</div>', unsafe_allow_html=True)
-st.write("These students do not have an embassy interview date recorded two weeks after the initial date, and their stage is not CLIENTS.")
-st.dataframe(rule_5[['First Name', 'Last Name', 'DATE', 'Stage', 'Agent']], use_container_width=True)
+    # I-20 and School Registration Needed
+    st.markdown('<div class="section-header">❓ I-20 and School Registration Needed</div>', unsafe_allow_html=True)
+    st.write("These students do not have a school entry date recorded one week after the Payment date. They need an I-20 and must mention their entry date in the database.")
+    st.dataframe(rule_4[['First Name', 'Last Name', 'DATE', 'Stage', 'Agent']], use_container_width=True)
 
-# Visa Result Needed
-st.markdown('<div class="section-header">❓ Visa Result Needed</div>', unsafe_allow_html=True)
-st.write("These students have passed their embassy interview date and still do not have a recorded visa result. Please update their visa result.")
-st.dataframe(rule_6[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']], use_container_width=True)
+    # Embassy Interview Date Missing (After Two Weeks)
+    st.markdown('<div class="section-header">❓ Embassy Interview Date Missing (After Two Weeks)</div>', unsafe_allow_html=True)
+    st.write("These students do not have an embassy interview date recorded two weeks after the initial date, and their stage is not CLIENTS.")
+    st.dataframe(rule_5[['First Name', 'Last Name', 'DATE', 'Stage', 'Agent']], use_container_width=True)
+
+    # Visa Result Needed
+    st.markdown('<div class="section-header">❓ Visa Result Needed</div>', unsafe_allow_html=True)
+    st.write("These students have passed their embassy interview date and still do not have a recorded visa result. Please update their visa result.")
+    st.dataframe(rule_6[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']], use_container_width=True)
