@@ -22,7 +22,7 @@ def load_data(spreadsheet_id, sheet_name):
     data = sheet.get_all_records()
     df = pd.DataFrame(data)
     df = df.astype(str)  # Convert all columns to strings
-    df['DATE'] = pd.to_datetime(df['DATE'], format='%d/%m/%Y %H:%M:%S')  # Convert 'DATE' column to datetime
+    df['DATE'] = pd.to_datetime(df['DATE'], format='%d/%m/%Y %H:%M:%S', errors='coerce')  # Convert 'DATE' column to datetime
     return df
 
 # Function to save data to Google Sheets
@@ -49,7 +49,7 @@ def main():
     original_df_all = df_all.copy()  # Keep a copy of the original data
 
     # Extract month and year for filtering
-    df_all['Month'] = df_all['DATE'].dt.strftime('%Y-%m')
+    df_all['Month'] = df_all['DATE'].dt.strftime('%Y-%m').fillna('Invalid Date')
     months = ["All"] + sorted(df_all['Month'].unique())
 
     # Define filter options
