@@ -66,18 +66,25 @@ rule_5 = data[(data['DATE'] <= today - timedelta(days=14)) & (data['EMBASSY ITW.
 rule_6 = data[(data['EMBASSY ITW. DATE'] < today) & (data['Visa Result'].isna())].sort_values(by='EMBASSY ITW. DATE').reset_index(drop=True)
 
 
-# Custom CSS for a modern and beautiful design, zoomed out to 75%
+import streamlit as st
+import pandas as pd
+from datetime import datetime, timedelta
+
+# Set page config
+st.set_page_config(layout="wide", page_title="Student Visa CRM Dashboard")
+
+# Custom CSS for a modern and beautiful design, zoomed to 85%
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
     
     html {
-        font-size: 12px; /* Base font size reduced to 75% of 16px */
+        font-size: 13.6px; /* Base font size set to 85% of 16px */
     }
     
     body {
-        zoom: 0.75;
-        -moz-transform: scale(0.75);
+        zoom: 0.85;
+        -moz-transform: scale(0.85);
         -moz-transform-origin: 0 0;
     }
     
@@ -85,72 +92,72 @@ st.markdown("""
         background-color: #f0f4f8;
     }
     
-    h1 { font-size: 2.5rem; }
-    h2 { font-size: 2rem; }
-    h3 { font-size: 1.75rem; }
-    h4 { font-size: 1.5rem; }
-    h5 { font-size: 1.25rem; }
-    h6 { font-size: 1rem; }
+    h1 { font-size: 2.6rem; }
+    h2 { font-size: 2.1rem; }
+    h3 { font-size: 1.8rem; }
+    h4 { font-size: 1.6rem; }
+    h5 { font-size: 1.3rem; }
+    h6 { font-size: 1.1rem; }
     
     .stTabs {
         background-color: #ffffff;
-        border-radius: 8px;
+        border-radius: 9px;
         box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
-        padding: 15px;
-        margin-bottom: 15px;
+        padding: 17px;
+        margin-bottom: 17px;
     }
     
     .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
+        gap: 9px;
     }
     
     .stTabs [data-baseweb="tab"] {
-        border-radius: 23px;
-        padding: 8px 15px;
-        font-size: 0.9rem;
+        border-radius: 25px;
+        padding: 9px 17px;
+        font-size: 0.95rem;
     }
     
     .metric-card {
         background-color: #ffffff;
-        border-radius: 8px;
+        border-radius: 9px;
         box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
-        padding: 15px;
+        padding: 17px;
     }
     
     .metric-value {
-        font-size: 2rem;
+        font-size: 2.2rem;
     }
     
     .metric-label {
-        font-size: 0.9rem;
-        margin-top: 4px;
+        font-size: 0.95rem;
+        margin-top: 5px;
     }
     
     .dataframe {
-        font-size: 0.8rem;
+        font-size: 0.85rem;
     }
     
     .dataframe th, .dataframe td {
-        padding: 9px;
+        padding: 10px;
     }
     
     .section-header {
-        font-size: 1.3rem;
-        margin: 15px 0;
-        padding-bottom: 8px;
+        font-size: 1.4rem;
+        margin: 17px 0;
+        padding-bottom: 9px;
     }
     
     /* Adjust Streamlit's default elements */
     .stButton > button {
-        font-size: 0.9rem;
+        font-size: 0.95rem;
     }
     
     .stSelectbox > div > div {
-        font-size: 0.9rem;
+        font-size: 0.95rem;
     }
     
     .stTextInput > div > div > input {
-        font-size: 0.9rem;
+        font-size: 0.95rem;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -231,4 +238,3 @@ with tabs[6]:
 # Add a footer
 st.markdown("---")
 st.markdown("© 2023 Student Visa CRM Dashboard. All rights reserved.")
-
