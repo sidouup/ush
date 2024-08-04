@@ -65,7 +65,7 @@ rule_5 = data[(data['DATE'] <= today - timedelta(days=14)) & (data['EMBASSY ITW.
 # New Rule: EMBASSY ITW. DATE is passed today and Visa Result is empty
 rule_6 = data[(data['EMBASSY ITW. DATE'] < today) & (data['Visa Result'].isna())].sort_values(by='EMBASSY ITW. DATE').reset_index(drop=True)
 
-# Custom CSS for a modern look
+# Custom CSS for a modern look with 3D effect
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap');
@@ -108,6 +108,11 @@ st.markdown("""
         text-align: center;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         margin: 10px 0;
+        transition: transform 0.3s ease;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-5px);
     }
     
     .metric-card h2 {
@@ -148,20 +153,21 @@ st.markdown("""
         font-size: 1rem;
         padding: 10px 20px;
         margin: 0 5px;
-        color: #1E88E5;
-        border: 1px solid #1E88E5;
-        background-color: #ffffff;
+        color: #ffffff;
+        background-color: #1E88E5;
+        border: none;
         border-radius: 10px;
         transition: background-color 0.3s ease, color 0.3s ease;
     }
     
     .stTabs [role="tablist"] button[aria-selected="true"] {
-        background-color: #1E88E5;
-        color: #ffffff;
+        background-color: #ffffff;
+        color: #1E88E5;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
     .stTabs [role="tablist"] button:hover {
-        background-color: #f0f2f6;
+        background-color: #ffffff;
         color: #1E88E5;
     }
 </style>
@@ -197,7 +203,7 @@ with col7:
     st.markdown(metric_card("ITW Date", len(rule_5), "📅"), unsafe_allow_html=True)
 
 # Detailed sections in tabs
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["School Payment Due Soon", "DS-160 Step Due Soon", "Upcoming Embassy Interviews", "Need SEVIS Payment", "I-20 and School Registration Needed", "Visa Result Needed"])
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["📅 School Payment Due Soon", "📝 DS-160 Step Due Soon", "🎤 Upcoming Embassy Interviews", "💳 Need SEVIS Payment", "❓ I-20 and School Registration Needed", "❓ Visa Result Needed"])
 
 with tab1:
     st.markdown('<div class="section-header">📅 School Payment Due Soon</div>', unsafe_allow_html=True)
