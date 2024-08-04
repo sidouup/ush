@@ -88,28 +88,11 @@ st.markdown("""
         margin-bottom: 20px;
     }
     
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 2px;
-        background-color: #f0f2f6;
-        border-radius: 10px;
-        padding: 5px;
-    }
-    
-    .stTabs [data-baseweb="tab"] {
-        height: 50px;
-        white-space: pre-wrap;
-        background-color: #ffffff;
-        border-radius: 5px;
-        gap: 1px;
-        padding-top: 10px;
-        padding-bottom: 10px;
+    .section-header {
+        font-size: 2rem;
+        font-weight: 600;
         color: #1E88E5;
-        font-weight: 500;
-    }
-    
-    .stTabs [aria-selected="true"] {
-        background-color: #1E88E5;
-        color: #ffffff;
+        margin: 20px 0;
     }
     
     .metric-card {
@@ -119,6 +102,7 @@ st.markdown("""
         padding: 20px;
         text-align: center;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin: 10px 0;
     }
     
     .metric-card h2 {
@@ -148,56 +132,62 @@ st.markdown("""
     .dataframe td {
         background-color: #ffffff;
     }
+    
+    .icon {
+        font-size: 1.5rem;
+        margin-right: 10px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 st.title("Student Visa CRM Dashboard")
 
 # Overview metrics
+st.markdown("### Overview")
 col1, col2, col3, col4 = st.columns(4)
 
-def metric_card(title, value):
+def metric_card(title, value, icon):
     return f"""
     <div class="metric-card">
-        <h2>{title}</h2>
+        <h2>{icon} {title}</h2>
         <p>{value}</p>
     </div>
     """
 
 with col1:
-    st.markdown(metric_card("School Payments Due", len(rule_1)), unsafe_allow_html=True)
+    st.markdown(metric_card("School Payments Due", len(rule_1), "📅"), unsafe_allow_html=True)
 with col2:
-    st.markdown(metric_card("DS-160 Due", len(rule_2)), unsafe_allow_html=True)
+    st.markdown(metric_card("DS-160 Due", len(rule_2), "📝"), unsafe_allow_html=True)
 with col3:
-    st.markdown(metric_card("Upcoming Interviews", len(rule_3a)), unsafe_allow_html=True)
+    st.markdown(metric_card("Upcoming Interviews", len(rule_3a), "🎤"), unsafe_allow_html=True)
 with col4:
-    st.markdown(metric_card("Need SEVIS Payment", len(rule_3b)), unsafe_allow_html=True)
+    st.markdown(metric_card("Need SEVIS Payment", len(rule_3b), "💳"), unsafe_allow_html=True)
 
-# Main content
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["School Payments", "DS-160", "Interview Prep", "SEVIS Payment", "Missing Info"])
+# Detailed sections
+st.markdown("### Detailed Information")
 
-with tab1:
-    st.header("School Payment Due Soon")
-    st.dataframe(rule_1[['First Name','Last Name',  'DATE', 'School Payment Due', 'Stage']], use_container_width=True)
+# School Payment Due Soon
+st.markdown('<div class="section-header">📅 School Payment Due Soon</div>', unsafe_allow_html=True)
+st.dataframe(rule_1[['First Name','Last Name', 'DATE', 'School Payment Due', 'Stage']], use_container_width=True)
 
-with tab2:
-    st.header("DS-160 Step Due Soon")
-    st.dataframe(rule_2[['First Name','Last Name',  'DATE', 'EMBASSY ITW. DATE', 'Stage']], use_container_width=True)
+# DS-160 Step Due Soon
+st.markdown('<div class="section-header">📝 DS-160 Step Due Soon</div>', unsafe_allow_html=True)
+st.dataframe(rule_2[['First Name','Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage']], use_container_width=True)
 
-with tab3:
-    st.header("Upcoming Embassy Interviews (Need Prep)")
-    st.dataframe(rule_3a[['First Name','Last Name',  'DATE', 'EMBASSY ITW. DATE', 'Stage']], use_container_width=True)
+# Upcoming Embassy Interviews (Need Prep)
+st.markdown('<div class="section-header">🎤 Upcoming Embassy Interviews (Need Prep)</div>', unsafe_allow_html=True)
+st.dataframe(rule_3a[['First Name','Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage']], use_container_width=True)
 
-with tab4:
-    st.header("Need SEVIS Payment")
-    st.dataframe(rule_3b[['First Name','Last Name',  'DATE', 'EMBASSY ITW. DATE', 'Stage']], use_container_width=True)
+# Need SEVIS Payment
+st.markdown('<div class="section-header">💳 Need SEVIS Payment</div>', unsafe_allow_html=True)
+st.dataframe(rule_3b[['First Name','Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage']], use_container_width=True)
 
-with tab5:
-    st.header("Missing Information")
-    col1, col2 = st.columns(2)
-    with col1:
-        st.subheader("I-20 and School Registration Needed")
-        st.dataframe(rule_4[['First Name','Last Name',  'DATE', 'Stage']], use_container_width=True)
-    with col2:
-        st.subheader("Embassy Interview Date Missing")
-        st.dataframe(rule_5[['First Name','Last Name',  'DATE', 'Stage']], use_container_width=True)
+# Missing Information
+st.markdown('<div class="section-header">❓ Missing Information</div>', unsafe_allow_html=True)
+col1, col2 = st.columns(2)
+with col1:
+    st.subheader("I-20 and School Registration Needed")
+    st.dataframe(rule_4[['First Name','Last Name', 'DATE', 'Stage']], use_container_width=True)
+with col2:
+    st.subheader("Embassy Interview Date Missing")
+    st.dataframe(rule_5[['First Name','Last Name', 'DATE', 'Stage']], use_container_width=True)
