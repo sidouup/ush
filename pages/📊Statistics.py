@@ -8,7 +8,8 @@ from auth import check_password  # Assuming check_password is defined in auth.py
 
 
 
-def Statistic():
+def main():
+    st.set_page_config(page_title="The Us House - Dashboard", layout="wide")
     if check_password():
         import streamlit as st
         SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
@@ -264,4 +265,4 @@ def Statistic():
             st.dataframe(payment_df)
     
 if __name__ == "__main__":
-    Statistic()
+    main()
