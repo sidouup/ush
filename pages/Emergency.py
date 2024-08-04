@@ -142,6 +142,28 @@ st.markdown("""
         font-size: 1rem;  /* Adjust font size */
         margin-right: 5px;
     }
+
+    /* Custom CSS for tabs */
+    .stTabs [role="tablist"] button {
+        font-size: 1rem;
+        padding: 10px 20px;
+        margin: 0 5px;
+        color: #1E88E5;
+        border: 1px solid #1E88E5;
+        background-color: #ffffff;
+        border-radius: 10px;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    
+    .stTabs [role="tablist"] button[aria-selected="true"] {
+        background-color: #1E88E5;
+        color: #ffffff;
+    }
+
+    .stTabs [role="tablist"] button:hover {
+        background-color: #f0f2f6;
+        color: #1E88E5;
+    }
 </style>
 """, unsafe_allow_html=True)
 
