@@ -39,16 +39,16 @@ today = datetime.now()
 
 # Rule 1: School payment 40 days before school entry
 data['School Payment Due'] = data['School Entry Date'] - timedelta(days=40)
-rule_1 = data[(data['School Paid'] != 'Yes') & (data['School Payment Due'] <= today)].sort_values(by='DATE').reset_index(drop=True)
+rule_1 = data[(data['School Paid'] != 'Yes') & (data['School Payment Due'] > today)].sort_values(by='DATE').reset_index(drop=True)
 
 # Rule 2: DS-160 step 30 days before embassy interview
 ds_160_stages = ['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV', 'DS-160', 'ITW Prep', 'CLIENTS']
 data['DS-160 Due'] = data['EMBASSY ITW. DATE'] - timedelta(days=30)
-rule_2 = data[(data['Stage'].isin(ds_160_stages[:5])) & (data['DS-160 Due'] <= today)].sort_values(by='DATE').reset_index(drop=True)
+rule_2 = data[(data['Stage'].isin(ds_160_stages[:5])) & (data['DS-160 Due'] > today)].sort_values(by='DATE').reset_index(drop=True)
 
 # Rule 3: Embassy interview in less than 7 days and stage is not CLIENT or SEVIS payment is NO
-rule_3a = data[(data['EMBASSY ITW. DATE'] <= today + timedelta(days=7)) & (data['Stage'] != 'CLIENT')].sort_values(by='DATE').reset_index(drop=True)
-rule_3b = data[(data['EMBASSY ITW. DATE'] <= today + timedelta(days=7)) & (data['Sevis payment ?'] == 'NO')].sort_values(by='DATE').reset_index(drop=True)
+rule_3a = data[(data['EMBASSY ITW. DATE'] > today) & (data['EMBASSY ITW. DATE'] <= today + timedelta(days=7)) & (data['Stage'] != 'CLIENT')].sort_values(by='DATE').reset_index(drop=True)
+rule_3b = data[(data['EMBASSY ITW. DATE'] > today) & (data['EMBASSY ITW. DATE'] <= today + timedelta(days=7)) & (data['Sevis payment ?'] == 'NO')].sort_values(by='DATE').reset_index(drop=True)
 
 # Rule 4: One week after DATE and School Entry Date is still empty
 rule_4 = data[(data['DATE'] <= today - timedelta(days=7)) & (data['School Entry Date'].isna())].sort_values(by='DATE').reset_index(drop=True)
