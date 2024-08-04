@@ -118,13 +118,15 @@ st.markdown("""
         background-color: #ffffff;
         border: none;
         border-radius: 15px;
-        padding: 25px;
+        padding: 20px;
         text-align: center;
         box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
         margin: 15px;
         width: 180px;
         height: 180px;
-        display: inline-block;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
     
@@ -134,16 +136,36 @@ st.markdown("""
     }
     
     .metric-card h2 {
-        font-size: 1.3rem;
+        font-size: 1.1rem;
         font-weight: 600;
-        margin-bottom: 15px;
+        margin-bottom: 10px;
         color: #34495e;
     }
     
     .metric-card p {
-        font-size: 2rem;
+        font-size: 2.5rem;
         font-weight: 700;
         color: #2c3e50;
+        margin: 0;
+    }
+    
+    /* More vibrant colors for metric cards */
+    .metric-card.red {
+        background-color: #ff6b6b;
+    }
+    .metric-card.green {
+        background-color: #51cf66;
+    }
+    .metric-card.yellow {
+        background-color: #feca57;
+    }
+    
+    .metric-card.red h2, .metric-card.green h2, .metric-card.yellow h2 {
+        color: #ffffff;
+    }
+    
+    .metric-card.red p, .metric-card.green p, .metric-card.yellow p {
+        color: #ffffff;
     }
     
     .dataframe {
@@ -206,6 +228,7 @@ st.markdown("""
         background: #555;
     }
 </style>
+
 """, unsafe_allow_html=True)
 
 st.title("Student Visa CRM Dashboard")
