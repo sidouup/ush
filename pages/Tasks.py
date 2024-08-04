@@ -42,24 +42,98 @@ def load_data(spreadsheet_id):
 def tasks_and_emergencies_page(df):
     st.markdown("""
     <style>
-    .big-font { font-size:30px !important; font-weight: bold; color: #1E88E5; }
-    .medium-font { font-size:20px !important; font-weight: bold; color: #43A047; }
-    .small-font { font-size:14px !important; color: #212121; }
-    .highlight { background-color: #FFF176; padding: 5px; border-radius: 5px; }
-    .dashboard-item { background-color: #F5F5F5; border-radius: 10px; padding: 10px; margin-bottom: 10px; }
+    .stApp {
+        background-color: #f0f2f6;
+    }
+    .big-font {
+        font-size: 36px !important;
+        font-weight: bold;
+        color: #1E88E5;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    .medium-font {
+        font-size: 24px !important;
+        font-weight: bold;
+        color: #43A047;
+        margin-bottom: 15px;
+    }
+    .small-font {
+        font-size: 16px !important;
+        color: #212121;
+    }
+    .highlight {
+        background-color: #FFF176;
+        padding: 5px;
+        border-radius: 5px;
+    }
+    .dashboard-item {
+        background-color: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .stat-box {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    .stat-number {
+        font-size: 28px;
+        font-weight: bold;
+        color: #1E88E5;
+    }
+    .stat-label {
+        font-size: 14px;
+        color: #616161;
+    }
     </style>
     """, unsafe_allow_html=True)
 
     st.markdown('<p class="big-font">📋 Tasks and Emergencies Dashboard</p>', unsafe_allow_html=True)
 
     today = datetime.now()
-    col1, col2 = st.columns(2)
 
+    # Key Statistics
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.markdown('<div class="stat-box">', unsafe_allow_html=True)
+        st.markdown(f'<p class="stat-number">{len(df)}</p>', unsafe_allow_html=True)
+        st.markdown('<p class="stat-label">Total Students</p>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    with col2:
+        urgent_count = len(df[(df['EMBASSY_ITW_DATE'] <= today + timedelta(days=30)) & 
+                              (df['EMBASSY_ITW_DATE'] >= today) & 
+                              (df['STAGE'].isin(['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV']))])
+        st.markdown('<div class="stat-box">', unsafe_allow_html=True)
+        st.markdown(f'<p class="stat-number">{urgent_count}</p>', unsafe_allow_html=True)
+        st.markdown('<p class="stat-label">Urgent DS-160</p>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    with col3:
+        upcoming_interviews_count = len(df[(df['EMBASSY_ITW_DATE'] <= today + timedelta(days=15)) & 
+                                           (df['EMBASSY_ITW_DATE'] >= today)])
+        st.markdown('<div class="stat-box">', unsafe_allow_html=True)
+        st.markdown(f'<p class="stat-number">{upcoming_interviews_count}</p>', unsafe_allow_html=True)
+        st.markdown('<p class="stat-label">Upcoming Interviews</p>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    with col4:
+        no_agent_count = len(df[(df['AGENT'].isna() | (df['AGENT'] == '')) & (df['STAGE'] != 'CLIENTS')])
+        st.markdown('<div class="stat-box">', unsafe_allow_html=True)
+        st.markdown(f'<p class="stat-number">{no_agent_count}</p>', unsafe_allow_html=True)
+        st.markdown('<p class="stat-label">Without Agent</p>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    # Urgent Matters and Upcoming Interviews
+    col1, col2 = st.columns(2)
     with col1:
         st.markdown('<div class="dashboard-item">', unsafe_allow_html=True)
         st.markdown('<p class="medium-font">🚨 Urgent Matters</p>', unsafe_allow_html=True)
-        
-        st.markdown('<p class="small-font">Appointment in 30 days, DS-160 Not Completed</p>', unsafe_allow_html=True)
         thirty_days = today + timedelta(days=30)
         urgent_ds160 = df[
             (df['EMBASSY_ITW_DATE'] <= thirty_days) &
@@ -69,6 +143,7 @@ def tasks_and_emergencies_page(df):
         st.dataframe(urgent_ds160[['STUDENT_NAME', 'EMBASSY_ITW_DATE', 'STAGE']], height=200)
         st.markdown('</div>', unsafe_allow_html=True)
 
+    with col2:
         st.markdown('<div class="dashboard-item">', unsafe_allow_html=True)
         st.markdown('<p class="medium-font">🗓️ Upcoming Embassy Interviews (Next 15 Days)</p>', unsafe_allow_html=True)
         fifteen_days = today + timedelta(days=15)
@@ -79,7 +154,9 @@ def tasks_and_emergencies_page(df):
         st.dataframe(upcoming_interviews[['STUDENT_NAME', 'EMBASSY_ITW_DATE', 'STAGE']], height=200)
         st.markdown('</div>', unsafe_allow_html=True)
 
-    with col2:
+    # Students with School Entry Date and Final Stages
+    col1, col2 = st.columns(2)
+    with col1:
         st.markdown('<div class="dashboard-item">', unsafe_allow_html=True)
         st.markdown('<p class="medium-font">🏫 Students with School Entry Date in the Next 40 Days</p>', unsafe_allow_html=True)
         forty_days = today + timedelta(days=40)
@@ -90,6 +167,7 @@ def tasks_and_emergencies_page(df):
         st.dataframe(upcoming_entry[['STUDENT_NAME', 'SCHOOL_ENTRY_DATE', 'CHOSEN_SCHOOL', 'STAGE']], height=200)
         st.markdown('</div>', unsafe_allow_html=True)
 
+    with col2:
         st.markdown('<div class="dashboard-item">', unsafe_allow_html=True)
         st.markdown('<p class="medium-font">🏁 Students in Final Stages Without Visa Results</p>', unsafe_allow_html=True)
         final_stages = df[
@@ -99,51 +177,51 @@ def tasks_and_emergencies_page(df):
         st.dataframe(final_stages[['STUDENT_NAME', 'STAGE', 'EMBASSY_ITW_DATE']], height=200)
         st.markdown('</div>', unsafe_allow_html=True)
 
+    # All Upcoming Events
     st.markdown('<div class="dashboard-item">', unsafe_allow_html=True)
     st.markdown('<p class="medium-font">📅 All Upcoming Events</p>', unsafe_allow_html=True)
-    
     tab1, tab2, tab3 = st.tabs(["Embassy Appointments", "School Entry Dates", "Missing Information"])
     
     with tab1:
-        st.markdown('<p class="small-font">Students Sorted by Upcoming Embassy Appointment Date</p>', unsafe_allow_html=True)
         embassy_sorted = df[df['EMBASSY_ITW_DATE'] > today].sort_values('EMBASSY_ITW_DATE')
         st.dataframe(embassy_sorted[['STUDENT_NAME', 'EMBASSY_ITW_DATE', 'STAGE']], height=300)
     
     with tab2:
-        st.markdown('<p class="small-font">Students Sorted by Upcoming School Entry Date</p>', unsafe_allow_html=True)
         school_sorted = df[df['SCHOOL_ENTRY_DATE'] > today].sort_values('SCHOOL_ENTRY_DATE')
         st.dataframe(school_sorted[['STUDENT_NAME', 'SCHOOL_ENTRY_DATE', 'CHOSEN_SCHOOL']], height=300)
     
     with tab3:
-        st.markdown('<p class="small-font">Applicants Without School Entry Date</p>', unsafe_allow_html=True)
         no_entry_date = df[df['SCHOOL_ENTRY_DATE'].isna()]
         st.dataframe(no_entry_date[['STUDENT_NAME', 'CHOSEN_SCHOOL', 'STAGE']], height=300)
     
     st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown('<div class="dashboard-item">', unsafe_allow_html=True)
-    st.markdown('<p class="medium-font">👥 Duplicate Students</p>', unsafe_allow_html=True)
-    duplicates = df[df.duplicated(subset=['STUDENT_NAME'], keep=False)]
-    if not duplicates.empty:
-        st.dataframe(duplicates[['STUDENT_NAME', 'DATE', 'STAGE']], height=200)
-        st.markdown('<p class="small-font highlight">⚠️ Please review and resolve these duplicate entries in the "ALL" sheet.</p>', unsafe_allow_html=True)
-    else:
-        st.markdown('<p class="small-font">✅ No duplicate students found.</p>')
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown('<div class="dashboard-item">', unsafe_allow_html=True)
-    st.markdown('<p class="medium-font">🔍 Students Without an Agent</p>', unsafe_allow_html=True)
-    
-    if 'AGENT' in df.columns and 'STAGE' in df.columns:
-        no_agent = df[(df['AGENT'].isna() | (df['AGENT'] == '')) & (df['STAGE'] != 'CLIENTS')]
-        if not no_agent.empty:
-            st.dataframe(no_agent[['STUDENT_NAME', 'STAGE']], height=200)
-            st.markdown('<p class="small-font highlight">⚠️ These students do not have an assigned agent.</p>', unsafe_allow_html=True)
+    # Duplicate Students and Students Without an Agent
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown('<div class="dashboard-item">', unsafe_allow_html=True)
+        st.markdown('<p class="medium-font">👥 Duplicate Students</p>', unsafe_allow_html=True)
+        duplicates = df[df.duplicated(subset=['STUDENT_NAME'], keep=False)]
+        if not duplicates.empty:
+            st.dataframe(duplicates[['STUDENT_NAME', 'DATE', 'STAGE']], height=200)
+            st.markdown('<p class="small-font highlight">⚠️ Please review and resolve these duplicate entries in the "ALL" sheet.</p>', unsafe_allow_html=True)
         else:
-            st.markdown('<p class="small-font">✅ All students who are not in the CLIENT stage have an assigned agent.</p>', unsafe_allow_html=True)
-    else:
-        st.error("Required columns 'AGENT' or 'STAGE' not found in the dataframe.")
-    st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown('<p class="small-font">✅ No duplicate students found.</p>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with col2:
+        st.markdown('<div class="dashboard-item">', unsafe_allow_html=True)
+        st.markdown('<p class="medium-font">🔍 Students Without an Agent</p>', unsafe_allow_html=True)
+        if 'AGENT' in df.columns and 'STAGE' in df.columns:
+            no_agent = df[(df['AGENT'].isna() | (df['AGENT'] == '')) & (df['STAGE'] != 'CLIENTS')]
+            if not no_agent.empty:
+                st.dataframe(no_agent[['STUDENT_NAME', 'STAGE']], height=200)
+                st.markdown('<p class="small-font highlight">⚠️ These students do not have an assigned agent.</p>', unsafe_allow_html=True)
+            else:
+                st.markdown('<p class="small-font">✅ All students who are not in the CLIENT stage have an assigned agent.</p>', unsafe_allow_html=True)
+        else:
+            st.error("Required columns 'AGENT' or 'STAGE' not found in the dataframe.")
+        st.markdown('</div>', unsafe_allow_html=True)
 
 def main():
     st.set_page_config(page_title="Tasks and Emergencies Dashboard", layout="wide")
@@ -151,7 +229,11 @@ def main():
     spreadsheet_id = "1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI"
     data = load_data(spreadsheet_id)
     
-    tasks_and_emergencies_page(data)
+    if not data.empty:
+        tasks_and_emergencies_page(data)
+    else:
+        st.error("Failed to load data. Please check your Google Sheets connection and try again.")
 
 if __name__ == "__main__":
     main()
+
