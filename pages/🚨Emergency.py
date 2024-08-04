@@ -65,7 +65,8 @@ rule_5 = data[(data['DATE'] <= today - timedelta(days=14)) & (data['EMBASSY ITW.
 # New Rule: EMBASSY ITW. DATE is passed today and Visa Result is empty
 rule_6 = data[(data['EMBASSY ITW. DATE'] < today) & (data['Visa Result'].isna())].sort_values(by='EMBASSY ITW. DATE').reset_index(drop=True)
 
-rule_7 = data[(data['Agent'].isna() | data['Agent'] == '') & (data['Stage'] != 'CLIENT') & (data['Stage'] != 'CLIENTS')].sort_values(by='DATE').reset_index(drop=True)
+
+rule_7 = data[(data['Agent'].isna() | data['Agent'] == '') &  (data['Stage'] != 'CLIENTS')].sort_values(by='DATE').reset_index(drop=True)
 
 
 
