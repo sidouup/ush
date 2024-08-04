@@ -57,7 +57,7 @@ rule_3a = data[(data['EMBASSY ITW. DATE'] > today) & (data['EMBASSY ITW. DATE'] 
 rule_3b = data[(data['EMBASSY ITW. DATE'] > today) & (data['EMBASSY ITW. DATE'] <= today + timedelta(days=14)) & (data['Sevis payment ?'] == 'NO')].sort_values(by='EMBASSY ITW. DATE').reset_index(drop=True)
 
 # Rule 4: One week after DATE and School Entry Date is still empty, exclude clients with stage 'CLIENTS'
-rule_4 = data[(data['DATE'] <= today - timedelta(days=7)) & (data['School Entry Date'].isna()) & (data['Stage'] != 'CLIENTS')].sort_values(by='DATE').reset_index(drop=True)
+rule_4 = data[(data['DATE'] <= today - timedelta(days=14)) & (data['School Entry Date'].isna()) & (data['Stage'] != 'CLIENTS')].sort_values(by='DATE').reset_index(drop=True)
 
 # Rule 5: Two weeks after DATE and EMBASSY ITW. DATE is still empty, exclude clients with stage 'CLIENTS'
 rule_5 = data[(data['DATE'] <= today - timedelta(days=14)) & (data['EMBASSY ITW. DATE'].isna()) & (data['Stage'] != 'CLIENTS')].sort_values(by='DATE').reset_index(drop=True)
@@ -205,8 +205,8 @@ tabs = st.tabs([
     "📝 DS-160",
     "🎤 Interviews",
     "💳 SEVIS Payment",
-    "📄 I-20 & Registration",
-    "📆 ITW Date",
+    "📄 I-20 ",
+    "📆 ARAMEX",
     "🔍 Visa Result",
     "👤 Unassigned Students"  # New tab
 ])
@@ -232,12 +232,12 @@ with tabs[3]:
     st.dataframe(rule_3b[['First Name', 'Last Name', 'DATE', 'EMBASSY ITW. DATE', 'Stage', 'Agent']], use_container_width=True)
 
 with tabs[4]:
-    st.markdown('<div class="section-header">📄 I-20 and School Registration Needed</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">📄 I-20 </div>', unsafe_allow_html=True)
     st.write("These students do not have a school entry date recorded one week after the Payment date. They need an I-20 and must mention their entry date in the database.")
     st.dataframe(rule_4[['First Name', 'Last Name', 'DATE', 'Stage', 'Agent']], use_container_width=True)
 
 with tabs[5]:
-    st.markdown('<div class="section-header">📆 ITW Date Needed</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">📆 ARAMEX</div>', unsafe_allow_html=True)
     st.write("These students do not have an embassy interview date recorded two weeks after their initial registration date. They need to schedule their interview and update the database.")
     st.dataframe(rule_5[['First Name', 'Last Name', 'DATE', 'Stage', 'Agent']], use_container_width=True)
 
