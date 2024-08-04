@@ -3,8 +3,7 @@ import pandas as pd
 from google.oauth2.service_account import Credentials
 import gspread
 
-st.set_page_config(page_title="Student List", layout="wide",
-    initial_sidebar_state="collapsed" )
+st.set_page_config(page_title="Student List", layout="wide" )
 # Use Streamlit secrets for service account info
 SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
 
