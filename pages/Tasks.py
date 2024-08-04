@@ -39,30 +39,6 @@ def load_data(spreadsheet_id):
         st.error(f"An error occurred: {str(e)}")
         return pd.DataFrame()
 
-def assign_agents(df):
-    students_without_agents = df[df['AGENT'].isna() & (df['STAGE'] != 'CLIENT')]
-    
-    agent_specialties = {
-        'Nesrine': ['University', 'Master', 'ESL'],
-        'Djazila': ['Community College', 'ESL'],
-        'Hamza': ['University', 'ESL', 'Community College']
-    }
-    
-    assignments = {}
-    
-    for _, student in students_without_agents.iterrows():
-        assigned = False
-        for agent, specialties in agent_specialties.items():
-            if any(specialty.lower() in student['CHOSEN_SCHOOL'].lower() for specialty in specialties):
-                assignments[student['STUDENT_NAME']] = agent
-                assigned = True
-                break
-        
-        if not assigned:
-            assignments[student['STUDENT_NAME']] = 'Hamza'
-    
-    return assignments
-
 def tasks_and_emergencies_page(df):
     st.markdown("""
     <style>
@@ -184,29 +160,15 @@ def main():
     st.set_page_config(page_title="Student Application Tracker", layout="wide")
     
     page = st.sidebar.selectbox("Choose a page", ["Student Tracker", "Tasks and Emergencies"])
-    
-    uploaded_file = st.sidebar.file_uploader("Choose an Excel file", type=["xlsx"])
-    
-    if uploaded_file is not None:
-        df = pd.read_excel(uploaded_file)
-        # Standardize column names
-        df.columns = df.columns.str.strip().str.upper().str.replace('.', '').str.replace(' ', '_')
-        
-        # Parse dates
-        date_columns = ['DATE', 'SCHOOL_ENTRY_DATE', 'ENTRY_DATE_IN_THE_US', 'EMBASSY_ITW_DATE']
-        for col in date_columns:
-            if col in df.columns:
-                df[col] = pd.to_datetime(df[col], errors='coerce', dayfirst=True)
+    spreadsheet_id = "1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI"
 
-        # Create Student Name column
-        df['STUDENT_NAME'] = df['FIRST_NAME'] + " " + df['LAST_NAME']
-        
-        if page == "Student Tracker":
-            student_tracker_page(df)
-        elif page == "Tasks and Emergencies":
-            tasks_and_emergencies_page(df)
-    else:
-        st.info("Please upload an Excel file to proceed.")
+    data = load_data(spreadsheet_id)
+    
+    if page == "Student Tracker":
+        student_tracker_page(data)
+    elif page == "Tasks and Emergencies":
+        tasks_and_emergencies_page(data)
 
 if __name__ == "__main__":
     main()
+
