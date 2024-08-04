@@ -67,16 +67,16 @@ st.header("DS-160 Step Due Soon")
 st.write("These students need to complete the DS-160 step within 30 days before their embassy interview date.")
 st.dataframe(rule_2)
 
-st.header("Upcoming Embassy Interviews (Stage Not CLIENT)")
-st.write("These students have embassy interviews scheduled within the next 7 days and their stage is not CLIENT.")
+st.header("Upcoming Embassy Interviews (Need Prep)")
+st.write("These students have embassy interviews scheduled within the next 14 days and they are not prepared yet.")
 st.dataframe(rule_3a)
 
 st.header("Upcoming Embassy Interviews (SEVIS Payment NO)")
-st.write("These students have embassy interviews scheduled within the next 7 days and their SEVIS payment status is NO.")
+st.write("These students have embassy interviews scheduled within the next 14 days and they did not pay the SEVIS.")
 st.dataframe(rule_3b)
 
-st.header("School Entry Date Missing (After One Week)")
-st.write("These students do not have a school entry date recorded one week after the initial date, and their stage is not CLIENTS.")
+st.header("I-20 and school registration Needed")
+st.write("These students do not have a school entry date recorded one week after the Payment date, They Need an I20 and Mention their Entry Date in the DATABASE.")
 st.dataframe(rule_4)
 
 st.header("Embassy Interview Date Missing (After Two Weeks)")
