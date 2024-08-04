@@ -41,7 +41,7 @@ def load_data(spreadsheet_id):
 
 def assign_agents(df):
     # Identify students without agents
-    students_without_agents = df[df['Agent'].isna() & (df['STAGE'] != 'CLIENT')]
+    students_without_agents = df[df['Agent'].isna() & (df['Stage'] != 'CLIENT')]
     
     # Define a simple agent assignment strategy
     agent_specialties = {
@@ -67,7 +67,7 @@ def assign_agents(df):
 
 def assign_agents(df):
     # Identify students without agents
-    students_without_agents = df[df['Agent'].isna() & (df['STAGE'] != 'CLIENT')]
+    students_without_agents = df[df['Agent'].isna() & (df['Stage'] != 'CLIENT')]
     
     # Define a simple agent assignment strategy
     agent_specialties = {
