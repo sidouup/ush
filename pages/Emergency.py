@@ -108,35 +108,48 @@ st.markdown("""
         margin: 20px 0;
     }
     
+    .metrics-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: stretch;
+        flex-wrap: nowrap;
+        margin: 0 -5px;
+    }
+    
     .metric-card {
+        flex: 1;
         background-color: #ffffff;
         border: 1px solid #e0e0e0;
         border-radius: 10px;
-        padding: 15px;
+        padding: 15px 10px;
         text-align: center;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        margin: 10px 0;
-        height: 120px;
+        margin: 0 5px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
         align-items: center;
+        min-width: 0;
     }
     
     .metric-card .icon {
-        font-size: 2.5rem;
+        font-size: 2rem;
         margin-bottom: 5px;
     }
     
     .metric-card h2 {
-        font-size: 0.9rem;
+        font-size: 0.8rem;
         font-weight: 500;
         margin-bottom: 5px;
         color: #333;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 100%;
     }
     
     .metric-card p {
-        font-size: 1.8rem;
+        font-size: 1.5rem;
         font-weight: 700;
         color: #1E88E5;
         margin: 0;
@@ -156,22 +169,44 @@ st.markdown("""
     .dataframe td {
         background-color: #ffffff;
     }
-    
-    .metrics-container {
-        display: flex;
-        justify-content: space-between;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-    }
-    
-    .metric-wrapper {
-        flex: 1;
-        min-width: 120px;
-        max-width: 150px;
-        margin: 0 5px;
-    }
 </style>
 """, unsafe_allow_html=True)
+
+st.title("Student Visa CRM Dashboard")
+
+# Overview metrics
+st.markdown("### Overview")
+
+def metric_card(title, value, icon):
+    return f"""
+    <div class="metric-card">
+        <div class="icon">{icon}</div>
+        <h2>{title}</h2>
+        <p>{value}</p>
+    </div>
+    """
+
+metrics_html = """
+<div class="metrics-container">
+    {0}
+    {1}
+    {2}
+    {3}
+    {4}
+    {5}
+    {6}
+</div>
+""".format(
+    metric_card("School Payments Due", len(rule_1), "📅"),
+    metric_card("Emergency DS-160", len(rule_2), "📝"),
+    metric_card("Emergency Interviews", len(rule_3a), "🎤"),
+    metric_card("Emergency SEVIS Payment", len(rule_3b), "💳"),
+    metric_card("Visa Result Needed", len(rule_6), "❓"),
+    metric_card("I-20s Needed", len(rule_4), "📄"),
+    metric_card("Embassy Interviews Needed", len(rule_5), "📅")
+)
+
+st.markdown(metrics_html, unsafe_allow_html=True)
 
 st.title("Student Visa CRM Dashboard")
 
