@@ -5,7 +5,8 @@ from google.oauth2.service_account import Credentials
 import gspread
 
 # Set page config at the very beginning
-st.set_page_config(layout="wide", page_title="Student Visa CRM Dashboard")
+st.set_page_config(layout="wide", page_title="Student Visa CRM Dashboard",
+    initial_sidebar_state="collapsed")
 
 # Use Streamlit secrets for service account info
 SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
