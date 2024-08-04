@@ -134,12 +134,15 @@ def tasks_and_emergencies_page(df):
     st.markdown('<div class="dashboard-item">', unsafe_allow_html=True)
     st.markdown('<p class="medium-font">🔍 Students Without an Agent</p>', unsafe_allow_html=True)
     
-    no_agent = df[df['AGENT']== '' & (df['STAGE'] != 'CLIENT')]
-    if not no_agent.empty:
-        st.dataframe(no_agent[['STUDENT_NAME', 'STAGE']], height=200)
-        st.markdown('<p class="small-font highlight">⚠️ These students do not have an assigned agent.</p>', unsafe_allow_html=True)
+    if 'AGENT' in df.columns and 'STAGE' in df.columns:
+        no_agent = df[(df['AGENT'].isna() | (df['AGENT'] == '')) & (df['STAGE'] != 'CLIENT')]
+        if not no_agent.empty:
+            st.dataframe(no_agent[['STUDENT_NAME', 'STAGE']], height=200)
+            st.markdown('<p class="small-font highlight">⚠️ These students do not have an assigned agent.</p>', unsafe_allow_html=True)
+        else:
+            st.markdown('<p class="small-font">✅ All students who are not in the CLIENT stage have an assigned agent.</p>', unsafe_allow_html=True)
     else:
-        st.markdown('<p class="small-font">✅ All students who are not in the CLIENT stage have an assigned agent.</p>')
+        st.error("Required columns 'AGENT' or 'STAGE' not found in the dataframe.")
     st.markdown('</div>', unsafe_allow_html=True)
 
 def main():
