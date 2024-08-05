@@ -55,7 +55,7 @@ def main():
 
     # Define filter options
     current_steps = ["All"] + list(df_all['Stage'].unique())
-    agents = ["All", "Nesrine", "Hamza", "Djazila"]
+    agents = ["All", "Nesrine", "Hamza", "Djazila","Nada"]
     school_options = ["All", "University", "Community College", "CCLS Miami", "CCLS NY NJ", "Connect English", "CONVERSE SCHOOL", "ELI San Francisco", "F2 Visa", "GT Chicago", "BEA Huston", "BIA Huston", "OHLA Miami", "UCDEA", "HAWAII", "Not Partner", "Not yet"]
     attempts_options = ["All", "1 st Try", "2 nd Try", "3 rd Try"]
 
