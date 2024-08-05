@@ -13,6 +13,19 @@ SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
 
 # Define the scopes
 SCOPES = ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/spreadsheets']
+def find_duplicates(df):
+    # Combine First Name and Last Name
+    df['Full Name'] = df['First Name'] + ' ' + df['Last Name']
+    
+    # Find duplicates based on Full Name, Phone N°, or E-mail
+    duplicates = df[df.duplicated(subset=['Full Name', 'Phone N°', 'E-mail'], keep=False)]
+    
+    # Sort the duplicates for better readability
+    duplicates = duplicates.sort_values(by=['Full Name', 'Phone N°', 'E-mail'])
+    
+    return duplicates
+
+duplicate_students = find_duplicates(data)
 
 # Authenticate and build the Google Sheets service
 @st.cache_resource
@@ -208,7 +221,8 @@ tabs = st.tabs([
     "📄 I-20 ",
     "📆 ARAMEX",
     "🔍 Visa Result",
-    "👤 Unassigned Students"  # New tab
+    "👤 Unassigned Students",
+    "🔄 Duplicate Students"  # New tab
 ])
 
 with tabs[0]:
@@ -254,7 +268,14 @@ with tabs[7]:
         st.dataframe(rule_7[['First Name', 'Last Name', 'DATE', 'Stage', 'Agent']], use_container_width=True)
     else:
         st.write("No unassigned students found. This could mean all students are properly assigned, or there might be an issue with the data or filtering condition.")
-
+        
+with tabs[8]:  # This is the new tab for duplicate students
+    st.markdown('<div class="section-header">🔄 Duplicate Students</div>', unsafe_allow_html=True)
+    st.write("These students appear to be duplicates based on matching Full Name, Phone N°, or E-mail.")
+    if len(duplicate_students) > 0:
+        st.dataframe(duplicate_students[['First Name', 'Last Name', 'Phone N°', 'E-mail', 'DATE', 'Stage', 'Agent']], use_container_width=True)
+    else:
+        st.write("No duplicate students found.")
 
 # Add a footer
 st.markdown("---")
