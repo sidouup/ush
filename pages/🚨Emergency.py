@@ -13,19 +13,7 @@ SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
 
 # Define the scopes
 SCOPES = ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/spreadsheets']
-def find_duplicates(df):
-    # Combine First Name and Last Name
-    df['Full Name'] = df['First Name'] + ' ' + df['Last Name']
-    
-    # Find duplicates based on Full Name, Phone N°, or E-mail
-    duplicates = df[df.duplicated(subset=['Full Name', 'Phone N°', 'E-mail'], keep=False)]
-    
-    # Sort the duplicates for better readability
-    duplicates = duplicates.sort_values(by=['Full Name', 'Phone N°', 'E-mail'])
-    
-    return duplicates
 
-duplicate_students = find_duplicates(data)
 
 # Authenticate and build the Google Sheets service
 @st.cache_resource
@@ -92,7 +80,19 @@ rule_7 = data[
 # Add this diagnostic print
 st.sidebar.write(f"Number of rows in rule_7: {len(rule_7)}")
 
+def find_duplicates(df):
+    # Combine First Name and Last Name
+    df['Full Name'] = df['First Name'] + ' ' + df['Last Name']
+    
+    # Find duplicates based on Full Name, Phone N°, or E-mail
+    duplicates = df[df.duplicated(subset=['Full Name', 'Phone N°', 'E-mail'], keep=False)]
+    
+    # Sort the duplicates for better readability
+    duplicates = duplicates.sort_values(by=['Full Name', 'Phone N°', 'E-mail'])
+    
+    return duplicates
 
+duplicate_students = find_duplicates(data)
 
 
 st.markdown("""
