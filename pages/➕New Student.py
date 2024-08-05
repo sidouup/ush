@@ -129,7 +129,7 @@ def main():
             payment_amount = st.selectbox("💰 Payment Amount", payment_amount_options)
             payment_type = st.selectbox("💳 Payment Type", ["Cash", "CCP", "Baridimob", "Bank"])
             compte = st.selectbox("🏦 Compte", ["Mohamed", "Sid Ali"])
-            agent_options = ["Nesrine", "Hamza", "Djazila"]
+            agent_options = ["Nesrine", "Hamza", "Djazila","Nada"]
             agent = st.selectbox("👨‍💼 Agent", agent_options)
 
         submit_button = st.form_submit_button("Add Student")
