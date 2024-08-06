@@ -36,7 +36,7 @@ def save_data(df, original_df, spreadsheet_id, sheet_name):
     def convert_timestamp(val):
         if isinstance(val, pd.Timestamp):
             return val.strftime('%Y-%m-%d %H:%M:%S')
-        return val
+        return str(val)  # Convert all values to string
 
     # Apply the conversion to all elements in the DataFrame
     df = df.applymap(convert_timestamp)
@@ -46,11 +46,19 @@ def save_data(df, original_df, spreadsheet_id, sheet_name):
     if 'Month' in df.columns:
         df = df.drop(columns=['Month'])
     
-    # Update only the modified rows in the original dataframe
+    # Prepare batch update
+    batch_update = []
     for idx, row in df.iterrows():
         for col in df.columns:
             if col in original_df.columns and row[col] != original_df.at[idx, col]:
-                sheet.update_cell(idx + 2, df.columns.get_loc(col) + 1, str(row[col]))
+                batch_update.append({
+                    'range': f'{sheet_name}!{gspread.utils.rowcol_to_a1(idx + 2, df.columns.get_loc(col) + 1)}',
+                    'values': [[row[col]]]
+                })
+    
+    # Execute batch update
+    if batch_update:
+        sheet.batch_update(batch_update)
 
 # Main function for the new page
 def main():
