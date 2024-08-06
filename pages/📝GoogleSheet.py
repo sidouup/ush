@@ -34,9 +34,11 @@ def save_data(df, original_df, spreadsheet_id, sheet_name):
     df = df.where(pd.notnull(df), None)  # Replace NaNs with None for gspread
 
     # Update only the modified rows and columns
+    changes_detected = False
     for idx, row in df.iterrows():
         for col in df.columns:
             if row[col] != original_df.at[idx, col]:
+                changes_detected = True
                 try:
                     value_to_update = row[col]
                     if isinstance(value_to_update, pd.Timestamp):
@@ -46,6 +48,8 @@ def save_data(df, original_df, spreadsheet_id, sheet_name):
                     time.sleep(1)  # Add a delay to prevent exceeding API quota
                 except Exception as e:
                     st.error(f"Failed to update cell: Row {idx + 2}, Column {col} with value {row[col]}. Error: {e}")
+    if not changes_detected:
+        st.write("No changes detected to update.")
 
 # Main function for the new page
 def main():
@@ -129,7 +133,7 @@ def main():
         # Apply styling and display the dataframe
         styled_df = filtered_data.style.apply(highlight_agent, axis=1)
         st.dataframe(styled_df)
-        
+
 # Custom CSS to zoom out
 st.markdown("""
 <style>
