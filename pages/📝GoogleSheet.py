@@ -52,13 +52,17 @@ def save_data(df, original_df, spreadsheet_id, sheet_name):
         for col in df.columns:
             if col in original_df.columns and row[col] != original_df.at[idx, col]:
                 batch_update.append({
-                    'range': f'{sheet_name}!{gspread.utils.rowcol_to_a1(idx + 2, df.columns.get_loc(col) + 1)}',
+                    'range': gspread.utils.rowcol_to_a1(idx + 2, df.columns.get_loc(col) + 1),
                     'values': [[row[col]]]
                 })
     
     # Execute batch update
     if batch_update:
-        sheet.batch_update(batch_update)
+        body = {
+            'valueInputOption': 'USER_ENTERED',
+            'data': batch_update
+        }
+        sheet.spreadsheet.values_batch_update(body)
 
 # Main function for the new page
 def main():
