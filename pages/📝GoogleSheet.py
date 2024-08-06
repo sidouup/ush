@@ -21,7 +21,7 @@ def get_google_sheet_client():
 def load_data(spreadsheet_id, sheet_name):
     client = get_google_sheet_client()
     sheet = client.open_by_key(spreadsheet_id).worksheet(sheet_name)
-    data = sheet.get_all_records(expected_headers=None)  # Ensure unique headers
+    data = sheet.get_all_records()
     df = pd.DataFrame(data)
     df = df.astype(str)  # Convert all columns to strings
     df['DATE'] = pd.to_datetime(df['DATE'], format='%d/%m/%Y %H:%M:%S', errors='coerce')  # Convert 'DATE' column to datetime
@@ -37,7 +37,9 @@ def save_data(df, original_df, spreadsheet_id, sheet_name):
     changes_detected = False
     for idx, row in df.iterrows():
         for col in df.columns:
-            if row[col] != original_df.at[idx, col]:
+            if pd.isna(row[col]) and pd.isna(original_df.at[idx, col]):
+                continue
+            if (row[col] != original_df.at[idx, col]):
                 changes_detected = True
                 try:
                     value_to_update = row[col]
