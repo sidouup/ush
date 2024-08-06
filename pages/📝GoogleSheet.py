@@ -24,7 +24,7 @@ def load_data(spreadsheet_id, sheet_name):
     df = pd.DataFrame(data)
     df = df.astype(str)  # Convert all columns to strings
     df['DATE'] = pd.to_datetime(df['DATE'], format='%d/%m/%Y %H:%M:%S', errors='coerce')  # Convert 'DATE' column to datetime
-    df['Month'] = def['DATE'].dt.strftime('%Y-%m').fillna('Invalid Date')  # Add Month column here
+    df['Month'] = df['DATE'].dt.strftime('%Y-%m').fillna('Invalid Date')  # Add Month column here
     return df
 
 # Function to save data to Google Sheets
