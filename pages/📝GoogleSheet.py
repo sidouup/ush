@@ -31,13 +31,26 @@ def load_data(spreadsheet_id, sheet_name):
 def save_data(df, original_df, spreadsheet_id, sheet_name):
     client = get_google_sheet_client()
     sheet = client.open_by_key(spreadsheet_id).worksheet(sheet_name)
-    df = df.where(pd.notnull(df), None)  # Replace NaNs with None for gspread
+    
+    # Function to convert Timestamp to string
+    def convert_timestamp(val):
+        if isinstance(val, pd.Timestamp):
+            return val.strftime('%Y-%m-%d %H:%M:%S')
+        return val
+
+    # Apply the conversion to all elements in the DataFrame
+    df = df.applymap(convert_timestamp)
+    original_df = original_df.applymap(convert_timestamp)
+
+    # Remove 'Month' column if it exists
+    if 'Month' in df.columns:
+        df = df.drop(columns=['Month'])
     
     # Update only the modified rows in the original dataframe
     for idx, row in df.iterrows():
         for col in df.columns:
-            if row[col] != original_df.at[idx, col]:
-                sheet.update_cell(idx + 2, df.columns.get_loc(col) + 1, row[col])
+            if col in original_df.columns and row[col] != original_df.at[idx, col]:
+                sheet.update_cell(idx + 2, df.columns.get_loc(col) + 1, str(row[col]))
 
 # Main function for the new page
 def main():
