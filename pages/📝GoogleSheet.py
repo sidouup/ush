@@ -21,7 +21,7 @@ def get_google_sheet_client():
 def load_data(spreadsheet_id, sheet_name):
     client = get_google_sheet_client()
     sheet = client.open_by_key(spreadsheet_id).worksheet(sheet_name)
-    data = sheet.get_all_records()
+    data = sheet.get_all_records(expected_headers=None)  # Ensure unique headers
     df = pd.DataFrame(data)
     df = df.astype(str)  # Convert all columns to strings
     df['DATE'] = pd.to_datetime(df['DATE'], format='%d/%m/%Y %H:%M:%S', errors='coerce')  # Convert 'DATE' column to datetime
@@ -133,6 +133,7 @@ def main():
         # Apply styling and display the dataframe
         styled_df = filtered_data.style.apply(highlight_agent, axis=1)
         st.dataframe(styled_df)
+
 
 # Custom CSS to zoom out
 st.markdown("""
