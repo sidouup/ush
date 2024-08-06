@@ -31,12 +31,16 @@ def save_data(df, original_df, spreadsheet_id, sheet_name):
     client = get_google_sheet_client()
     sheet = client.open_by_key(spreadsheet_id).worksheet(sheet_name)
     df = df.where(pd.notnull(df), None)  # Replace NaNs with None for gspread
-    
+
     # Update only the modified rows in the original dataframe
     for idx, row in df.iterrows():
         for col in df.columns:
             if row[col] != original_df.at[idx, col]:
-                sheet.update_cell(idx + 2, df.columns.get_loc(col) + 1, row[col])
+                try:
+                    st.write(f"Updating cell: Row {idx + 2}, Column {col} with value {row[col]}")
+                    sheet.update_cell(idx + 2, df.columns.get_loc(col) + 1, row[col])
+                except Exception as e:
+                    st.error(f"Failed to update cell: Row {idx + 2}, Column {col} with value {row[col]}. Error: {e}")
 
 # Main function for the new page
 def main():
@@ -114,7 +118,7 @@ def main():
         if st.button("Save Changes"):
             save_data(edited_data, original_df_all, spreadsheet_id, sheet_name)
             st.success("Changes saved successfully!")
-            st.rerun()  # Rerun the script to show the updated data
+            st.experimental_rerun()  # Rerun the script to show the updated data
     else:
         # Apply styling and display the dataframe
         styled_df = filtered_data.style.apply(highlight_agent, axis=1)
