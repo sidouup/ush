@@ -39,7 +39,7 @@ def save_data(df, original_df, spreadsheet_id, sheet_name):
     # Update only the modified rows in the original dataframe
     for idx, row in df.iterrows():
         for col in df.columns:
-            if row[col] != original_df.at[idx, col]:
+            if col != 'Month' and row[col] != original_df.at[idx, col]:
                 sheet.update_cell(idx + 2, df.columns.get_loc(col) + 1, row[col])
 
 # Main function for the new page
@@ -53,12 +53,7 @@ def main():
     original_df_all = df_all.copy()  # Keep a copy of the original data
 
     # Extract month and year for filtering
-    if not df_all.empty and 'DATE' in df_all.columns:
-        df_all['Month'] = df_all['DATE'].dt.strftime('%Y-%m').fillna('Invalid Date')
-    else:
-        st.error("The data frame is empty or the 'DATE' column is missing.")
-        return
-
+    df_all['Month'] = df_all['DATE'].dt.strftime('%Y-%m').fillna('Invalid Date')
     months = ["All"] + sorted(df_all['Month'].unique())
 
     # Define filter options
@@ -118,9 +113,9 @@ def main():
     # Editable table
     edit_mode = st.checkbox("Edit Mode")
     if edit_mode:
-        edited_data = st.data_editor(filtered_data, num_rows="dynamic")
+        edited_data = st.data_editor(filtered_data.drop(columns=['Month']), num_rows="dynamic")
         if st.button("Save Changes"):
-            save_data(edited_data, original_df_all, spreadsheet_id, sheet_name)
+            save_data(edited_data, original_df_all.drop(columns=['Month']), spreadsheet_id, sheet_name)
             st.success("Changes saved successfully!")
             st.rerun()  # Rerun the script to show the updated data
     else:
