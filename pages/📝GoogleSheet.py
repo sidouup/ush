@@ -3,7 +3,7 @@ import pandas as pd
 from google.oauth2.service_account import Credentials
 import gspread
 
-st.set_page_config(page_title="Student List", layout="wide" )
+st.set_page_config(page_title="Student List", layout="wide")
 # Use Streamlit secrets for service account info
 SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
 
@@ -32,6 +32,10 @@ def save_data(df, original_df, spreadsheet_id, sheet_name):
     sheet = client.open_by_key(spreadsheet_id).worksheet(sheet_name)
     df = df.where(pd.notnull(df), None)  # Replace NaNs with None for gspread
     
+    # Convert 'DATE' column back to string before updating
+    if 'DATE' in df.columns:
+        df['DATE'] = df['DATE'].dt.strftime('%d/%m/%Y %H:%M:%S')
+    
     # Update only the modified rows in the original dataframe
     for idx, row in df.iterrows():
         for col in df.columns:
@@ -40,7 +44,6 @@ def save_data(df, original_df, spreadsheet_id, sheet_name):
 
 # Main function for the new page
 def main():
-
     st.title("Student List")
 
     # Load data from Google Sheets
@@ -55,7 +58,7 @@ def main():
 
     # Define filter options
     current_steps = ["All"] + list(df_all['Stage'].unique())
-    agents = ["All", "Nesrine", "Hamza", "Djazila","Nada"]
+    agents = ["All", "Nesrine", "Hamza", "Djazila", "Nada"]
     school_options = ["All", "University", "Community College", "CCLS Miami", "CCLS NY NJ", "Connect English", "CONVERSE SCHOOL", "ELI San Francisco", "F2 Visa", "GT Chicago", "BEA Huston", "BIA Huston", "OHLA Miami", "UCDEA", "HAWAII", "Not Partner", "Not yet"]
     attempts_options = ["All", "1 st Try", "2 nd Try", "3 rd Try"]
 
