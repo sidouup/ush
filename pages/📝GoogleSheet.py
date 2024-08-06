@@ -52,8 +52,8 @@ if 'original_data' not in st.session_state:
     st.session_state.original_data = st.session_state.data.copy()
 
 # Extract month and year for filtering
-st.session_state.data['Month'] = pd.to_datetime(st.session_state.data['DATE'], errors='coerce').dt.strftime('%Y-%m').fillna('Invalid Date')
-st.session_state.original_data['Month'] = pd.to_datetime(st.session_state.original_data['DATE'], errors='coerce').dt.strftime('%Y-%m').fillna('Invalid Date')
+st.session_state.data['DATE'] = pd.to_datetime(st.session_state.data['DATE'], errors='coerce')
+st.session_state.data['Month'] = st.session_state.data['DATE'].dt.strftime('%Y-%m').fillna('Invalid Date')
 months = ["All"] + sorted(st.session_state.data['Month'].unique())
 
 # Define filter options
@@ -75,19 +75,13 @@ for agent, color in agent_colors.items():
     st.sidebar.markdown(f"<div style='{color};padding: 5px;'>{agent}</div>", unsafe_allow_html=True)
 
 # Filter buttons for stages
-st.markdown('<div class="stCard" style="display: flex; justify-content: space-between;">', unsafe_allow_html=True)
-stage_filter = st.selectbox("Filter by Stage", current_steps, key="stage_filter")
+stage_filter = st.sidebar.selectbox("Filter by Stage", current_steps, key="stage_filter")
 
 # Filter widgets
-col1, col2, col3, col4 = st.columns(4)
-with col1:
-    agent_filter = st.selectbox("Filter by Agent", agents, key="agent_filter")
-with col2:
-    school_filter = st.selectbox("Filter by School", school_options, key="school_filter")
-with col3:
-    attempts_filter = st.selectbox("Filter by Attempts", attempts_options, key="attempts_filter")
-with col4:
-    month_filter = st.selectbox("Filter by Month", months, key="month_filter")
+agent_filter = st.sidebar.selectbox("Filter by Agent", agents, key="agent_filter")
+school_filter = st.sidebar.selectbox("Filter by School", school_options, key="school_filter")
+attempts_filter = st.sidebar.selectbox("Filter by Attempts", attempts_options, key="attempts_filter")
+month_filter = st.sidebar.selectbox("Filter by Month", months, key="month_filter")
 
 # Apply filters
 filtered_data = st.session_state.data
