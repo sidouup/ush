@@ -53,7 +53,12 @@ def main():
     original_df_all = df_all.copy()  # Keep a copy of the original data
 
     # Extract month and year for filtering
-    df_all['Month'] = df_all['DATE'].dt.strftime('%Y-%m').fillna('Invalid Date')
+    if not df_all.empty and 'DATE' in df_all.columns:
+        df_all['Month'] = df_all['DATE'].dt.strftime('%Y-%m').fillna('Invalid Date')
+    else:
+        st.error("The data frame is empty or the 'DATE' column is missing.")
+        return
+
     months = ["All"] + sorted(df_all['Month'].unique())
 
     # Define filter options
