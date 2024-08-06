@@ -39,7 +39,7 @@ def save_data(df, original_df, spreadsheet_id, sheet_name):
     # Update only the modified rows in the original dataframe
     for idx, row in df.iterrows():
         for col in df.columns:
-            if col != 'Month' and row[col] != original_df.at[idx, col]:
+            if row[col] != original_df.at[idx, col]:
                 sheet.update_cell(idx + 2, df.columns.get_loc(col) + 1, row[col])
 
 # Main function for the new page
@@ -90,7 +90,7 @@ def main():
         month_filter = st.selectbox("Filter by Month", months, key="month_filter")
 
     # Apply filters
-    filtered_data = df_all
+    filtered_data = df_all.copy()
     if stage_filter != "All":
         filtered_data = filtered_data[filtered_data['Stage'] == stage_filter]
     if agent_filter != "All":
@@ -115,9 +115,9 @@ def main():
     if edit_mode:
         edited_data = st.data_editor(filtered_data.drop(columns=['Month']), num_rows="dynamic")
         if st.button("Save Changes"):
-            save_data(edited_data, original_df_all.drop(columns=['Month']), spreadsheet_id, sheet_name)
+            save_data(edited_data, original_df_all, spreadsheet_id, sheet_name)
             st.success("Changes saved successfully!")
-            st.rerun()  # Rerun the script to show the updated data
+            st.experimental_rerun()  # Rerun the script to show the updated data
     else:
         # Apply styling and display the dataframe
         styled_df = filtered_data.style.apply(highlight_agent, axis=1)
