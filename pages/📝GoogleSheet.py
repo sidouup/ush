@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from google.oauth2.service_account import Credentials
 import gspread
+import time
 
 st.set_page_config(page_title="Student List", layout="wide" )
 # Use Streamlit secrets for service account info
@@ -37,8 +38,12 @@ def save_data(df, original_df, spreadsheet_id, sheet_name):
         for col in df.columns:
             if row[col] != original_df.at[idx, col]:
                 try:
-                    st.write(f"Updating cell: Row {idx + 2}, Column {col} with value {row[col]}")
-                    sheet.update_cell(idx + 2, df.columns.get_loc(col) + 1, row[col])
+                    value_to_update = row[col]
+                    if isinstance(value_to_update, pd.Timestamp):
+                        value_to_update = value_to_update.strftime('%Y-%m-%d %H:%M:%S')
+                    st.write(f"Updating cell: Row {idx + 2}, Column {col} with value {value_to_update}")
+                    sheet.update_cell(idx + 2, df.columns.get_loc(col) + 1, value_to_update)
+                    time.sleep(1)  # Add a delay to prevent exceeding API quota
                 except Exception as e:
                     st.error(f"Failed to update cell: Row {idx + 2}, Column {col} with value {row[col]}. Error: {e}")
 
