@@ -4,7 +4,7 @@ from google.oauth2.service_account import Credentials
 import gspread
 import time
 
-st.set_page_config(page_title="Student List", layout="wide" )
+st.set_page_config(page_title="Student List", layout="wide")
 # Use Streamlit secrets for service account info
 SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
 
@@ -60,11 +60,12 @@ def main():
 
     # Extract month and year for filtering
     df_all['Month'] = df_all['DATE'].dt.strftime('%Y-%m').fillna('Invalid Date')
+    original_df_all['Month'] = original_df_all['DATE'].dt.strftime('%Y-%m').fillna('Invalid Date')
     months = ["All"] + sorted(df_all['Month'].unique())
 
     # Define filter options
     current_steps = ["All"] + list(df_all['Stage'].unique())
-    agents = ["All", "Nesrine", "Hamza", "Djazila","Nada"]
+    agents = ["All", "Nesrine", "Hamza", "Djazila", "Nada"]
     school_options = ["All", "University", "Community College", "CCLS Miami", "CCLS NY NJ", "Connect English", "CONVERSE SCHOOL", "ELI San Francisco", "F2 Visa", "GT Chicago", "BEA Huston", "BIA Huston", "OHLA Miami", "UCDEA", "HAWAII", "Not Partner", "Not yet"]
     attempts_options = ["All", "1 st Try", "2 nd Try", "3 rd Try"]
 
