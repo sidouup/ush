@@ -3,7 +3,7 @@ import pandas as pd
 from google.oauth2.service_account import Credentials
 import gspread
 
-st.set_page_config(page_title="Student List", layout="wide")
+st.set_page_config(page_title="Student List", layout="wide" )
 # Use Streamlit secrets for service account info
 SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
 
@@ -32,10 +32,6 @@ def save_data(df, original_df, spreadsheet_id, sheet_name):
     sheet = client.open_by_key(spreadsheet_id).worksheet(sheet_name)
     df = df.where(pd.notnull(df), None)  # Replace NaNs with None for gspread
     
-    # Convert 'DATE' column back to string before updating
-    if 'DATE' in df.columns:
-        df['DATE'] = df['DATE'].dt.strftime('%d/%m/%Y %H:%M:%S')
-    
     # Update only the modified rows in the original dataframe
     for idx, row in df.iterrows():
         for col in df.columns:
@@ -44,6 +40,7 @@ def save_data(df, original_df, spreadsheet_id, sheet_name):
 
 # Main function for the new page
 def main():
+
     st.title("Student List")
 
     # Load data from Google Sheets
@@ -58,7 +55,7 @@ def main():
 
     # Define filter options
     current_steps = ["All"] + list(df_all['Stage'].unique())
-    agents = ["All", "Nesrine", "Hamza", "Djazila", "Nada"]
+    agents = ["All", "Nesrine", "Hamza", "Djazila","Nada"]
     school_options = ["All", "University", "Community College", "CCLS Miami", "CCLS NY NJ", "Connect English", "CONVERSE SCHOOL", "ELI San Francisco", "F2 Visa", "GT Chicago", "BEA Huston", "BIA Huston", "OHLA Miami", "UCDEA", "HAWAII", "Not Partner", "Not yet"]
     attempts_options = ["All", "1 st Try", "2 nd Try", "3 rd Try"]
 
@@ -90,7 +87,7 @@ def main():
         month_filter = st.selectbox("Filter by Month", months, key="month_filter")
 
     # Apply filters
-    filtered_data = df_all.copy()
+    filtered_data = df_all
     if stage_filter != "All":
         filtered_data = filtered_data[filtered_data['Stage'] == stage_filter]
     if agent_filter != "All":
@@ -113,11 +110,11 @@ def main():
     # Editable table
     edit_mode = st.checkbox("Edit Mode")
     if edit_mode:
-        edited_data = st.data_editor(filtered_data.drop(columns=['Month']), num_rows="dynamic")
+        edited_data = st.data_editor(filtered_data, num_rows="dynamic")
         if st.button("Save Changes"):
             save_data(edited_data, original_df_all, spreadsheet_id, sheet_name)
             st.success("Changes saved successfully!")
-            st.experimental_rerun()  # Rerun the script to show the updated data
+            st.rerun()  # Rerun the script to show the updated data
     else:
         # Apply styling and display the dataframe
         styled_df = filtered_data.style.apply(highlight_agent, axis=1)
