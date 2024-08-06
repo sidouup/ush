@@ -17,14 +17,15 @@ def get_google_sheet_client():
     return gspread.authorize(creds)
 
 # Function to load data from Google Sheets
-def load_data(spreadsheet_id, sheet_name):
-    client = get_google_sheet_client()
-    sheet = client.open_by_key(spreadsheet_id).worksheet(sheet_name)
-    data = sheet.get_all_records()
-    df = pd.DataFrame(data)
-    df = df.astype(str)  # Convert all columns to strings
-    df['DATE'] = pd.to_datetime(df['DATE'], format='%d/%m/%Y %H:%M:%S', errors='coerce')  # Convert 'DATE' column to datetime
-    return df
+   def load_data(spreadsheet_id, sheet_name):
+       client = get_google_sheet_client()
+       sheet = client.open_by_key(spreadsheet_id).worksheet(sheet_name)
+       data = sheet.get_all_records()
+       df = pd.DataFrame(data)
+       df = df.astype(str)  # Convert all columns to strings
+       df['DATE'] = pd.to_datetime(df['DATE'], format='%d/%m/%Y %H:%M:%S', errors='coerce')  # Convert 'DATE' column to datetime
+       df['Month'] = df['DATE'].dt.strftime('%Y-%m').fillna('Invalid Date')  # Add Month column here
+       return df
 
 # Function to save data to Google Sheets
 def save_data(df, original_df, spreadsheet_id, sheet_name):
@@ -47,7 +48,7 @@ def main():
     spreadsheet_id = "1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI"
     sheet_name = "ALL"
     df_all = load_data(spreadsheet_id, sheet_name)
-    original_df_all = df_all.copy()  # Keep a copy of the original data
+    original_df_all = df_all.copy()  # This will now include the 'Month' column
 
     # Extract month and year for filtering
     df_all['Month'] = df_all['DATE'].dt.strftime('%Y-%m').fillna('Invalid Date')
