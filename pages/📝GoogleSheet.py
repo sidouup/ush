@@ -29,7 +29,7 @@ def get_gsheet_client():
 client = get_gsheet_client()
 
 # Open the Google Sheet using the provided link
-spreadsheet_url = "https://docs.google.com/spreadsheets/d/1NkW2a4_eOlDGeVxY9PZk-lEI36PvAv9XoO4ZIwl-Sew/edit#gid=1019724402"
+spreadsheet_url = "https://docs.google.com/spreadsheets/d/1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI/edit?gid=693781323#gid=693781323"
 
 # Function to load data from Google Sheets
 def load_data():
