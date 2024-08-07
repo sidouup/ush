@@ -5,6 +5,8 @@ import pandas as pd
 import numpy as np
 import time
 import logging
+from datetime import datetime
+
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -35,7 +37,7 @@ def load_data():
     sheet = spreadsheet.sheet1  # Adjust if you need to access a different sheet
     data = sheet.get_all_records()
     df = pd.DataFrame(data)
-    df['DATE'] = pd.to_datetime(df['DATE'], dayfirst=True, errors='coerce')  # Convert DATE to datetime with dayfirst=True
+    df['DATE'] = pd.to_datetime(df['DATE'], format='%d/%m/%Y %H:%M:%S', errors='coerce')  # Convert DATE to datetime with dayfirst=True
     df['Months'] = df['DATE'].dt.strftime('%B %Y')  # Create a new column 'Months' for filtering
     return df
 
@@ -47,7 +49,7 @@ def save_data(df, spreadsheet_url):
         sheet = spreadsheet.sheet1
 
         # Convert DATE column back to string
-        df['DATE'] = pd.to_datetime(df['DATE'], dayfirst=True, errors='coerce')  # Ensure DATE is datetime
+        df['DATE'] = pd.to_datetime(df['DATE'], errors='coerce')  # Ensure DATE is datetime
         df['DATE'] = df['DATE'].dt.strftime('%d/%m/%Y %H:%M:%S')
 
         # Replace problematic values with a placeholder
@@ -78,32 +80,42 @@ st.title("Student List")
 col1, col2, col3, col4, col5 = st.columns(5)
 
 with col1:
-    agents = st.multiselect('Filter by Agent', options=st.session_state.data['Agent'].unique())
+    agents = ["All", "Nesrine", "Hamza", "Djazila", "Nada"]
+    selected_agents = st.multiselect('Filter by Agent', options=agents)
 
 with col2:
-    months_years = st.multiselect('Filter by Month', options=st.session_state.data['Months'].unique())
+    # Sort months chronologically
+    all_months = sorted(st.session_state.data['Months'].unique(), 
+                        key=lambda x: datetime.strptime(x, '%B %Y'))
+    months_years = ["All"] + list(all_months)
+    selected_months = st.multiselect('Filter by Month', options=months_years, default=["All"])
 
 with col3:
-    stages = st.multiselect('Filter by Stage', options=st.session_state.data['Stage'].unique())
+    stages = ["All", 'PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV', 'DS-160', 'ITW Prep.', 'CLIENTS']
+    selected_stages = st.multiselect('Filter by Stage', options=stages)
 
 with col4:
-    schools = st.multiselect('Filter by Chosen School', options=st.session_state.data['Chosen School'].unique())
+    school_options = ["All", "University", "Community College", "CCLS Miami", "CCLS NY NJ", "Connect English",
+                      "CONVERSE SCHOOL", "ELI San Francisco", "F2 Visa", "GT Chicago", "BEA Huston", "BIA Huston",
+                      "OHLA Miami", "UCDEA", "HAWAII", "Not Partner", "Not yet"]
+    selected_schools = st.multiselect('Filter by Chosen School', options=school_options)
 
 with col5:
-    attempts = st.multiselect('Filter by Attempts', options=st.session_state.data['Attempts'].unique())
+    attempts_options = ["All", "1 st Try", "2 nd Try", "3 rd Try"]
+    selected_attempts = st.multiselect('Filter by Attempts', options=attempts_options)
 
 filtered_data = st.session_state.data.copy()
 
-if agents:
-    filtered_data = filtered_data[filtered_data['Agent'].isin(agents)]
-if months_years:
-    filtered_data = filtered_data[filtered_data['Months'].isin(months_years)]
-if stages:
-    filtered_data = filtered_data[filtered_data['Stage'].isin(stages)]
-if schools:
-    filtered_data = filtered_data[filtered_data['Chosen School'].isin(schools)]
-if attempts:
-    filtered_data = filtered_data[filtered_data['Attempts'].isin(attempts)]
+if selected_agents and "All" not in selected_agents:
+    filtered_data = filtered_data[filtered_data['Agent'].isin(selected_agents)]
+if selected_months and "All" not in selected_months:
+    filtered_data = filtered_data[filtered_data['Months'].isin(selected_months)]
+if selected_stages and "All" not in selected_stages:
+    filtered_data = filtered_data[filtered_data['Stage'].isin(selected_stages)]
+if selected_schools and "All" not in selected_schools:
+    filtered_data = filtered_data[filtered_data['Chosen School'].isin(selected_schools)]
+if selected_attempts and "All" not in selected_attempts:
+    filtered_data = filtered_data[filtered_data['Attempts'].isin(selected_attempts)]
 
 # Sort filtered data for display using DATE as day-first
 filtered_data['DATE'] = pd.to_datetime(filtered_data['DATE'], dayfirst=True, errors='coerce')
@@ -119,7 +131,7 @@ edited_df = st.data_editor(filtered_data, num_rows="dynamic", key="student_data"
 if st.button("Save Changes"):
     try:
         # Convert DATE column back to string for saving
-        edited_df['DATE'] = pd.to_datetime(edited_df['DATE'], dayfirst=True, errors='coerce')
+        edited_df['DATE'] = pd.to_datetime(edited_df['DATE'], format='%d/%m/%Y %H:%M:%S', errors='coerce')
         edited_df['DATE'] = edited_df['DATE'].dt.strftime('%d/%m/%Y %H:%M:%S')
         
         st.session_state.original_data.update(edited_df)  # Update the original dataset with edited data
