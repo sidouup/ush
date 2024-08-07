@@ -47,7 +47,6 @@ def cache_with_timeout(timeout_minutes=60):
         return wrapper
     return decorator
 
-
 # Use Streamlit secrets for service account info
 SERVICE_ACCOUNT_INFO = st.secrets["gcp_service_account"]
 
@@ -136,7 +135,15 @@ def load_data(spreadsheet_id):
                 df.dropna(how='all', inplace=True)
                 combined_data = pd.concat([combined_data, df], ignore_index=True)
         
-        combined_data.drop_duplicates(subset='Student Name', keep='last', inplace=True)
+        # Handle duplicates by appending a number to duplicate names
+        combined_data['Student Name'] = combined_data['Student Name'].astype(str)
+        name_counts = combined_data['Student Name'].value_counts()
+        for name, count in name_counts.items():
+            if count > 1:
+                indices = combined_data[combined_data['Student Name'] == name].index
+                for i, idx in enumerate(indices):
+                    combined_data.at[idx, 'Student Name'] = f"{name} {i+1}"
+        
         combined_data.reset_index(drop=True, inplace=True)
 
         return combined_data
@@ -144,61 +151,44 @@ def load_data(spreadsheet_id):
         st.error(f"An error occurred: {str(e)}")
         return pd.DataFrame()
 
-# Function to save data to Google Sheets (batch up)
-def save_data(df, spreadsheet_id, sheet_name, student_name):
-    def replace_invalid_floats(val):
-        if isinstance(val, float):
-            if pd.isna(val) or np.isinf(val):
-                return None
-        return val
+def save_data(df, spreadsheet_id, sheet_name):
+    logger.info("Attempting to save changes")
 
-    # Get the row of the specific student
-    student_row = df[df['Student Name'] == student_name].iloc[0]
-
-    # Replace NaN and inf values with None for this student's data
-    student_row = student_row.apply(replace_invalid_floats)
-
-    # Replace [pd.NA, pd.NaT, float('inf'), float('-inf')] with None
-    student_row = student_row.replace([pd.NA, pd.NaT, float('inf'), float('-inf')], None)
-
-    # Format the date columns to ensure consistency
-    date_columns = ['DATE', 'School Entry Date', 'Entry Date in the US', 'EMBASSY ITW. DATE']
-    for col in date_columns:
-        if col in student_row.index:
-            value = student_row[col]
-            if pd.notna(value):
-                try:
-                    # Convert to datetime and format as string
-                    formatted_date = pd.to_datetime(value).strftime('%d/%m/%Y %H:%M:%S')
-                    student_row[col] = formatted_date
-                except:
-                    student_row[col] = ""
-
-    client = get_google_sheet_client()
-    sheet = client.open_by_key(spreadsheet_id).worksheet(sheet_name)
+    # Handle duplicates by appending a number to duplicate names
+    df['Student Name'] = df['Student Name'].astype(str)
+    name_counts = df['Student Name'].value_counts()
+    for name, count in name_counts.items():
+        if count > 1:
+            indices = df[df['Student Name'] == name].index
+            for i, idx in enumerate(indices):
+                df.at[idx, 'Student Name'] = f"{name} {i+1}"
     
-    # Find the row of the student in the sheet
-    cell = sheet.find(student_name)
-    if cell is None:
-        logger.error(f"Student {student_name} not found in the sheet.")
-        return
+    try:
+        client = get_google_sheet_client()
+        spreadsheet = client.open_by_key(spreadsheet_id)
+        sheet = spreadsheet.worksheet(sheet_name)
 
-    row_number = cell.row
+        # Convert DATE column back to string for saving
+        date_columns = ['DATE', 'School Entry Date', 'Entry Date in the US', 'EMBASSY ITW. DATE']
+        for col in date_columns:
+            if col in df.columns:
+                df[col] = pd.to_datetime(df[col], dayfirst=True, errors='coerce')  # Ensure DATE is datetime
+                df[col] = df[col].dt.strftime('%d/%m/%Y %H:%M:%S')
 
-    # Prepare the data for update
-    values = [student_row.tolist()]
-    
-    # Calculate the last column letter
-    num_columns = len(student_row)
-    if num_columns <= 26:
-        last_column = string.ascii_uppercase[num_columns - 1]
-    else:
-        last_column = string.ascii_uppercase[(num_columns - 1) // 26 - 1] + string.ascii_uppercase[(num_columns - 1) % 26]
+        # Replace problematic values with a placeholder
+        df.replace([np.inf, -np.inf, np.nan], 'NaN', inplace=True)
 
-    # Update only the specific student's row
-    sheet.update(f'A{row_number}:{last_column}{row_number}', values)
+        # Clear the existing sheet
+        sheet.clear()
 
-    logger.info(f"Updated data for student: {student_name}")
+        # Update the sheet with new data, including the "Student Name" column
+        sheet.update([df.columns.values.tolist()] + df.values.tolist())
+
+        logger.info("Changes saved successfully")
+        return True
+    except Exception as e:
+        logger.error(f"Error saving changes: {str(e)}")
+        return False
 
 def format_date(date_string):
     if pd.isna(date_string) or date_string == 'NaT':
@@ -209,9 +199,6 @@ def format_date(date_string):
         return date.strftime('%d %B %Y') if not pd.isna(date) else "Invalid Date"
     except:
         return "Invalid Date"
-
-
-
 
 def clear_cache_and_rerun():
     st.cache_data.clear()
@@ -231,7 +218,6 @@ def calculate_days_until_interview(interview_date):
     except Exception as e:
         logger.error(f"Error calculating days until interview: {str(e)}")
         return None
-
 
 # Function to get visa status
 def get_visa_status(result):
@@ -308,7 +294,6 @@ def check_file_exists(file_name, student_folder_id, document_type):
         logger.error(f"An error occurred while checking if file exists: {error}")
         return False
 
-
 # Function to handle file upload and folder creation
 def handle_file_upload(student_name, document_type, uploaded_file):
     parent_folder_id = '1It91HqQDsYeSo1MuYgACtmkmcO82vzXp'  # Use the provided parent folder ID
@@ -350,8 +335,6 @@ def handle_file_upload(student_name, document_type, uploaded_file):
         st.warning(f"{file_name} already exists for this student in the {document_type} folder.")
     
     return None
-
-
 
 async def fetch_document_status(session, document_type, student_folder_id, service):
     document_folder_id = await check_folder_exists_async(document_type, student_folder_id, service)
@@ -552,7 +535,7 @@ def main():
     </div>
     """, unsafe_allow_html=True)
 
-    spreadsheet_id = "1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI"
+    spreadsheet_id = "1NkW2a4_eOlDGeVxY9PZk-lEI36PvAv9XoO4ZIwl-Sew"
     
     if 'data' not in st.session_state or st.session_state.get('reload_data', False):
         data = load_data(spreadsheet_id)
@@ -560,6 +543,9 @@ def main():
         st.session_state['reload_data'] = False
     else:
         data = st.session_state['data']
+
+    # Combine First Name and Last Name for all rows
+    data['Student Name'] = data['First Name'] + " " + data['Last Name']
 
     if not data.empty:
         current_steps = ["All"] + list(data['Stage'].unique())
@@ -592,7 +578,10 @@ def main():
             filtered_data = filtered_data[filtered_data['Chosen School'] == school_filter]
         if attempts_filter != "All":
             filtered_data = filtered_data[filtered_data['Attempts'] == attempts_filter]
-        
+
+        # Combine First Name and Last Name for filtered data
+        filtered_data['Student Name'] = filtered_data['First Name'] + " " + filtered_data['Last Name']
+
         student_names = filtered_data['Student Name'].tolist()
         
         if not filtered_data.empty:
@@ -727,8 +716,6 @@ def main():
 
             edit_mode = st.toggle("Edit Mode", value=False)
 
-
-
             # Tabs for student information
             tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["Personal", "School", "Embassy", "Payment","Stage", "Documents"])
             
@@ -811,7 +798,7 @@ def main():
                         specialite = st.text_input("Specialite", selected_student['Specialite'], key="specialite", on_change=update_student_data)
                         duration = st.text_input("Duration", selected_student['Duration'], key="duration", on_change=update_student_data)
                         Bankstatment = st.text_input("BANK", selected_student['BANK'], key="Bankstatment", on_change=update_student_data)
-                
+
                         school_entry_date = pd.to_datetime(selected_student['School Entry Date'], errors='coerce', dayfirst=True)
                         school_entry_date = st.date_input(
                             "School Entry Date",
@@ -819,7 +806,7 @@ def main():
                             key="school_entry_date",
                             on_change=update_student_data
                         )
-                        
+
                         entry_date_in_us = pd.to_datetime(selected_student['Entry Date in the US'], errors='coerce', dayfirst=True)
                         entry_date_in_us = st.date_input(
                             "Entry Date in the US",
@@ -828,10 +815,10 @@ def main():
                             on_change=update_student_data
                         )
                         School_Paid = st.selectbox(
-                            "School Paid", 
-                            School_paid_opt, 
+                            "School Paid",
+                            School_paid_opt,
                             index=School_paid_opt.index(selected_student['School Paid']) if selected_student['School Paid'] in School_paid_opt else 0,
-                            key="School_Paid",  # Note the capitalization here
+                            key="School_Paid",
                             on_change=update_student_data
                         )
                     else:
@@ -843,7 +830,7 @@ def main():
                         st.write(f"**Entry Date in the US:** {format_date(selected_student['Entry Date in the US'])}")
                         st.write(f"**School Paid:** {selected_student['School Paid']}")
                     st.markdown('</div>', unsafe_allow_html=True)
-            
+
             with tab3:
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("🏛️ Embassy Information")
@@ -851,7 +838,7 @@ def main():
                     address_us = st.text_input("Address in the U.S", selected_student['ADDRESS in the U.S'], key="address_us", on_change=update_student_data)
                     email_rdv = st.text_input("E-mail RDV", selected_student['E-MAIL RDV'], key="email_rdv", on_change=update_student_data)
                     password_rdv = st.text_input("Password RDV", selected_student['PASSWORD RDV'], key="password_rdv", on_change=update_student_data)
-                    
+
                     # Handle embassy interview date
                     embassy_itw_date_str = selected_student['EMBASSY ITW. DATE']
                     try:
@@ -859,22 +846,22 @@ def main():
                         embassy_itw_date_value = embassy_itw_date.date() if not pd.isna(embassy_itw_date) else None
                     except AttributeError:
                         embassy_itw_date_value = None
-        
+
                     embassy_itw_date = st.date_input(
-                        "Embassy Interview Date", 
+                        "Embassy Interview Date",
                         value=embassy_itw_date_value,
-                        key="embassy_itw_date", 
+                        key="embassy_itw_date",
                         on_change=update_student_data
                     )
-        
+
                     ds160_maker = st.text_input("DS-160 Maker", selected_student['DS-160 maker'], key="ds160_maker", on_change=update_student_data)
                     password_ds160 = st.text_input("Password DS-160", selected_student['Password DS-160'], key="password_ds160", on_change=update_student_data)
                     secret_q = st.text_input("Secret Question", selected_student['Secret Q.'], key="secret_q", on_change=update_student_data)
                     Prep_ITW = st.selectbox(
-                        "Prep ITW", 
-                        Prep_ITW_opt, 
+                        "Prep ITW",
+                        Prep_ITW_opt,
                         index=Prep_ITW_opt.index(selected_student['Prep ITW']) if selected_student['Prep ITW'] in Prep_ITW_opt else 0,
-                        key="Prep_ITW",  # Note the capitalization here
+                        key="Prep_ITW",
                         on_change=update_student_data
                     )
 
@@ -888,7 +875,7 @@ def main():
                     st.write(f"**Secret Question:** {selected_student['Secret Q.']}")
                     st.write(f"**ITW Prep:** {selected_student['Prep ITW']}")
                 st.markdown('</div>', unsafe_allow_html=True)
-            
+
             with tab4:
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("💰 Payment Information")
@@ -899,14 +886,14 @@ def main():
                         payment_date_value = payment_date if not pd.isna(payment_date) else None
                     except AttributeError:
                         payment_date_value = None
-            
+
                     payment_date = st.date_input(
-                        "Payment Date", 
+                        "Payment Date",
                         value=payment_date_value,
-                        key="payment_date", 
+                        key="payment_date",
                         on_change=update_student_data
                     )
-            
+
                     payment_method = st.selectbox("Payment Method", payment_amount_options, index=payment_amount_options.index(selected_student['Payment Amount']) if selected_student['Payment Amount'] in payment_amount_options else 0, key="payment_method", on_change=update_student_data)
                     payment_type = st.selectbox("Payment Type", payment_type_options, key="payment_type", on_change=update_student_data)
                     compte = st.selectbox("Compte", compte_options, key="compte", on_change=update_student_data)
@@ -920,34 +907,14 @@ def main():
                     st.write(f"**Sevis Payment:** {selected_student['Sevis payment ?']}")
                     st.write(f"**Application Payment:** {selected_student['Application payment ?']}")
                 st.markdown('</div>', unsafe_allow_html=True)
-    
-                
-            with tab6:
-                st.markdown('<div class="stCard">', unsafe_allow_html=True)
-                st.subheader("📂 Document Upload and Status")
-                document_type = st.selectbox("Select Document Type", 
-                                             ["Passport", "Bank Statement", "Financial Letter", 
-                                              "Transcripts", "Diplomas", "English Test", "Payment Receipt",
-                                              "SEVIS Receipt", "I20"], 
-                                             key="document_type")
-                uploaded_file = st.file_uploader("Upload Document", type=["jpg", "jpeg", "png", "pdf"], key="uploaded_file")
-                
-                if uploaded_file and st.button("Upload Document"):
-                    file_id = handle_file_upload(student_name, document_type, uploaded_file)
-                    if file_id:
-                        st.success(f"{document_type} uploaded successfully!")
-                        if 'document_status_cache' in st.session_state:
-                            st.session_state['document_status_cache'].pop(student_name, None)
-                        clear_cache_and_rerun()  # Clear cache and rerun the app
-                    else:
-                        st.error("An error occurred while uploading the document.")
+
             with tab5:
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("🚩 Current Stage")
-            
+
                 # Define the stages
                 stages = ['PAYMENT & MAIL', 'APPLICATION', 'SCAN & SEND', 'ARAMEX & RDV', 'DS-160', 'ITW Prep.',  'CLIENTS']
-            
+
                 if edit_mode:
                     current_stage = st.selectbox(
                         "Current Stage",
@@ -958,11 +925,11 @@ def main():
                     )
                 else:
                     st.write(f"**Current Stage:** {selected_student['Stage']}")
-            
+
                 # Display progress bar
                 step_index = stages.index(selected_student['Stage']) if selected_student['Stage'] in stages else 0
                 progress = ((step_index + 1) / len(stages)) * 100
-            
+
                 progress_bar = f"""
                 <div class="progress-container">
                     <div class="progress-bar" style="width: {progress}%;">
@@ -971,65 +938,88 @@ def main():
                 </div>
                 """
                 st.markdown(progress_bar, unsafe_allow_html=True)
-            
-                st.markdown('</div>', unsafe_allow_html=True)
-    
-            if edit_mode and st.button("Save Changes", key="save_changes_button"):
-                updated_student = {
-                    'First Name': st.session_state.get('first_name', ''),
-                    'Last Name': st.session_state.get('last_name', ''),
-                    'Phone N°': st.session_state.get('phone_number', ''),
-                    'E-mail': st.session_state.get('email', ''),
-                    'Emergency contact N°': st.session_state.get('emergency_contact', ''),
-                    'Address': st.session_state.get('address', ''),
-                    'Attempts': st.session_state.get('attempts', ''),
-                    'Chosen School': st.session_state.get('chosen_school', ''),
-                    'Specialite': st.session_state.get('specialite', ''),
-                    'Duration': st.session_state.get('duration', ''),
-                    'School Entry Date': st.session_state.get('school_entry_date', ''),
-                    'Entry Date in the US': st.session_state.get('entry_date_in_us', ''),
-                    'ADDRESS in the U.S': st.session_state.get('address_us', ''),
-                    'E-MAIL RDV': st.session_state.get('email_rdv', ''),
-                    'PASSWORD RDV': st.session_state.get('password_rdv', ''),
-                    'EMBASSY ITW. DATE': st.session_state.get('embassy_itw_date', ''),
-                    'DS-160 maker': st.session_state.get('ds160_maker', ''),
-                    'Password DS-160': st.session_state.get('password_ds160', ''),
-                    'Secret Q.': st.session_state.get('secret_q', ''),
-                    'Visa Result': st.session_state.get('visa_status', ''),
-                    'Stage': st.session_state.get('current_stage', ''),  # Add this line
-                    'DATE': st.session_state.get('payment_date', ''),
-                    'BANK': st.session_state.get('Bankstatment', ''),
-                    'Gender': st.session_state.get('Gender', ''),
-                    'Payment Amount': st.session_state.get('payment_method', ''),
-                    'Payment Type': st.session_state.get('payment_type', ''),
-                    'Compte': st.session_state.get('compte', ''),
-                    'School Paid': st.session_state.get('School_Paid', ''),
-                    'Prep ITW': st.session_state.get('Prep_ITW', ''),
-                    'Age': st.session_state.get('Age', ''),
-                    'Sevis payment ?': st.session_state.get('sevis_payment', ''),
-                    'Agent': st.session_state.get('Agent', ''),
-                    'Application payment ?': st.session_state.get('application_payment', ''),
-                }
-            
-                # Update the data in the DataFrame
-                for key, value in updated_student.items():
-                    filtered_data.loc[filtered_data['Student Name'] == student_name, key] = value
-            
-                # Save the updated data back to Google Sheets
-                save_data(filtered_data, spreadsheet_id, 'ALL', student_name)
-                st.success("Changes saved successfully!")
-                
-                # Set a flag to reload data on next run
-                st.session_state['reload_data'] = True
-                
-                # Exit edit mode
-                st.session_state['edit_mode'] = False
-                
-                # Rerun the app to show updated data
-                st.rerun()
-            
-    
 
+                st.markdown('</div>', unsafe_allow_html=True)
+
+            with tab6:
+                st.markdown('<div class="stCard">', unsafe_allow_html=True)
+                st.subheader("📂 Document Upload and Status")
+                document_type = st.selectbox("Select Document Type",
+                                             ["Passport", "Bank Statement", "Financial Letter",
+                                              "Transcripts", "Diplomas", "English Test", "Payment Receipt",
+                                              "SEVIS Receipt", "I20"],
+                                             key="document_type")
+                uploaded_file = st.file_uploader("Upload Document", type=["jpg", "jpeg", "png", "pdf"], key="uploaded_file")
+
+                if uploaded_file and st.button("Upload Document"):
+                    file_id = handle_file_upload(student_name, document_type, uploaded_file)
+                    if file_id:
+                        st.success(f"{document_type} uploaded successfully!")
+                        if 'document_status_cache' in st.session_state:
+                            st.session_state['document_status_cache'].pop(student_name, None)
+                        clear_cache_and_rerun()  # Clear cache and rerun the app
+                    else:
+                        st.error("An error occurred while uploading the document.")
+
+            if st.button("Save Changes", key="save_changes_button"):
+                try:
+                    # Prepare the updated student data
+                    updated_student = {
+                        'First Name': st.session_state.get('first_name', selected_student['First Name']),
+                        'Last Name': st.session_state.get('last_name', selected_student['Last Name']),
+                        'Phone N°': st.session_state.get('phone_number', selected_student['Phone N°']),
+                        'E-mail': st.session_state.get('email', selected_student['E-mail']),
+                        'Emergency contact N°': st.session_state.get('emergency_contact', selected_student['Emergency contact N°']),
+                        'Address': st.session_state.get('address', selected_student['Address']),
+                        'Attempts': st.session_state.get('attempts', selected_student['Attempts']),
+                        'Chosen School': st.session_state.get('chosen_school', selected_student['Chosen School']),
+                        'Specialite': st.session_state.get('specialite', selected_student['Specialite']),
+                        'Duration': st.session_state.get('duration', selected_student['Duration']),
+                        'School Entry Date': st.session_state.get('school_entry_date', selected_student['School Entry Date']),
+                        'Entry Date in the US': st.session_state.get('entry_date_in_us', selected_student['Entry Date in the US']),
+                        'ADDRESS in the U.S': st.session_state.get('address_us', selected_student['ADDRESS in the U.S']),
+                        'E-MAIL RDV': st.session_state.get('email_rdv', selected_student['E-MAIL RDV']),
+                        'PASSWORD RDV': st.session_state.get('password_rdv', selected_student['PASSWORD RDV']),
+                        'EMBASSY ITW. DATE': st.session_state.get('embassy_itw_date', selected_student['EMBASSY ITW. DATE']),
+                        'DS-160 maker': st.session_state.get('ds160_maker', selected_student['DS-160 maker']),
+                        'Password DS-160': st.session_state.get('password_ds160', selected_student['Password DS-160']),
+                        'Secret Q.': st.session_state.get('secret_q', selected_student['Secret Q.']),
+                        'Visa Result': st.session_state.get('visa_status', selected_student['Visa Result']),
+                        'Stage': st.session_state.get('current_stage', selected_student['Stage']),
+                        'DATE': st.session_state.get('payment_date', selected_student['DATE']),
+                        'BANK': st.session_state.get('Bankstatment', selected_student['BANK']),
+                        'Gender': st.session_state.get('Gender', selected_student['Gender']),
+                        'Payment Amount': st.session_state.get('payment_method', selected_student['Payment Amount']),
+                        'Payment Type': st.session_state.get('payment_type', selected_student['Payment Type']),
+                        'Compte': st.session_state.get('compte', selected_student['Compte']),
+                        'School Paid': st.session_state.get('School_Paid', selected_student['School Paid']),
+                        'Prep ITW': st.session_state.get('Prep_ITW', selected_student['Prep ITW']),
+                        'Age': st.session_state.get('Age', selected_student['Age']),
+                        'Sevis payment ?': st.session_state.get('sevis_payment', selected_student['Sevis payment ?']),
+                        'Agent': st.session_state.get('Agent', selected_student['Agent']),
+                        'Application payment ?': st.session_state.get('application_payment', selected_student['Application payment ?']),
+                    }
+            
+                    # Update the data in the DataFrame
+                    for key, value in updated_student.items():
+                        filtered_data.loc[filtered_data['Student Name'] == student_name, key] = value
+            
+                    # Ensure the "Student Name" column is updated
+                    filtered_data['Student Name'] = filtered_data['First Name'] + " " + filtered_data['Last Name']
+            
+                    # Save the updated data back to Google Sheets
+                    if save_data(filtered_data, spreadsheet_id, 'ALL'):
+                        st.success("Changes saved successfully!")
+                        st.session_state['reload_data'] = True
+                        st.cache_data.clear()
+                        with st.spinner("Refreshing data..."):
+                            time.sleep(2)
+                        st.rerun()
+                    else:
+                        st.error("Failed to save changes. Please try again.")
+                except Exception as e:
+                    st.error(f"An error occurred while saving: {str(e)}")
+        
     else:
         st.error("No data available. Please check your Google Sheets connection and data.")
 
@@ -1038,5 +1028,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
