@@ -94,7 +94,7 @@ def statistics_page():
     # Create a DataFrame with students having incorrect date format
     students_with_incorrect_dates = data[incorrect_date_mask]
 
-    # Remove duplicates for analysis
+    # Remove duplicates based on Phone N° and E-mail
     data_deduped = data.drop_duplicates(subset=['Phone N°', 'E-mail'], keep='last')
     
     # Remove rows with NaT values in the DATE column for further analysis
