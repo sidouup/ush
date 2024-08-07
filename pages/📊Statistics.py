@@ -91,48 +91,156 @@ def statistics_page():
     incorrect_date_mask = data['DATE'].isna()
     incorrect_date_count = incorrect_date_mask.sum()
     
-    # Create a DataFrame with students having incorrect dates
+    # Create a DataFrame with students having incorrect date format
     students_with_incorrect_dates = data[incorrect_date_mask]
 
     # Remove duplicates for analysis
-    data_deduped = data.drop_duplicates(subset=['Student Name', 'Chosen School'], keep='last')
+    data_deduped = data.drop_duplicates(subset=['Phone N°', 'E-mail'], keep='last')
     
     # Remove rows with NaT values in the DATE column for further analysis
     data_clean = data_deduped.dropna(subset=['DATE'])
 
-    # (Rest of the code remains the same until the "Applications Over Time" section)
+    min_date = data_clean['DATE'].min()
+    max_date = data_clean['DATE'].max()
+    years = list(range(min_date.year, max_date.year + 1))
+    months = list(range(1, 13))
+
+    # Filter selection
+    st.sidebar.subheader("Filter Options")
+    filter_option = st.sidebar.radio("Select Filter Method", ("Date Range", "Month and Year"))
+
+    min_date = min_date.to_pydatetime() if not pd.isna(min_date) else datetime(2022, 1, 1)
+    max_date = max_date.to_pydatetime() if not pd.isna(max_date) else datetime(2022, 12, 31)
+
+    if filter_option == "Date Range":
+        start_date = st.sidebar.date_input("Start Date", min_date)
+        end_date = st.sidebar.date_input("End Date", max_date)
+        
+        # Convert date inputs to pandas Timestamp objects
+        start_date = pd.Timestamp(start_date)
+        end_date = pd.Timestamp(end_date)
+        
+        filtered_data = filter_data_by_date_range(data_clean, start_date, end_date)
+    else:
+        selected_year = st.sidebar.selectbox("Year", years)
+        selected_month = st.sidebar.selectbox("Month", months, format_func=lambda x: datetime(2023, x, 1).strftime('%B'))
+        filtered_data = filter_data_by_month_year(data_clean, selected_year, selected_month)
+
+    # Calculate overall visa approval rate
+    overall_approval_rate, visa_approved, total_decisions = calculate_visa_approval_rate(filtered_data)
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        total_students = len(filtered_data)
+        st.metric("Total Unique Students", total_students)
+
+    with col2:
+        st.metric("Visa Approvals", visa_approved)
+
+    with col3:
+        st.metric("Visa Approval Rate", f"{overall_approval_rate:.2f}%")
+
+    st.markdown("---")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.subheader("🏫 Top Chosen Schools")
+        school_counts = filtered_data['Chosen School'].value_counts().head(10).reset_index()
+        school_counts.columns = ['School', 'Number of Students']
+        fig = px.bar(school_counts, x='School', y='Number of Students',
+                     labels={'Number of Students': 'Number of Students', 'School': 'School'},
+                     title="Top 10 Chosen Schools")
+        st.plotly_chart(fig, use_container_width=True)
+
+    with col2:
+        st.subheader("🛂 Student Visa Approval")
+        visa_status = filtered_data['Visa Result'].value_counts()
+        colors = {'Visa Approved': 'blue', 'Visa Denied': 'red', '0 not yet': 'grey', 'not our school': 'lightblue'}
+        fig = px.pie(values=visa_status.values, names=visa_status.index,
+                     title="Visa Application Results", color=visa_status.index, 
+                     color_discrete_map=colors)
+        st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown("---")
+
+    # New section for Visa Approval Rate by School
+    st.subheader("🏆 Top 8 Schools by Visa Approval Rate")
+    
+    def school_approval_rate(group):
+        return calculate_visa_approval_rate(group)[0]
+    
+    school_visa_stats = filtered_data.groupby('Chosen School').apply(school_approval_rate).reset_index()
+    school_visa_stats.columns = ['School', 'Approval Rate']
+    
+    # Sort by approval rate and get top 8
+    top_8_schools = school_visa_stats.sort_values('Approval Rate', ascending=False).head(8)
+    
+    fig = px.bar(top_8_schools, x='School', y='Approval Rate',
+                 text='Approval Rate',
+                 labels={'Approval Rate': 'Visa Approval Rate (%)', 'School': 'School'},
+                 title="Top 8 Schools by Visa Approval Rate")
+    fig.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
+    fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown("---")
 
     col1, col2 = st.columns(2)
 
     with col1:
         st.subheader("📅 Applications Over Time")
-        # Use 'Months' column instead of DATE
-        monthly_apps = data_clean['Months'].value_counts().sort_index().reset_index()
-        monthly_apps.columns = ['Month', 'count']
-        # Convert 'Month' to datetime for proper sorting
-        monthly_apps['Month'] = pd.to_datetime(monthly_apps['Month'], format='%B %Y')
-        monthly_apps = monthly_apps.sort_values('Month')
-        fig = px.line(monthly_apps, x='Month', y='count',
-                      labels={'count': 'Number of Applications', 'Month': 'Month'},
+        monthly_apps = filtered_data.groupby(filtered_data['DATE'].dt.to_period("M")).size().reset_index(name='count')
+        monthly_apps['DATE'] = monthly_apps['DATE'].dt.to_timestamp()
+        fig = px.line(monthly_apps, x='DATE', y='count',
+                      labels={'count': 'Number of Applications', 'DATE': 'Date'},
                       title="Monthly Application Trend")
-        fig.update_xaxes(tickformat="%b %Y")
         st.plotly_chart(fig, use_container_width=True)
 
     with col2:
         st.subheader("💰 Payment Methods")
-        # Use deduplicated data for counting
-        payment_counts = data_clean['Payment Type'].value_counts()
+        payment_counts = filtered_data['Payment Type'].value_counts()
         fig = px.pie(values=payment_counts.values, names=payment_counts.index,
                      title="Payment Method Distribution")
         st.plotly_chart(fig, use_container_width=True)
 
-    # (Rest of the code remains the same until the "Top Payment Types" section)
+    st.markdown("---")
 
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader("👥 Gender Distribution")
+        gender_counts = filtered_data['Gender'].value_counts()
+        fig = px.pie(values=gender_counts.values, names=gender_counts.index,
+                     title="Gender Distribution")
+        st.plotly_chart(fig, use_container_width=True)
+
+    with col2:
+        st.subheader("🔄 Application Attempts")
+        attempts_counts = filtered_data['Attempts'].value_counts().reset_index()
+        attempts_counts.columns = ['Attempt', 'Number of Students']
+        fig = px.bar(attempts_counts, x='Attempt', y='Number of Students',
+                     labels={'Number of Students': 'Number of Students', 'Attempt': 'Attempt'},
+                     title="Application Attempts Distribution")
+        st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown("---")
+
+    st.subheader("🏆 Top Performing Agents")
+    agent_performance = filtered_data['Agent'].value_counts().head(5).reset_index()
+    agent_performance.columns = ['Agent', 'Number of Students']
+    fig = px.bar(agent_performance, x='Agent', y='Number of Students',
+                 labels={'Number of Students': 'Number of Students', 'Agent': 'Agent'},
+                 title="Top 5 Agents by Number of Students")
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown("---")
+
+    # New Payment Amount Statistics Section
     st.header("💰 Top 5 Payment Types")
 
     # Count the number of payments in each category and get the top 5
-    # Use deduplicated data for counting
-    payment_counts = data_clean['Payment Amount'].value_counts().nlargest(5)
+    payment_counts = filtered_data['Payment Amount'].value_counts().nlargest(5)
 
     # Create a bar chart for top 5 payment categories
     fig = px.bar(x=payment_counts.index, y=payment_counts.values,
@@ -150,8 +258,19 @@ def statistics_page():
     payment_df = pd.DataFrame({'Payment Amount': payment_counts.index, 'Number of Payments': payment_counts.values})
     st.dataframe(payment_df)
 
-    # (The rest of the code remains the same)
+    st.markdown("---")
+
+    # Payment Trends Section
+    st.subheader("📈 Payment Trends Over Time")
+    data_clean['Month_Year'] = data_clean['DATE'].dt.to_period('M')
+    monthly_payment_counts = data_clean['Month_Year'].value_counts().sort_index().reset_index()
+    monthly_payment_counts.columns = ['Month_Year', 'Count']
+    monthly_payment_counts['Month_Year'] = monthly_payment_counts['Month_Year'].astype(str)
+
+    fig = px.bar(monthly_payment_counts, x='Month_Year', y='Count',
+                 labels={'Month_Year': 'Month and Year', 'Count': 'Number of Payments'},
+                 title="Payment Trends by Month and Year")
+    st.plotly_chart(fig, use_container_width=True)
 
 if __name__ == "__main__":
     statistics_page()
-
