@@ -208,6 +208,7 @@ def statistics_page():
     st.markdown("---")
 
     col1, col2 = st.columns(2)
+
     with col1:
         st.subheader("👥 Gender Distribution")
         gender_counts = filtered_data['Gender'].value_counts()
@@ -262,8 +263,14 @@ def statistics_page():
 
     # Payment Trends Section
     st.subheader("📈 Payment Trends Over Time")
-    data_clean['Month_Year'] = data_clean['DATE'].dt.to_period('M')
-    monthly_payment_counts = data_clean['Month_Year'].value_counts().sort_index().reset_index()
+    
+    # Filter for specific payment amounts
+    specific_payments = ['159.000 DZD', '139.000 DZD', '152.000 DZD', '132.000 DZD']
+    filtered_payments = data_clean[data_clean['Payment Amount'].isin(specific_payments)]
+    
+    # Group by month and year
+    filtered_payments['Month_Year'] = filtered_payments['DATE'].dt.to_period('M')
+    monthly_payment_counts = filtered_payments['Month_Year'].value_counts().sort_index().reset_index()
     monthly_payment_counts.columns = ['Month_Year', 'Count']
     monthly_payment_counts['Month_Year'] = monthly_payment_counts['Month_Year'].astype(str)
 
