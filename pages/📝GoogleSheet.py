@@ -107,7 +107,7 @@ if selected_months and "All" not in selected_months:
     filtered_data = filtered_data[filtered_data['Months'].isin(selected_months)]
 if selected_stages and "All" not in selected_stages:
     filtered_data = filtered_data[filtered_data['Stage'].isin(selected_stages)]
-if selected_schools and "All" not in selected_schools]:
+if selected_schools and "All" not in selected_schools:
     filtered_data = filtered_data[filtered_data['Chosen School'].isin(selected_schools)]
 if selected_attempts and "All" not in selected_attempts:
     filtered_data = filtered_data[filtered_data['Attempts'].isin(selected_attempts)]
