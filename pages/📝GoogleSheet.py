@@ -107,7 +107,7 @@ if selected_months and "All" not in selected_months:
     filtered_data = filtered_data[filtered_data['Months'].isin(selected_months)]
 if selected_stages and "All" not in selected_stages:
     filtered_data = filtered_data[filtered_data['Stage'].isin(selected_stages)]
-if selected_schools and "All" not in selected_schools:
+if selected_schools and "All" not in selected_schools]:
     filtered_data = filtered_data[filtered_data['Chosen School'].isin(selected_schools)]
 if selected_attempts and "All" not in selected_attempts:
     filtered_data = filtered_data[filtered_data['Attempts'].isin(selected_attempts)]
@@ -119,21 +119,25 @@ filtered_data.sort_values(by='DATE', inplace=True)
 # Ensure all columns are treated as strings for editing
 filtered_data = filtered_data.astype(str)
 
-# Make certain columns unchangeable
-unchangeable_columns = ['School Entry Date', 'Entry Date in the US', 'DATE']
-editable_columns = [col for col in filtered_data.columns if col not in unchangeable_columns]
+# Columns that should be visible but not editable
+disabled_columns = ['School Entry Date', 'Entry Date in the US', 'DATE', 'EMBASSY ITW. DATE']
 
-# Display only editable columns in the data editor
-edited_df = st.data_editor(filtered_data[editable_columns], num_rows="dynamic", key="student_data")
-
-# Merge back with unchangeable columns before saving
-final_df = pd.concat([edited_df, filtered_data[unchangeable_columns]], axis=1)
+# Display the data editor with specified columns disabled
+edited_df = st.data_editor(
+    filtered_data, 
+    num_rows="dynamic", 
+    disabled=disabled_columns,  # Disable specific columns
+    key="student_data"
+)
 
 # Update Google Sheet with edited data
 if st.button("Save Changes"):
     try:
         # Only save changes for the editable columns, leave unchangeable columns as they are
-        st.session_state.original_data.update(final_df)  # Update the original dataset with edited data
+        for col in disabled_columns:
+            edited_df[col] = st.session_state.original_data[col]  # Revert any changes to the unchangeable columns
+        
+        st.session_state.original_data.update(edited_df)  # Update the original dataset with edited data
         
         if save_data(st.session_state.original_data, spreadsheet_url):
             st.session_state.data = load_data()  # Reload the data to ensure consistency
