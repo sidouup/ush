@@ -569,7 +569,7 @@ def main():
             attempts_filter = st.selectbox("Filter by Attempts", attempts_options, key="attempts_filter")
 
         # Apply filters
-        filtered_data = data
+        filtered_data = st.session_state['data'].copy()
         if status_filter != "All":
             filtered_data = filtered_data[filtered_data['Stage'] == status_filter]
         if agent_filter != "All":
@@ -1000,15 +1000,17 @@ def main():
                         'Application payment ?': st.session_state.get('application_payment', selected_student['Application payment ?']),
                     }
             
-                    # Update the data in the DataFrame
+                    original_data = st.session_state['data']
+            
+                    # Apply the changes to the original data
                     for key, value in updated_student.items():
-                        filtered_data.loc[filtered_data['Student Name'] == student_name, key] = value
+                        original_data.loc[original_data['Student Name'] == student_name, key] = value
             
                     # Ensure the "Student Name" column is updated
-                    filtered_data['Student Name'] = filtered_data['First Name'] + " " + filtered_data['Last Name']
+                    original_data['Student Name'] = original_data['First Name'] + " " + original_data['Last Name']
             
-                    # Save the updated data back to Google Sheets
-                    if save_data(filtered_data, spreadsheet_id, 'ALL'):
+                    # Save the original data back to Google Sheets
+                    if save_data(original_data, spreadsheet_id, 'ALL'):
                         st.success("Changes saved successfully!")
                         st.session_state['reload_data'] = True
                         st.cache_data.clear()
@@ -1019,7 +1021,7 @@ def main():
                         st.error("Failed to save changes. Please try again.")
                 except Exception as e:
                     st.error(f"An error occurred while saving: {str(e)}")
-        
+                    
     else:
         st.error("No data available. Please check your Google Sheets connection and data.")
 
