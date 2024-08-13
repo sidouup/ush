@@ -42,30 +42,39 @@ def load_data():
     return df
 
 # Function to save data to Google Sheets
-def save_data(df, spreadsheet_url):
+def save_data(df, edited_df, spreadsheet_url):
     logger.info("Attempting to save changes")
     try:
         spreadsheet = client.open_by_url(spreadsheet_url)
         sheet = spreadsheet.sheet1
-
-        # Convert DATE column back to string
-        df['DATE'] = pd.to_datetime(df['DATE'], errors='coerce')  # Ensure DATE is datetime
-        df['DATE'] = df['DATE'].dt.strftime('%d/%m/%Y %H:%M:%S')
-
+        
+        # Identify the modified rows
+        modified_rows = df[df.ne(edited_df)].dropna(how='all')
+        
+        if modified_rows.empty:
+            logger.info("No changes detected.")
+            return False
+        
+        # Ensure the correct date format for "School Entry Date" and "Entry Date in the US"
+        date_columns = ["School Entry Date", "Entry Date in the US"]
+        for col in date_columns:
+            if col in modified_rows.columns:
+                modified_rows[col] = pd.to_datetime(modified_rows[col], format='%d/%m/%Y %H:%M:%S', errors='coerce')
+                modified_rows[col] = modified_rows[col].dt.strftime('%d/%m/%Y %H:%M:%S')
+        
         # Replace problematic values with a placeholder
-        df.replace([np.inf, -np.inf, np.nan], 'NaN', inplace=True)
+        modified_rows.replace([np.inf, -np.inf, np.nan], 'NaN', inplace=True)
 
-        # Clear the existing sheet
-        sheet.clear()
-
-        # Update the sheet with new data
-        sheet.update([df.columns.values.tolist()] + df.values.tolist())
+        # Update the specific rows in Google Sheets
+        for idx, row in modified_rows.iterrows():
+            sheet.update(f"A{idx+2}:Z{idx+2}", [row.tolist()])  # Update the row with changes
 
         logger.info("Changes saved successfully")
         return True
     except Exception as e:
         logger.error(f"Error saving changes: {str(e)}")
         return False
+
 
 # Load data and initialize session state
 if 'data' not in st.session_state or st.session_state.get('reload_data', False):
@@ -130,13 +139,15 @@ edited_df = st.data_editor(filtered_data, num_rows="dynamic", key="student_data"
 # Update Google Sheet with edited data
 if st.button("Save Changes"):
     try:
-        # Convert DATE column back to string for saving
-        edited_df['DATE'] = pd.to_datetime(edited_df['DATE'], format='%d/%m/%Y %H:%M:%S', errors='coerce')
-        edited_df['DATE'] = edited_df['DATE'].dt.strftime('%d/%m/%Y %H:%M:%S')
+        # Ensure correct date format for "School Entry Date" and "Entry Date in the US"
+        date_columns = ["School Entry Date", "Entry Date in the US"]
+        for col in date_columns:
+            if col in edited_df.columns:
+                edited_df[col] = pd.to_datetime(edited_df[col], format='%d/%m/%Y %H:%M:%S', errors='coerce')
+                edited_df[col] = edited_df[col].dt.strftime('%d/%m/%Y %H:%M:%S')
         
-        st.session_state.original_data.update(edited_df)  # Update the original dataset with edited data
-        
-        if save_data(st.session_state.original_data, spreadsheet_url):
+        # Save only modified rows
+        if save_data(st.session_state.original_data, edited_df, spreadsheet_url):
             st.session_state.data = load_data()  # Reload the data to ensure consistency
             st.success("Changes saved successfully!")
             
@@ -147,6 +158,6 @@ if st.button("Save Changes"):
             st.session_state.reload_data = True
             st.rerun()
         else:
-            st.error("Failed to save changes. Please try again.")
+            st.warning("No changes detected or failed to save changes.")
     except Exception as e:
         st.error(f"An error occurred while saving: {str(e)}")
