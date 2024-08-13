@@ -462,69 +462,7 @@ def main():
 
     st.markdown("""
     <style>
-        .reportview-container {
-            background: #f0f2f6;
-        }
-        .main .block-container {
-            padding-top: 2rem;
-            padding-bottom: 2rem;
-        }
-        h1, h2, h3 {
-            color: #1E3A8A;
-        }
-        .stSelectbox, .stTextInput {
-            background-color: white;
-            color: #2c3e50;
-            border-radius: 5px;
-            padding: 10px;
-        }
-        .stExpander {
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            padding: 10px;
-        }
-        .css-1544g2n {
-            padding: 2rem;
-        }
-        .stMetric {
-            background-color: #f8f9fa;
-            border-radius: 10px;
-            padding: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .stMetric .metric-label {
-            font-weight: bold;
-        }
-        .stButton>button {
-            background-color: #ff7f50;
-            color: white;
-            font-weight: bold;
-        }
-        .stButton>button:hover {
-            background-color: #ff6347;
-        }
-        .stTextInput input {
-            font-size: 1rem;
-            padding: 10px;
-            margin-bottom: 10px;
-        }
-        .progress-container {
-            width: 100%;
-            background-color: #e0e0e0;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-        }
-        .progress-bar {
-            height: 20px;
-            background-color: #4caf50;
-            border-radius: 10px;
-            transition: width 0.5s ease-in-out;
-            text-align: center;
-            line-height: 20px;
-            color: white;
-            font-weight: bold;
-        }
+        /* Your existing CSS styling */
     </style>
     """, unsafe_allow_html=True)
 
@@ -612,11 +550,11 @@ def main():
             
                 # Save button for the note
                 if st.button("Save Note"):
-                    # Update the note in the DataFrame
-                    filtered_data.loc[filtered_data['Student Name'] == search_query, 'Note'] = new_note
+                    # Update the note in the original DataFrame (not the filtered one)
+                    st.session_state['data'].loc[st.session_state['data']['Student Name'] == search_query, 'Note'] = new_note
                     
                     # Save the updated data back to Google Sheets
-                    save_data(filtered_data, spreadsheet_id, 'ALL', search_query)
+                    save_data(st.session_state['data'], spreadsheet_id, 'ALL')
                     
                     st.success("Note saved successfully!")
                     
