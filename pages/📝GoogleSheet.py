@@ -7,7 +7,6 @@ import time
 import logging
 from datetime import datetime
 
-
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -42,39 +41,26 @@ def load_data():
     return df
 
 # Function to save data to Google Sheets
-def save_data(df, edited_df, spreadsheet_url):
+def save_data(df, spreadsheet_url):
     logger.info("Attempting to save changes")
     try:
         spreadsheet = client.open_by_url(spreadsheet_url)
         sheet = spreadsheet.sheet1
-        
-        # Identify the modified rows
-        modified_rows = df[df.ne(edited_df)].dropna(how='all')
-        
-        if modified_rows.empty:
-            logger.info("No changes detected.")
-            return False
-        
-        # Ensure the correct date format for "School Entry Date" and "Entry Date in the US"
-        date_columns = ["School Entry Date", "Entry Date in the US"]
-        for col in date_columns:
-            if col in modified_rows.columns:
-                modified_rows[col] = pd.to_datetime(modified_rows[col], format='%d/%m/%Y %H:%M:%S', errors='coerce')
-                modified_rows[col] = modified_rows[col].dt.strftime('%d/%m/%Y %H:%M:%S')
-        
-        # Replace problematic values with a placeholder
-        modified_rows.replace([np.inf, -np.inf, np.nan], 'NaN', inplace=True)
 
-        # Update the specific rows in Google Sheets
-        for idx, row in modified_rows.iterrows():
-            sheet.update(f"A{idx+2}:Z{idx+2}", [row.tolist()])  # Update the row with changes
+        # Replace problematic values with a placeholder
+        df.replace([np.inf, -np.inf, np.nan], 'NaN', inplace=True)
+
+        # Clear the existing sheet
+        sheet.clear()
+
+        # Update the sheet with new data
+        sheet.update([df.columns.values.tolist()] + df.values.tolist())
 
         logger.info("Changes saved successfully")
         return True
     except Exception as e:
         logger.error(f"Error saving changes: {str(e)}")
         return False
-
 
 # Load data and initialize session state
 if 'data' not in st.session_state or st.session_state.get('reload_data', False):
@@ -133,21 +119,23 @@ filtered_data.sort_values(by='DATE', inplace=True)
 # Ensure all columns are treated as strings for editing
 filtered_data = filtered_data.astype(str)
 
-# Use a key for the data_editor to ensure proper updates
-edited_df = st.data_editor(filtered_data, num_rows="dynamic", key="student_data")
+# Make certain columns unchangeable
+unchangeable_columns = ['School Entry Date', 'Entry Date in the US', 'DATE']
+editable_columns = [col for col in filtered_data.columns if col not in unchangeable_columns]
+
+# Display only editable columns in the data editor
+edited_df = st.data_editor(filtered_data[editable_columns], num_rows="dynamic", key="student_data")
+
+# Merge back with unchangeable columns before saving
+final_df = pd.concat([edited_df, filtered_data[unchangeable_columns]], axis=1)
 
 # Update Google Sheet with edited data
 if st.button("Save Changes"):
     try:
-        # Ensure correct date format for "School Entry Date" and "Entry Date in the US"
-        date_columns = ["School Entry Date", "Entry Date in the US"]
-        for col in date_columns:
-            if col in edited_df.columns:
-                edited_df[col] = pd.to_datetime(edited_df[col], format='%d/%m/%Y %H:%M:%S', errors='coerce')
-                edited_df[col] = edited_df[col].dt.strftime('%d/%m/%Y %H:%M:%S')
+        # Only save changes for the editable columns, leave unchangeable columns as they are
+        st.session_state.original_data.update(final_df)  # Update the original dataset with edited data
         
-        # Save only modified rows
-        if save_data(st.session_state.original_data, edited_df, spreadsheet_url):
+        if save_data(st.session_state.original_data, spreadsheet_url):
             st.session_state.data = load_data()  # Reload the data to ensure consistency
             st.success("Changes saved successfully!")
             
@@ -158,6 +146,6 @@ if st.button("Save Changes"):
             st.session_state.reload_data = True
             st.rerun()
         else:
-            st.warning("No changes detected or failed to save changes.")
+            st.error("Failed to save changes. Please try again.")
     except Exception as e:
         st.error(f"An error occurred while saving: {str(e)}")
