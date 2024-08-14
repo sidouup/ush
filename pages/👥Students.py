@@ -808,54 +808,59 @@ def main():
                         key="payment_date",
                         on_change=update_student_data
                     )
-            
+                
                     # Convert the data to string before using it in selectboxes
                     current_payment_method = str(selected_student_dict.get('Payment Amount', ''))
-                    st.write(f"Current Payment Method (after conversion): {current_payment_method}")  # Debugging: Display payment method
+                    st.write(f"Current Payment Method (after conversion): {current_payment_method}")
                     payment_method = st.selectbox(
                         "Payment Method",
                         options=[str(option) for option in payment_amount_options],
-                        index=payment_amount_options.index(current_payment_method) if current_payment_method in payment_amount_options else 0,
+                        index=None,  # Allow initialization without preselected value
+                        placeholder="Choose a payment method...",
                         key="payment_method",
                         on_change=update_student_data
                     )
-            
+                
                     current_payment_type = str(selected_student_dict.get('Payment Type', ''))
-                    st.write(f"Current Payment Type (after conversion): {current_payment_type}")  # Debugging: Display payment type
+                    st.write(f"Current Payment Type (after conversion): {current_payment_type}")
                     payment_type = st.selectbox(
                         "Payment Type",
                         options=[str(option) for option in payment_type_options],
-                        index=payment_type_options.index(current_payment_type) if current_payment_type in payment_type_options else 0,
+                        index=None,  # Allow initialization without preselected value
+                        placeholder="Choose a payment type...",
                         key="payment_type",
                         on_change=update_student_data
                     )
-            
+                
                     current_compte = str(selected_student_dict.get('Compte', ''))
-                    st.write(f"Current Compte (after conversion): {current_compte}")  # Debugging: Display compte
+                    st.write(f"Current Compte (after conversion): {current_compte}")
                     compte = st.selectbox(
                         "Compte",
                         options=[str(option) for option in compte_options],
-                        index=compte_options.index(current_compte) if current_compte in compte_options else 0,
+                        index=None,  # Allow initialization without preselected value
+                        placeholder="Choose a compte...",
                         key="compte",
                         on_change=update_student_data
                     )
-            
+                
                     current_sevis_payment = str(selected_student_dict.get('Sevis payment ?', ''))
-                    st.write(f"SEVIS Payment (after conversion): {current_sevis_payment}")  # Debugging: Display SEVIS payment
+                    st.write(f"SEVIS Payment (after conversion): {current_sevis_payment}")
                     sevis_payment = st.selectbox(
                         "Sevis Payment",
                         options=[str(option) for option in yes_no_options],
-                        index=yes_no_options.index(current_sevis_payment) if current_sevis_payment in yes_no_options else 0,
+                        index=None,  # Allow initialization without preselected value
+                        placeholder="Choose a SEVIS payment option...",
                         key="sevis_payment",
                         on_change=update_student_data
                     )
-            
+                
                     current_application_payment = str(selected_student_dict.get('Application payment ?', ''))
-                    st.write(f"Application Payment (after conversion): {current_application_payment}")  # Debugging: Display application payment
+                    st.write(f"Application Payment (after conversion): {current_application_payment}")
                     application_payment = st.selectbox(
                         "Application Payment",
                         options=[str(option) for option in yes_no_options],
-                        index=yes_no_options.index(current_application_payment) if current_application_payment in yes_no_options else 0,
+                        index=None,  # Allow initialization without preselected value
+                        placeholder="Choose an application payment option...",
                         key="application_payment",
                         on_change=update_student_data
                     )
