@@ -821,90 +821,85 @@ def main():
                 
                     # Convert the data to string before using it in selectboxes
                     current_payment_method = str(selected_student_dict.get('Payment Amount', '')).strip()
-                    st.write("Current Payment Method Value:", current_payment_method)  # Debugging: Print current payment method
-                    st.write("Available Payment Method Options:", payment_amount_options)  # Debugging: Print available options
+                    st.write("Current Payment Method Value:", current_payment_method)
+                    st.write("Available Payment Method Options:", payment_amount_options)
                     try:
                         payment_method_index = payment_amount_options.index(current_payment_method)
                     except ValueError:
-                        payment_method_index = 0  # Default to first option if no match found
-                    st.write("Payment Method Index Selected:", payment_method_index)  # Debugging: Print the selected index
+                        payment_method_index = 0
+                    st.write("Payment Method Index Selected:", payment_method_index)
                     payment_method = st.selectbox(
                         "Payment Method",
                         options=payment_amount_options,
                         index=payment_method_index,
-                        placeholder="Choose a payment method...",
                         key="payment_method",
                         on_change=update_student_data
                     )
                 
                     current_payment_type = str(selected_student_dict.get('Payment Type', '')).strip()
-                    st.write("Current Payment Type Value:", current_payment_type)  # Debugging: Print current payment type
-                    st.write("Available Payment Type Options:", payment_type_options)  # Debugging: Print available options
+                    st.write("Current Payment Type Value:", current_payment_type)
+                    st.write("Available Payment Type Options:", payment_type_options)
                     try:
                         payment_type_index = payment_type_options.index(current_payment_type)
                     except ValueError:
-                        payment_type_index = 0  # Default to first option if no match found
-                    st.write("Payment Type Index Selected:", payment_type_index)  # Debugging: Print the selected index
+                        payment_type_index = 0
+                    st.write("Payment Type Index Selected:", payment_type_index)
                     payment_type = st.selectbox(
                         "Payment Type",
                         options=payment_type_options,
                         index=payment_type_index,
-                        placeholder="Choose a payment type...",
                         key="payment_type",
                         on_change=update_student_data
                     )
                 
                     current_compte = str(selected_student_dict.get('Compte', '')).strip()
-                    st.write("Current Compte Value:", current_compte)  # Debugging: Print current compte
-                    st.write("Available Compte Options:", compte_options)  # Debugging: Print available options
+                    st.write("Current Compte Value:", current_compte)
+                    st.write("Available Compte Options:", compte_options)
                     try:
                         compte_index = compte_options.index(current_compte)
                     except ValueError:
-                        compte_index = 0  # Default to first option if no match found
-                    st.write("Compte Index Selected:", compte_index)  # Debugging: Print the selected index
+                        compte_index = 0
+                    st.write("Compte Index Selected:", compte_index)
                     compte = st.selectbox(
                         "Compte",
                         options=compte_options,
                         index=compte_index,
-                        placeholder="Choose a compte...",
                         key="compte",
                         on_change=update_student_data
                     )
                 
                     current_sevis_payment = str(selected_student_dict.get('Sevis payment ?', '')).strip()
-                    st.write("Current SEVIS Payment Value:", current_sevis_payment)  # Debugging: Print current SEVIS payment
-                    st.write("Available SEVIS Payment Options:", yes_no_options)  # Debugging: Print available options
+                    st.write("Current SEVIS Payment Value:", current_sevis_payment)
+                    st.write("Available SEVIS Payment Options:", yes_no_options)
                     try:
                         sevis_payment_index = yes_no_options.index(current_sevis_payment)
                     except ValueError:
-                        sevis_payment_index = 0  # Default to first option if no match found
-                    st.write("SEVIS Payment Index Selected:", sevis_payment_index)  # Debugging: Print the selected index
+                        sevis_payment_index = 0
+                    st.write("SEVIS Payment Index Selected:", sevis_payment_index)
                     sevis_payment = st.selectbox(
                         "Sevis Payment",
                         options=yes_no_options,
                         index=sevis_payment_index,
-                        placeholder="Choose a SEVIS payment option...",
                         key="sevis_payment",
                         on_change=update_student_data
                     )
                 
                     current_application_payment = str(selected_student_dict.get('Application payment ?', '')).strip()
-                    st.write("Current Application Payment Value:", current_application_payment)  # Debugging: Print current application payment
-                    st.write("Available Application Payment Options:", yes_no_options)  # Debugging: Print available options
+                    st.write("Current Application Payment Value:", current_application_payment)
+                    st.write("Available Application Payment Options:", yes_no_options)
                     try:
                         application_payment_index = yes_no_options.index(current_application_payment)
                     except ValueError:
-                        application_payment_index = 0  # Default to first option if no match found
-                    st.write("Application Payment Index Selected:", application_payment_index)  # Debugging: Print the selected index
+                        application_payment_index = 0
+                    st.write("Application Payment Index Selected:", application_payment_index)
                     application_payment = st.selectbox(
                         "Application Payment",
                         options=yes_no_options,
                         index=application_payment_index,
-                        placeholder="Choose an application payment option...",
                         key="application_payment",
                         on_change=update_student_data
                     )
-                            
+                
                 else:
                     st.write(f"**Payment Date:** {format_date(selected_student_dict['DATE'])}")
                     st.write(f"**Payment Method:** {selected_student_dict['Payment Amount']}")
