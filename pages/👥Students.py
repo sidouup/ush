@@ -810,7 +810,7 @@ def main():
                 
                     # Handling Payment Method Select Box
                     st.write("Payment Method")
-                    current_payment_method = selected_student_dict['Payment Amount'] if pd.notna(selected_student_dict['Payment Amount']) else payment_amount_options[0]
+                    current_payment_method = selected_student_dict['Payment Amount']
                     payment_method = st.selectbox(
                         "Payment Method",
                         options=payment_amount_options,
