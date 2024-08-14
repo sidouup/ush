@@ -18,6 +18,7 @@ import string
 import time
 import re
 
+
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -55,17 +56,32 @@ def get_valid_value(column_value, valid_options):
     
     # If no match found, return the first valid option
     return valid_options[0]
-def find_closest_match(value, options):
+def find_best_match(value, options):
     """
-    Finds the closest match in options for the given value.
-    Returns the index of the closest match.
+    Finds the best match in options for the given value.
+    Returns the best matching option.
     """
     if pd.isna(value):
-        return 0
+        logger.info(f"Value is NaN, returning first option: {options[0]}")
+        return options[0]
     
-    value = str(value).lower()
-    closest_match = min(options, key=lambda x: len(set(value) ^ set(x.lower())))
-    return options.index(closest_match)
+    value_str = str(value).lower().strip()
+    
+    # Try exact match first
+    for option in options:
+        if value_str == str(option).lower().strip():
+            logger.info(f"Exact match found: {option}")
+            return option
+    
+    # Try partial match
+    for option in options:
+        if value_str in str(option).lower().strip():
+            logger.info(f"Partial match found: {option}")
+            return option
+    
+    # If no match found, return the first option
+    logger.info(f"No match found, returning first option: {options[0]}")
+    return options[0]
 
 # Caching decorator
 def cache_with_timeout(timeout_minutes=60):
@@ -879,11 +895,11 @@ def main():
                         on_change=update_student_data
                     )
             
-                    # Handle dropdowns with improved value fetching and index selection
+                    # Handle dropdowns with improved value fetching and selection
                     payment_method = st.selectbox(
                         "Payment Method", 
                         payment_amount_options, 
-                        index=find_closest_match(selected_student['Payment Amount'], payment_amount_options),
+                        index=payment_amount_options.index(find_best_match(selected_student['Payment Amount'], payment_amount_options)),
                         key="payment_method", 
                         on_change=update_student_data
                     )
@@ -891,7 +907,7 @@ def main():
                     payment_type = st.selectbox(
                         "Payment Type", 
                         payment_type_options, 
-                        index=find_closest_match(selected_student['Payment Type'], payment_type_options),
+                        index=payment_type_options.index(find_best_match(selected_student['Payment Type'], payment_type_options)),
                         key="payment_type", 
                         on_change=update_student_data
                     )
@@ -899,7 +915,7 @@ def main():
                     compte = st.selectbox(
                         "Compte", 
                         compte_options, 
-                        index=find_closest_match(selected_student['Compte'], compte_options),
+                        index=compte_options.index(find_best_match(selected_student['Compte'], compte_options)),
                         key="compte", 
                         on_change=update_student_data
                     )
@@ -907,7 +923,7 @@ def main():
                     sevis_payment = st.selectbox(
                         "Sevis Payment", 
                         yes_no_options, 
-                        index=find_closest_match(selected_student['Sevis payment ?'], yes_no_options),
+                        index=yes_no_options.index(find_best_match(selected_student['Sevis payment ?'], yes_no_options)),
                         key="sevis_payment", 
                         on_change=update_student_data
                     )
@@ -915,7 +931,7 @@ def main():
                     application_payment = st.selectbox(
                         "Application Payment", 
                         yes_no_options, 
-                        index=find_closest_match(selected_student['Application payment ?'], yes_no_options),
+                        index=yes_no_options.index(find_best_match(selected_student['Application payment ?'], yes_no_options)),
                         key="application_payment", 
                         on_change=update_student_data
                     )
