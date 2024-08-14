@@ -798,18 +798,17 @@ def main():
                 payment_amount_options = ["159.000 DZD", "152.000 DZD", "139.000 DZD", "132.000 DZD", "36.000 DZD", "20.000 DZD", "Giveaway", "No Paiement"]
                 School_paid_opt = ["YES", "NO"]
                 Prep_ITW_opt = ["YES", "NO"]
-    
-    
+            
                 payment_type_options = ["Cash", "CCP", "Baridimob", "Bank"]
                 compte_options = ["Mohamed", "Sid Ali"]
                 yes_no_options = ["YES", "NO"]
                 attempts_options = ["1st Try", "2nd Try", "3rd Try"]
-                Gender_options = ["","Male", "Female"]
-
+                Gender_options = ["", "Male", "Female"]
+            
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("💰 Payment Information")
                 st.write("Selected Student Data:", selected_student_dict)  # Debugging: Display the data to verify it's loaded correctly
-
+            
                 if edit_mode:
                     # Handling Payment Date
                     payment_date = selected_student_dict.get('DATE', None)
@@ -819,59 +818,58 @@ def main():
                         key="payment_date",
                         on_change=update_student_data
                     )
-                
-                    # Strip and normalize case for current values
-                    current_payment_method = str(selected_student_dict.get('Payment Amount', '')).strip().lower()
+            
+                    # Convert the data to string before using it in selectboxes
+                    current_payment_method = str(selected_student_dict.get('Payment Amount', '')).strip()
                     payment_method = st.selectbox(
                         "Payment Method",
-                        options=[str(option).strip().lower() for option in payment_amount_options],
-                        index=[str(option).strip().lower() for option in payment_amount_options].index(current_payment_method) if current_payment_method in [str(option).strip().lower() for option in payment_amount_options] else 0,
+                        options=payment_amount_options,
+                        index=payment_amount_options.index(current_payment_method) if current_payment_method in payment_amount_options else 0,
                         placeholder="Choose a payment method...",
                         key="payment_method",
                         on_change=update_student_data
                     )
-                
-                    current_payment_type = str(selected_student_dict.get('Payment Type', '')).strip().lower()
+            
+                    current_payment_type = str(selected_student_dict.get('Payment Type', '')).strip()
                     payment_type = st.selectbox(
                         "Payment Type",
-                        options=[str(option).strip().lower() for option in payment_type_options],
-                        index=[str(option).strip().lower() for option in payment_type_options].index(current_payment_type) if current_payment_type in [str(option).strip().lower() for option in payment_type_options] else 0,
+                        options=payment_type_options,
+                        index=payment_type_options.index(current_payment_type) if current_payment_type in payment_type_options else 0,
                         placeholder="Choose a payment type...",
                         key="payment_type",
                         on_change=update_student_data
                     )
-                
-                    current_compte = str(selected_student_dict.get('Compte', '')).strip().lower()
+            
+                    current_compte = str(selected_student_dict.get('Compte', '')).strip()
                     compte = st.selectbox(
                         "Compte",
-                        options=[str(option).strip().lower() for option in compte_options],
-                        index=[str(option).strip().lower() for option in compte_options].index(current_compte) if current_compte in [str(option).strip().lower() for option in compte_options] else 0,
+                        options=compte_options,
+                        index=compte_options.index(current_compte) if current_compte in compte_options else 0,
                         placeholder="Choose a compte...",
                         key="compte",
                         on_change=update_student_data
                     )
-                
-                    current_sevis_payment = str(selected_student_dict.get('Sevis payment ?', '')).strip().lower()
+            
+                    current_sevis_payment = str(selected_student_dict.get('Sevis payment ?', '')).strip()
                     sevis_payment = st.selectbox(
                         "Sevis Payment",
-                        options=[str(option).strip().lower() for option in yes_no_options],
-                        index=[str(option).strip().lower() for option in yes_no_options].index(current_sevis_payment) if current_sevis_payment in [str(option).strip().lower() for option in yes_no_options] else 0,
+                        options=yes_no_options,
+                        index=yes_no_options.index(current_sevis_payment) if current_sevis_payment in yes_no_options else 0,
                         placeholder="Choose a SEVIS payment option...",
                         key="sevis_payment",
                         on_change=update_student_data
                     )
-                
-                    current_application_payment = str(selected_student_dict.get('Application payment ?', '')).strip().lower()
+            
+                    current_application_payment = str(selected_student_dict.get('Application payment ?', '')).strip()
                     application_payment = st.selectbox(
                         "Application Payment",
-                        options=[str(option).strip().lower() for option in yes_no_options],
-                        index=[str(option).strip().lower() for option in yes_no_options].index(current_application_payment) if current_application_payment in [str(option).strip().lower() for option in yes_no_options] else 0,
+                        options=yes_no_options,
+                        index=yes_no_options.index(current_application_payment) if current_application_payment in yes_no_options else 0,
                         placeholder="Choose an application payment option...",
                         key="application_payment",
                         on_change=update_student_data
                     )
-                            
-    
+            
                 else:
                     st.write(f"**Payment Date:** {format_date(selected_student_dict['DATE'])}")
                     st.write(f"**Payment Method:** {selected_student_dict['Payment Amount']}")
