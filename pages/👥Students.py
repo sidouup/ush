@@ -844,14 +844,15 @@ def main():
                         on_change=update_student_data
                     )
             
-                    # Application Payment Input
-                    st.write("Options for Application Payment: " + ", ".join(yes_no_options))
-                    application_payment = st.text_input(
-                        "Application Payment",
-                        value=str(selected_student_dict.get('Application payment ?', '')).strip(),
-                        key="application_payment",
-                        on_change=update_student_data
-                    )
+
+                    application_payment = st.selectbox(
+                            "Application Payment",
+                            yes_no_options,
+                            index=School_paid_opt.index(selected_student['Application payment ?']) if selected_student['Application payment ?'] in yes_no_options else 0,
+                            key="School_Paid",
+                            on_change=update_student_data
+                        )
+
                     School_Paid = st.selectbox(
                             "School Paid",
                             School_paid_opt,
