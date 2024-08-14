@@ -688,14 +688,6 @@ def main():
                         key="attempts", 
                         on_change=update_student_data
                     )
-                    agentss = st.selectbox(
-                    "Agent", 
-                    agents, 
-                    index=agents.index(selected_student['Agent']) if selected_student['Agent'] in attempts_options else 0,
-                    key="Agent", 
-                    on_change=update_student_data
-                )
-
                     payment_method = st.text_input(
                         "Payment Method",
                         value=str(selected_student_dict.get('Payment Amount', '')).strip(),
@@ -827,14 +819,7 @@ def main():
                         on_change=update_student_data
                     )
             
-                    # Payment Method Input
-                    st.write("Options for Payment Method: " + ", ".join(payment_amount_options))
-                    payment_method = st.text_input(
-                        "Payment Method",
-                        value=str(selected_student_dict.get('Payment Amount', '')).strip(),
-                        key="payment_method",
-                        on_change=update_student_data
-                    )
+
             
                     # Payment Type Input
                     st.write("Options for Payment Type: " + ", ".join(payment_type_options))
