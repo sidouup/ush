@@ -39,10 +39,33 @@ def reload_data(spreadsheet_id):
 def get_valid_value(column_value, valid_options):
     """
     Returns the column_value if it's in valid_options, otherwise returns the first valid option.
+    Handles NaN values and attempts partial matching.
     """
-    if pd.isna(column_value) or column_value not in valid_options:
-        return valid_options[0]  # or set to another default value
-    return column_value
+    if pd.isna(column_value):
+        return valid_options[0]
+    
+    # Attempt exact match
+    if column_value in valid_options:
+        return column_value
+    
+    # Attempt partial match
+    for option in valid_options:
+        if str(column_value).lower() in option.lower():
+            return option
+    
+    # If no match found, return the first valid option
+    return valid_options[0]
+def find_closest_match(value, options):
+    """
+    Finds the closest match in options for the given value.
+    Returns the index of the closest match.
+    """
+    if pd.isna(value):
+        return 0
+    
+    value = str(value).lower()
+    closest_match = min(options, key=lambda x: len(set(value) ^ set(x.lower())))
+    return options.index(closest_match)
 
 # Caching decorator
 def cache_with_timeout(timeout_minutes=60):
@@ -856,11 +879,11 @@ def main():
                         on_change=update_student_data
                     )
             
-                    # Handle dropdowns with safe value fetching
+                    # Handle dropdowns with improved value fetching and index selection
                     payment_method = st.selectbox(
                         "Payment Method", 
                         payment_amount_options, 
-                        index=payment_amount_options.index(get_valid_value(selected_student['Payment Amount'], payment_amount_options)),
+                        index=find_closest_match(selected_student['Payment Amount'], payment_amount_options),
                         key="payment_method", 
                         on_change=update_student_data
                     )
@@ -868,7 +891,7 @@ def main():
                     payment_type = st.selectbox(
                         "Payment Type", 
                         payment_type_options, 
-                        index=payment_type_options.index(get_valid_value(selected_student['Payment Type'], payment_type_options)),
+                        index=find_closest_match(selected_student['Payment Type'], payment_type_options),
                         key="payment_type", 
                         on_change=update_student_data
                     )
@@ -876,7 +899,7 @@ def main():
                     compte = st.selectbox(
                         "Compte", 
                         compte_options, 
-                        index=compte_options.index(get_valid_value(selected_student['Compte'], compte_options)),
+                        index=find_closest_match(selected_student['Compte'], compte_options),
                         key="compte", 
                         on_change=update_student_data
                     )
@@ -884,7 +907,7 @@ def main():
                     sevis_payment = st.selectbox(
                         "Sevis Payment", 
                         yes_no_options, 
-                        index=yes_no_options.index(get_valid_value(selected_student['Sevis payment ?'], yes_no_options)),
+                        index=find_closest_match(selected_student['Sevis payment ?'], yes_no_options),
                         key="sevis_payment", 
                         on_change=update_student_data
                     )
@@ -892,7 +915,7 @@ def main():
                     application_payment = st.selectbox(
                         "Application Payment", 
                         yes_no_options, 
-                        index=yes_no_options.index(get_valid_value(selected_student['Application payment ?'], yes_no_options)),
+                        index=find_closest_match(selected_student['Application payment ?'], yes_no_options),
                         key="application_payment", 
                         on_change=update_student_data
                     )
