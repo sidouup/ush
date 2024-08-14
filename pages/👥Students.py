@@ -87,6 +87,17 @@ def upload_file_to_drive(file_path, mime_type, folder_id=None):
     return None
 
 def load_data(spreadsheet_id):
+    sheet_headers = {
+        'ALL': [
+            'DATE','First Name', 'Last Name','Age', 'Phone N°', 'Address', 'E-mail', 'Payment Type', 'Compte', 'Student Name', 'Months', 
+            'Emergency contact N°', 'Chosen School', 'Specialite', 'Duration', 
+            'Payment Amount', 'Sevis payment ?', 'Application payment ?', 'DS-160 maker', 
+            'Password DS-160', 'Secret Q.', 'School Entry Date', 'Entry Date in the US', 
+            'ADDRESS in the U.S', 'E-MAIL RDV', 'PASSWORD RDV', 'EMBASSY ITW. DATE', 
+            'Attempts', 'Visa Result', 'Agent', 'Note', 'Stage','Gender','BANK','Prep ITW','School Paid'
+        ]
+    }
+    
     try:
         client = get_google_sheet_client()
         sheet = client.open_by_key(spreadsheet_id)
@@ -94,25 +105,35 @@ def load_data(spreadsheet_id):
         combined_data = pd.DataFrame()
         
         for worksheet in sheet.worksheets():
-            # Load all data as strings initially
-            data = worksheet.get_all_values()
+            title = worksheet.title
+            expected_headers = sheet_headers.get(title, None)
+            
+            if expected_headers:
+                data = worksheet.get_all_records(expected_headers=expected_headers, value_render_option='UNFORMATTED_VALUE')
+            else:
+                data = worksheet.get_all_records(value_render_option='UNFORMATTED_VALUE')
+            
             df = pd.DataFrame(data)
-            
-            # Set the first row as the header
-            df.columns = df.iloc[0]
-            df = df[1:]  # Remove the first row since it's now the header
-            
-            # Convert everything to string
-            df = df.astype(str)
-            
-            # Identify date columns and convert them to datetime
-            date_columns = ['DATE', 'School Entry Date', 'Entry Date in the US', 'EMBASSY ITW. DATE']
-            for col in date_columns:
-                if col in df.columns:
-                    df[col] = pd.to_datetime(df[col], errors='coerce', dayfirst=True)
-            
-            # Combine data from all worksheets
-            combined_data = pd.concat([combined_data, df], ignore_index=True)
+            if not df.empty:
+                # Ensure phone numbers and other text fields are treated as strings
+                text_columns = ['First Name', 'Last Name', 'Phone N°', 'Emergency contact N°', 'E-mail', 'Address']
+                for col in text_columns:
+                    if col in df.columns:
+                        df[col] = df[col].astype(str)
+                
+                # Create Student Name column
+                if 'First Name' in df.columns and 'Last Name' in df.columns:
+                    df['Student Name'] = df['First Name'] + " " + df['Last Name']
+                
+                # Parse dates
+                date_columns = ['DATE', 'School Entry Date', 'Entry Date in the US', 'EMBASSY ITW. DATE']
+                for col in date_columns:
+                    if col in df.columns:
+                        df[col] = pd.to_datetime(df[col], errors='coerce', dayfirst=True)
+                
+                df.dropna(subset=['Student Name'], inplace=True)
+                df.dropna(how='all', inplace=True)
+                combined_data = pd.concat([combined_data, df], ignore_index=True)
         
         # Handle duplicates by appending a number to duplicate names
         combined_data['Student Name'] = combined_data['Student Name'].astype(str)
@@ -129,7 +150,7 @@ def load_data(spreadsheet_id):
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
         return pd.DataFrame()
-        
+
 def save_data(df, spreadsheet_id, sheet_name):
     logger.info("Attempting to save changes")
 
@@ -522,7 +543,6 @@ def main():
                 
                 # Get the current note for the selected student
                 selected_student = filtered_data[filtered_data['Student Name'] == search_query].iloc[0]
-                selected_student_dict = selected_student.to_dict()
                 current_note = selected_student['Note'] if 'Note' in selected_student else ""
             
                 # Create a text area for note input
@@ -654,9 +674,6 @@ def main():
 
             
             with tab1:
-                if 'payment_method' not in st.session_state:
-                    st.session_state['payment_method'] = selected_student_dict.get('Payment Amount', '').strip()
-
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("📋 Personal Information")
                 if edit_mode:
@@ -691,13 +708,13 @@ def main():
                         key="attempts", 
                         on_change=update_student_data
                     )
-                    payment_method = st.text_input(
-                        "Payment Method",
-                        value=str(selected_student_dict.get('Payment Amount', '')).strip(),
-                        key="payment_method",
-                        on_change=update_student_data
-                    )
-            
+                    agentss = st.selectbox(
+                    "Agent", 
+                    agents, 
+                    index=agents.index(selected_student['Agent']) if selected_student['Agent'] in attempts_options else 0,
+                    key="Agent", 
+                    on_change=update_student_data
+                )
                 else:
                     st.write(f"**First Name:** {selected_student['First Name']}")
                     st.write(f"**Last Name:** {selected_student['Last Name']}")
@@ -733,6 +750,13 @@ def main():
                             "Entry Date in the US",
                             value=entry_date_in_us if not pd.isna(entry_date_in_us) else None,
                             key="entry_date_in_us",
+                            on_change=update_student_data
+                        )
+                        School_Paid = st.selectbox(
+                            "School Paid",
+                            School_paid_opt,
+                            index=School_paid_opt.index(selected_student['School Paid']) if selected_student['School Paid'] in School_paid_opt else 0,
+                            key="School_Paid",
                             on_change=update_student_data
                         )
                     else:
@@ -791,79 +815,98 @@ def main():
                 st.markdown('</div>', unsafe_allow_html=True)
 
             with tab4:
-                payment_amount_options = ["159.000 DZD", "152.000 DZD", "139.000 DZD", "132.000 DZD", "36.000 DZD", "20.000 DZD", "Giveaway", "No Paiement"]
-                School_paid_opt = ["YES", "NO"]
-                Prep_ITW_opt = ["YES", "NO"]
-            
-                payment_type_options = ["Cash", "CCP", "Baridimob", "Bank"]
-                compte_options = ["Mohamed", "Sid Ali"]
-                yes_no_options = ["YES", "NO"]
-                attempts_options = ["1st Try", "2nd Try", "3rd Try"]
-                Gender_options = ["", "Male", "Female"]
-            
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("💰 Payment Information")
-                st.write("Selected Student Data:", selected_student_dict)  # Debugging: Display the data to verify it's loaded correctly
-            
+                
                 if edit_mode:
                     # Handling Payment Date
-                    payment_date = selected_student_dict.get('DATE', None)
+                    payment_date_str = selected_student['DATE']
+                    try:
+                        payment_date = pd.to_datetime(payment_date_str, format='%d/%m/%Y %H:%M:%S', errors='coerce', dayfirst=True)
+                        payment_date_value = payment_date if not pd.isna(payment_date) else None
+                    except AttributeError:
+                        payment_date_value = None
+            
                     payment_date = st.date_input(
                         "Payment Date",
-                        value=pd.to_datetime(payment_date) if pd.notna(payment_date) else None,
+                        value=payment_date_value,
                         key="payment_date",
                         on_change=update_student_data
                     )
             
-
-            
-                    # Payment Type Input
-                    st.write("Options for Payment Type: " + ", ".join(payment_type_options))
-                    payment_type = st.text_input(
-                        "Payment Type",
-                        value=str(selected_student_dict.get('Payment Type', '')).strip(),
-                        key="payment_type",
+                    # Handling Payment Method Dropdown
+                    if 'payment_method' not in st.session_state:
+                        st.session_state['payment_method'] = selected_student['Payment Amount']
+                    
+                    current_payment_method = st.session_state['payment_method']
+                    payment_method = st.selectbox(
+                        "Payment Method", 
+                        payment_amount_options, 
+                        index=payment_amount_options.index(current_payment_method) if current_payment_method in payment_amount_options else 0, 
+                        key="payment_method", 
                         on_change=update_student_data
                     )
             
-                    # Compte Input
-                    st.write("Options for Compte: " + ", ".join(compte_options))
-                    compte = st.text_input(
-                        "Compte",
-                        value=str(selected_student_dict.get('Compte', '')).strip(),
-                        key="compte",
+                    # Handling Payment Type Dropdown
+                    if 'payment_type' not in st.session_state:
+                        st.session_state['payment_type'] = selected_student['Payment Type']
+                    
+                    current_payment_type = st.session_state['payment_type']
+                    payment_type = st.selectbox(
+                        "Payment Type", 
+                        payment_type_options, 
+                        index=payment_type_options.index(current_payment_type) if current_payment_type in payment_type_options else 0, 
+                        key="payment_type", 
                         on_change=update_student_data
                     )
             
-                    # SEVIS Payment Input
-                    st.write("Options for SEVIS Payment: " + ", ".join(yes_no_options))
-                    sevis_payment = st.text_input(
-                        "SEVIS Payment",
-                        value=str(selected_student_dict.get('Sevis payment ?', '')).strip(),
-                        key="sevis_payment",
+                    # Handling Compte Dropdown
+                    if 'compte' not in st.session_state:
+                        st.session_state['compte'] = selected_student['Compte']
+                    
+                    current_compte = st.session_state['compte']
+                    compte = st.selectbox(
+                        "Compte", 
+                        compte_options, 
+                        index=compte_options.index(current_compte) if current_compte in compte_options else 0, 
+                        key="compte", 
                         on_change=update_student_data
                     )
             
-
+                    # Handling Sevis Payment Dropdown
+                    if 'sevis_payment' not in st.session_state:
+                        st.session_state['sevis_payment'] = selected_student['Sevis payment ?']
+                    
+                    current_sevis_payment = st.session_state['sevis_payment']
+                    sevis_payment = st.selectbox(
+                        "Sevis Payment", 
+                        yes_no_options, 
+                        index=yes_no_options.index(current_sevis_payment) if current_sevis_payment in yes_no_options else 0, 
+                        key="sevis_payment", 
+                        on_change=update_student_data
+                    )
+            
+                    # Handling Application Payment Dropdown
+                    if 'application_payment' not in st.session_state:
+                        st.session_state['application_payment'] = selected_student['Application payment ?']
+                    
+                    current_application_payment = st.session_state['application_payment']
                     application_payment = st.selectbox(
-                            "Application Payment",
-                            yes_no_options,
-                            index=School_paid_opt.index(selected_student['Application payment ?']) if selected_student['Application payment ?'] in yes_no_options else 0,
-                            key="School_Paid",
-                            on_change=update_student_data
-                        )
-
-
+                        "Application Payment", 
+                        yes_no_options, 
+                        index=yes_no_options.index(current_application_payment) if current_application_payment in yes_no_options else 0, 
+                        key="application_payment", 
+                        on_change=update_student_data
+                    )
             
                 else:
-                    st.write(f"**Payment Date:** {format_date(selected_student_dict['DATE'])}")
-                    st.write(f"**Payment Method:** {selected_student_dict['Payment Amount']}")
-                    st.write(f"**Payment Type:** {selected_student_dict['Payment Type']}")
-                    st.write(f"**Compte:** {selected_student_dict['Compte']}")
-                    st.write(f"**Sevis Payment:** {selected_student_dict['Sevis payment ?']}")
-                    st.write(f"**Application Payment:** {selected_student_dict['Application payment ?']}")
+                    st.write(f"**Payment Date:** {format_date(selected_student['DATE'])}")
+                    st.write(f"**Payment Method:** {selected_student['Payment Amount']}")
+                    st.write(f"**Payment Type:** {selected_student['Payment Type']}")
+                    st.write(f"**Compte:** {selected_student['Compte']}")
+                    st.write(f"**Sevis Payment:** {selected_student['Sevis payment ?']}")
+                    st.write(f"**Application Payment:** {selected_student['Application payment ?']}")
                 st.markdown('</div>', unsafe_allow_html=True)
-
     
             with tab5:
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
