@@ -664,7 +664,7 @@ def main():
             payment_amount_options = ["159.000 DZD", "152.000 DZD", "139.000 DZD", "132.000 DZD", "36.000 DZD", "20.000 DZD", "Giveaway", "No Paiement"]
             School_paid_opt = ["YES", "NO"]
             Prep_ITW_opt = ["YES", "NO"]
-
+            Visa_Result_opt =["Visa Approved", "Visa Denied", "Not Our school"]
 
             payment_type_options = ["Cash", "CCP", "Baridimob", "Bank"]
             compte_options = ["Mohamed", "Sid Ali"]
@@ -800,6 +800,13 @@ def main():
                         Prep_ITW_opt,
                         index=Prep_ITW_opt.index(selected_student['Prep ITW']) if selected_student['Prep ITW'] in Prep_ITW_opt else 0,
                         key="Prep_ITW",
+                        on_change=update_student_data
+                    )
+                    Visa Result = st.selectbox(
+                        "Visa Result",
+                        Visa_Result_opt,
+                        index=Visa_Result_opt.index(selected_student['Visa Result']) if selected_student['Visa Result'] in Visa_Result_opt else 0,
+                        key="Visa Result",
                         on_change=update_student_data
                     )
 
