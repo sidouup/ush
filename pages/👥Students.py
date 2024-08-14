@@ -838,7 +838,7 @@ def main():
                     "Payment Method", 
                     payment_amount_options, 
                     index=payment_amount_options.index(selected_student['Payment Amount']) if selected_student['Payment Amount'] in payment_amount_options else 0,
-                    key="payment_method", 
+                    key="Payment Method", 
                     on_change=update_student_data
                 )
                     
@@ -846,7 +846,7 @@ def main():
                     "Payment Type", 
                     payment_type_options, 
                     index=payment_type_options.index(selected_student['Payment Type']) if selected_student['Payment Type'] in payment_type_options else 0,
-                    key="payment_type", 
+                    key="Payment Type", 
                     on_change=update_student_data
                 )
                     
