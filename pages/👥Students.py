@@ -975,7 +975,7 @@ def main():
                         'Age': st.session_state.get('Age', selected_student['Age']),
                         'Sevis payment ?': st.session_state.get('Sevis Payment', selected_student['Sevis payment ?']),
                         'Agent': st.session_state.get('Agent', selected_student['Agent']),
-                        'Application payment ?': st.session_state.get('application_payment', selected_student['Application payment ?']),
+                        'Application payment ?': st.session_state.get('Application payment ?', selected_student['Application payment ?']),
                     }
             
                     original_data = st.session_state['data']
