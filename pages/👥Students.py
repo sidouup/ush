@@ -543,6 +543,7 @@ def main():
                 
                 # Get the current note for the selected student
                 selected_student = filtered_data[filtered_data['Student Name'] == search_query].iloc[0]
+                selected_student_dict = selected_student.to_dict()
                 current_note = selected_student['Note'] if 'Note' in selected_student else ""
             
                 # Create a text area for note input
@@ -820,23 +821,17 @@ def main():
                 
                 if edit_mode:
                     # Handling Payment Date
-                    payment_date_str = selected_student['DATE']
-                    try:
-                        payment_date = pd.to_datetime(payment_date_str, format='%d/%m/%Y %H:%M:%S', errors='coerce', dayfirst=True)
-                        payment_date_value = payment_date if not pd.isna(payment_date) else None
-                    except AttributeError:
-                        payment_date_value = None
-            
+                    payment_date = selected_student_dict['DATE']
                     payment_date = st.date_input(
                         "Payment Date",
-                        value=payment_date_value,
+                        value=payment_date if pd.notna(payment_date) else None,
                         key="payment_date",
                         on_change=update_student_data
                     )
-            
+    
                     # Handling Payment Method Radio
                     st.write("Payment Method")
-                    current_payment_method = selected_student['Payment Amount'] if pd.notna(selected_student['Payment Amount']) else payment_amount_options[0]
+                    current_payment_method = selected_student_dict['Payment Amount'] if pd.notna(selected_student_dict['Payment Amount']) else payment_amount_options[0]
                     payment_method = st.radio(
                         "Payment Method",
                         payment_amount_options,
@@ -845,10 +840,10 @@ def main():
                         on_change=update_student_data,
                         horizontal=True
                     )
-            
+    
                     # Handling Payment Type Radio
                     st.write("Payment Type")
-                    current_payment_type = selected_student['Payment Type'] if pd.notna(selected_student['Payment Type']) else payment_type_options[0]
+                    current_payment_type = selected_student_dict['Payment Type'] if pd.notna(selected_student_dict['Payment Type']) else payment_type_options[0]
                     payment_type = st.radio(
                         "Payment Type",
                         payment_type_options,
@@ -857,10 +852,10 @@ def main():
                         on_change=update_student_data,
                         horizontal=True
                     )
-            
+    
                     # Handling Compte Radio
                     st.write("Compte")
-                    current_compte = selected_student['Compte'] if pd.notna(selected_student['Compte']) else compte_options[0]
+                    current_compte = selected_student_dict['Compte'] if pd.notna(selected_student_dict['Compte']) else compte_options[0]
                     compte = st.radio(
                         "Compte",
                         compte_options,
@@ -869,10 +864,10 @@ def main():
                         on_change=update_student_data,
                         horizontal=True
                     )
-            
+    
                     # Handling Sevis Payment Radio
                     st.write("Sevis Payment")
-                    current_sevis_payment = selected_student['Sevis payment ?'] if pd.notna(selected_student['Sevis payment ?']) else yes_no_options[0]
+                    current_sevis_payment = selected_student_dict['Sevis payment ?'] if pd.notna(selected_student_dict['Sevis payment ?']) else yes_no_options[0]
                     sevis_payment = st.radio(
                         "Sevis Payment",
                         yes_no_options,
@@ -881,10 +876,10 @@ def main():
                         on_change=update_student_data,
                         horizontal=True
                     )
-            
+    
                     # Handling Application Payment Radio
                     st.write("Application Payment")
-                    current_application_payment = selected_student['Application payment ?'] if pd.notna(selected_student['Application payment ?']) else yes_no_options[0]
+                    current_application_payment = selected_student_dict['Application payment ?'] if pd.notna(selected_student_dict['Application payment ?']) else yes_no_options[0]
                     application_payment = st.radio(
                         "Application Payment",
                         yes_no_options,
@@ -893,14 +888,14 @@ def main():
                         on_change=update_student_data,
                         horizontal=True
                     )
-            
+    
                 else:
-                    st.write(f"**Payment Date:** {format_date(selected_student['DATE'])}")
-                    st.write(f"**Payment Method:** {selected_student['Payment Amount']}")
-                    st.write(f"**Payment Type:** {selected_student['Payment Type']}")
-                    st.write(f"**Compte:** {selected_student['Compte']}")
-                    st.write(f"**Sevis Payment:** {selected_student['Sevis payment ?']}")
-                    st.write(f"**Application Payment:** {selected_student['Application payment ?']}")
+                    st.write(f"**Payment Date:** {format_date(selected_student_dict['DATE'])}")
+                    st.write(f"**Payment Method:** {selected_student_dict['Payment Amount']}")
+                    st.write(f"**Payment Type:** {selected_student_dict['Payment Type']}")
+                    st.write(f"**Compte:** {selected_student_dict['Compte']}")
+                    st.write(f"**Sevis Payment:** {selected_student_dict['Sevis payment ?']}")
+                    st.write(f"**Application Payment:** {selected_student_dict['Application payment ?']}")
                 st.markdown('</div>', unsafe_allow_html=True)
 
     
