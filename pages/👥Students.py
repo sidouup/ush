@@ -671,7 +671,7 @@ def main():
             yes_no_options = ["YES", "NO"]
             attempts_options = ["1st Try", "2nd Try", "3rd Try"]
             Gender_options = ["","Male", "Female"]
-
+            agents = ["All", "Nesrine", "Hamza", "Djazila","Nada"]
             
             with tab1:
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
@@ -711,7 +711,7 @@ def main():
                     agentss = st.selectbox(
                     "Agent", 
                     agents, 
-                    index=agents.index(selected_student['Agent']) if selected_student['Agent'] in attempts_options else 0,
+                    index=agents.index(selected_student['Agent']),
                     key="Agent", 
                     on_change=update_student_data
                 )
