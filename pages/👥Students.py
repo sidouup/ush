@@ -24,6 +24,13 @@ logger = logging.getLogger(__name__)
 
 def on_student_select():
     st.session_state.student_changed = True
+    
+    # Reset session state variables for the dropdowns
+    st.session_state['payment_method'] = None
+    st.session_state['payment_type'] = None
+    st.session_state['compte'] = None
+    st.session_state['sevis_payment'] = None
+    st.session_state['application_payment'] = None
 
 def reload_data(spreadsheet_id):
     data = load_data(spreadsheet_id)
@@ -817,83 +824,26 @@ def main():
             with tab4:
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("💰 Payment Information")
-                
                 if edit_mode:
-                    # Handling Payment Date
                     payment_date_str = selected_student['DATE']
                     try:
                         payment_date = pd.to_datetime(payment_date_str, format='%d/%m/%Y %H:%M:%S', errors='coerce', dayfirst=True)
                         payment_date_value = payment_date if not pd.isna(payment_date) else None
                     except AttributeError:
                         payment_date_value = None
-            
+
                     payment_date = st.date_input(
                         "Payment Date",
                         value=payment_date_value,
                         key="payment_date",
                         on_change=update_student_data
                     )
-            
-                    # Handling Payment Method Dropdown
-                    current_payment_method = st.session_state.get('payment_method', selected_student['Payment Amount'])
-                    payment_method = st.selectbox(
-                        "Payment Method", 
-                        payment_amount_options, 
-                        index=payment_amount_options.index(current_payment_method) if current_payment_method in payment_amount_options else 0, 
-                        key="payment_method", 
-                        on_change=update_student_data
-                    )
-                    if not st.session_state['payment_method']:
-                        st.session_state['payment_method'] = selected_student['Payment Amount']
-            
-                    # Handling Payment Type Dropdown
-                    current_payment_type = st.session_state.get('payment_type', selected_student['Payment Type'])
-                    payment_type = st.selectbox(
-                        "Payment Type", 
-                        payment_type_options, 
-                        index=payment_type_options.index(current_payment_type) if current_payment_type in payment_type_options else 0, 
-                        key="payment_type", 
-                        on_change=update_student_data
-                    )
-                    if not st.session_state['payment_type']:
-                        st.session_state['payment_type'] = selected_student['Payment Type']
-            
-                    # Handling Compte Dropdown
-                    current_compte = st.session_state.get('compte', selected_student['Compte'])
-                    compte = st.selectbox(
-                        "Compte", 
-                        compte_options, 
-                        index=compte_options.index(current_compte) if current_compte in compte_options else 0, 
-                        key="compte", 
-                        on_change=update_student_data
-                    )
-                    if not st.session_state['compte']:
-                        st.session_state['compte'] = selected_student['Compte']
-            
-                    # Handling Sevis Payment Dropdown
-                    current_sevis_payment = st.session_state.get('sevis_payment', selected_student['Sevis payment ?'])
-                    sevis_payment = st.selectbox(
-                        "Sevis Payment", 
-                        yes_no_options, 
-                        index=yes_no_options.index(current_sevis_payment) if current_sevis_payment in yes_no_options else 0, 
-                        key="sevis_payment", 
-                        on_change=update_student_data
-                    )
-                    if not st.session_state['sevis_payment']:
-                        st.session_state['sevis_payment'] = selected_student['Sevis payment ?']
-            
-                    # Handling Application Payment Dropdown
-                    current_application_payment = st.session_state.get('application_payment', selected_student['Application payment ?'])
-                    application_payment = st.selectbox(
-                        "Application Payment", 
-                        yes_no_options, 
-                        index=yes_no_options.index(current_application_payment) if current_application_payment in yes_no_options else 0, 
-                        key="application_payment", 
-                        on_change=update_student_data
-                    )
-                    if not st.session_state['application_payment']:
-                        st.session_state['application_payment'] = selected_student['Application payment ?']
-            
+
+                    payment_method = st.selectbox("Payment Method", payment_amount_options, index=payment_amount_options.index(st.session_state['payment_method']) if st.session_state['payment_method'] else payment_amount_options.index(selected_student['Payment Amount']), key="payment_method", on_change=update_student_data)
+                    payment_type = st.selectbox("Payment Type", payment_type_options, index=payment_type_options.index(st.session_state['payment_type']) if st.session_state['payment_type'] else payment_type_options.index(selected_student['Payment Type']), key="payment_type", on_change=update_student_data)
+                    compte = st.selectbox("Compte", compte_options, index=compte_options.index(st.session_state['compte']) if st.session_state['compte'] else compte_options.index(selected_student['Compte']), key="compte", on_change=update_student_data)
+                    sevis_payment = st.selectbox("Sevis Payment", yes_no_options, index=yes_no_options.index(st.session_state['sevis_payment']) if st.session_state['sevis_payment'] else yes_no_options.index(selected_student['Sevis payment ?']), key="sevis_payment", on_change=update_student_data)
+                    application_payment = st.selectbox("Application Payment", yes_no_options, index=yes_no_options.index(st.session_state['application_payment']) if st.session_state['application_payment'] else yes_no_options.index(selected_student['Application payment ?']), key="application_payment", on_change=update_student_data)
                 else:
                     st.write(f"**Payment Date:** {format_date(selected_student['DATE'])}")
                     st.write(f"**Payment Method:** {selected_student['Payment Amount']}")
@@ -902,7 +852,7 @@ def main():
                     st.write(f"**Sevis Payment:** {selected_student['Sevis payment ?']}")
                     st.write(f"**Application Payment:** {selected_student['Application payment ?']}")
                 st.markdown('</div>', unsafe_allow_html=True)
-    
+
             with tab5:
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("🚩 Current Stage")
