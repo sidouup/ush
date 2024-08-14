@@ -89,7 +89,7 @@ def upload_file_to_drive(file_path, mime_type, folder_id=None):
 def load_data(spreadsheet_id):
     sheet_headers = {
         'ALL': [
-            'DATE','First Name', 'Last Name','Age', 'Phone N°', 'Address', 'E-mail', 
+            'DATE','First Name', 'Last Name','Age', 'Phone N°', 'Address', 'E-mail', 'Payment Type', 'Compte', 'Student Name', 'Months', 
             'Emergency contact N°', 'Chosen School', 'Specialite', 'Duration', 
             'Payment Amount', 'Sevis payment ?', 'Application payment ?', 'DS-160 maker', 
             'Password DS-160', 'Secret Q.', 'School Entry Date', 'Entry Date in the US', 
