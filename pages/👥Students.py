@@ -462,7 +462,69 @@ def main():
 
     st.markdown("""
     <style>
-        /* Your existing CSS styling */
+        .reportview-container {
+            background: #f0f2f6;
+        }
+        .main .block-container {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+        h1, h2, h3 {
+            color: #1E3A8A;
+        }
+        .stSelectbox, .stTextInput {
+            background-color: white;
+            color: #2c3e50;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .stExpander {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 10px;
+        }
+        .css-1544g2n {
+            padding: 2rem;
+        }
+        .stMetric {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .stMetric .metric-label {
+            font-weight: bold;
+        }
+        .stButton>button {
+            background-color: #ff7f50;
+            color: white;
+            font-weight: bold;
+        }
+        .stButton>button:hover {
+            background-color: #ff6347;
+        }
+        .stTextInput input {
+            font-size: 1rem;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .progress-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+        .progress-bar {
+            height: 20px;
+            background-color: #4caf50;
+            border-radius: 10px;
+            transition: width 0.5s ease-in-out;
+            text-align: center;
+            line-height: 20px;
+            color: white;
+            font-weight: bold;
+        }
     </style>
     """, unsafe_allow_html=True)
 
