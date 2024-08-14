@@ -832,7 +832,9 @@ def main():
             with tab4:
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("💰 Payment Information")
+                
                 if edit_mode:
+                    # Handle Payment Date
                     payment_date_str = selected_student['DATE']
                     try:
                         payment_date = pd.to_datetime(payment_date_str, format='%d/%m/%Y %H:%M:%S', errors='coerce', dayfirst=True)
@@ -847,12 +849,47 @@ def main():
                         on_change=update_student_data
                     )
             
-                    # Use safe_selectbox to handle NaN values
-                    payment_method = safe_selectbox("Payment Method", payment_amount_options, selected_student['Payment Amount'], "payment_method", update_student_data)
-                    payment_type = safe_selectbox("Payment Type", payment_type_options, selected_student['Payment Type'], "payment_type", update_student_data)
-                    compte = safe_selectbox("Compte", compte_options, selected_student['Compte'], "compte", update_student_data)
-                    sevis_payment = safe_selectbox("Sevis Payment", yes_no_options, selected_student['Sevis payment ?'], "sevis_payment", update_student_data)
-                    application_payment = safe_selectbox("Application Payment", yes_no_options, selected_student['Application payment ?'], "application_payment", update_student_data)
+                    # Handle dropdowns with retained values
+                    payment_method = st.selectbox(
+                        "Payment Method", 
+                        payment_amount_options, 
+                        index=payment_amount_options.index(selected_student['Payment Amount']) if selected_student['Payment Amount'] in payment_amount_options else 0, 
+                        key="payment_method", 
+                        on_change=update_student_data
+                    )
+                    
+                    payment_type = st.selectbox(
+                        "Payment Type", 
+                        payment_type_options, 
+                        index=payment_type_options.index(selected_student['Payment Type']) if selected_student['Payment Type'] in payment_type_options else 0, 
+                        key="payment_type", 
+                        on_change=update_student_data
+                    )
+                    
+                    compte = st.selectbox(
+                        "Compte", 
+                        compte_options, 
+                        index=compte_options.index(selected_student['Compte']) if selected_student['Compte'] in compte_options else 0, 
+                        key="compte", 
+                        on_change=update_student_data
+                    )
+                    
+                    sevis_payment = st.selectbox(
+                        "Sevis Payment", 
+                        yes_no_options, 
+                        index=yes_no_options.index(selected_student['Sevis payment ?']) if selected_student['Sevis payment ?'] in yes_no_options else 0, 
+                        key="sevis_payment", 
+                        on_change=update_student_data
+                    )
+                    
+                    application_payment = st.selectbox(
+                        "Application Payment", 
+                        yes_no_options, 
+                        index=yes_no_options.index(selected_student['Application payment ?']) if selected_student['Application payment ?'] in yes_no_options else 0, 
+                        key="application_payment", 
+                        on_change=update_student_data
+                    )
+                    
                 else:
                     st.write(f"**Payment Date:** {format_date(selected_student['DATE'])}")
                     st.write(f"**Payment Method:** {selected_student['Payment Amount']}")
