@@ -807,65 +807,60 @@ def main():
                         key="payment_date",
                         on_change=update_student_data
                     )
-    
-                    # Handling Payment Method Radio
+                
+                    # Handling Payment Method Select Box
                     st.write("Payment Method")
                     current_payment_method = selected_student_dict['Payment Amount'] if pd.notna(selected_student_dict['Payment Amount']) else payment_amount_options[0]
-                    payment_method = st.radio(
+                    payment_method = st.selectbox(
                         "Payment Method",
-                        payment_amount_options,
+                        options=payment_amount_options,
                         index=payment_amount_options.index(current_payment_method) if current_payment_method in payment_amount_options else 0,
                         key="payment_method",
-                        on_change=update_student_data,
-                        horizontal=True
+                        on_change=update_student_data
                     )
-    
-                    # Handling Payment Type Radio
+                
+                    # Handling Payment Type Select Box
                     st.write("Payment Type")
                     current_payment_type = selected_student_dict['Payment Type'] if pd.notna(selected_student_dict['Payment Type']) else payment_type_options[0]
-                    payment_type = st.radio(
+                    payment_type = st.selectbox(
                         "Payment Type",
-                        payment_type_options,
+                        options=payment_type_options,
                         index=payment_type_options.index(current_payment_type) if current_payment_type in payment_type_options else 0,
                         key="payment_type",
-                        on_change=update_student_data,
-                        horizontal=True
+                        on_change=update_student_data
                     )
-    
-                    # Handling Compte Radio
+                
+                    # Handling Compte Select Box
                     st.write("Compte")
                     current_compte = selected_student_dict['Compte'] if pd.notna(selected_student_dict['Compte']) else compte_options[0]
-                    compte = st.radio(
+                    compte = st.selectbox(
                         "Compte",
-                        compte_options,
+                        options=compte_options,
                         index=compte_options.index(current_compte) if current_compte in compte_options else 0,
                         key="compte",
-                        on_change=update_student_data,
-                        horizontal=True
+                        on_change=update_student_data
                     )
-    
-                    # Handling Sevis Payment Radio
+                
+                    # Handling Sevis Payment Select Box
                     st.write("Sevis Payment")
                     current_sevis_payment = selected_student_dict['Sevis payment ?'] if pd.notna(selected_student_dict['Sevis payment ?']) else yes_no_options[0]
-                    sevis_payment = st.radio(
+                    sevis_payment = st.selectbox(
                         "Sevis Payment",
-                        yes_no_options,
+                        options=yes_no_options,
                         index=yes_no_options.index(current_sevis_payment) if current_sevis_payment in yes_no_options else 0,
                         key="sevis_payment",
-                        on_change=update_student_data,
-                        horizontal=True
+                        on_change=update_student_data
                     )
-    
-                    # Handling Application Payment Radio
+                
+                    # Handling Application Payment Select Box
                     st.write("Application Payment")
                     current_application_payment = selected_student_dict['Application payment ?'] if pd.notna(selected_student_dict['Application payment ?']) else yes_no_options[0]
-                    application_payment = st.radio(
+                    application_payment = st.selectbox(
                         "Application Payment",
-                        yes_no_options,
+                        options=yes_no_options,
                         index=yes_no_options.index(current_application_payment) if current_application_payment in yes_no_options else 0,
                         key="application_payment",
-                        on_change=update_student_data,
-                        horizontal=True
+                        on_change=update_student_data
                     )
     
                 else:
