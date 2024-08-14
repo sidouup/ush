@@ -94,18 +94,22 @@ def load_data(spreadsheet_id):
         combined_data = pd.DataFrame()
         
         for worksheet in sheet.worksheets():
-            # Load all records without specifying headers
+            # Load all data as strings initially
             data = worksheet.get_all_values()
-            
-            # Convert the data to a DataFrame
             df = pd.DataFrame(data)
             
             # Set the first row as the header
             df.columns = df.iloc[0]
             df = df[1:]  # Remove the first row since it's now the header
             
-            # Treat everything as a string
+            # Convert everything to string
             df = df.astype(str)
+            
+            # Identify date columns and convert them to datetime
+            date_columns = ['DATE', 'School Entry Date', 'Entry Date in the US', 'EMBASSY ITW. DATE']
+            for col in date_columns:
+                if col in df.columns:
+                    df[col] = pd.to_datetime(df[col], errors='coerce', dayfirst=True)
             
             # Combine data from all worksheets
             combined_data = pd.concat([combined_data, df], ignore_index=True)
@@ -125,7 +129,7 @@ def load_data(spreadsheet_id):
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
         return pd.DataFrame()
-
+        
 def save_data(df, spreadsheet_id, sheet_name):
     logger.info("Attempting to save changes")
 
