@@ -834,11 +834,15 @@ def main():
                         on_change=update_student_data
                     )
             
-                    # Handling Payment Method Dropdown
-                    if 'payment_method' not in st.session_state:
-                        st.session_state['payment_method'] = selected_student['Payment Amount']
+                    payment_method = st.selectbox(
+                    "Payment Method", 
+                    payment_amount_options, 
+                    index=payment_amount_options.index(selected_student['Payment Amount']) if selected_student['Payment Amount'] in payment_amount_options else 0,
+                    key="Payment Method", 
+                    on_change=update_student_data
+                )
                     
-                    current_payment_method = st.session_state['payment_method']
+
                     payment_method = st.selectbox(
                         "Payment Method", 
                         payment_amount_options, 
