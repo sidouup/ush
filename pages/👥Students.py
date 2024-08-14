@@ -206,6 +206,14 @@ def format_date(date_string):
         return date.strftime('%d %B %Y') if not pd.isna(date) else "Invalid Date"
     except:
         return "Invalid Date"
+import pandas as pd
+
+# Replace NaN with a default value before using the selectbox
+def safe_selectbox(label, options, value, key, on_change):
+    if pd.isna(value) or value not in options:
+        value = options[0]  # or any default value you'd like to set
+    return st.selectbox(label, options, index=options.index(value), key=key, on_change=on_change)
+
 
 def clear_cache_and_rerun():
     st.cache_data.clear()
@@ -831,19 +839,20 @@ def main():
                         payment_date_value = payment_date if not pd.isna(payment_date) else None
                     except AttributeError:
                         payment_date_value = None
-
+            
                     payment_date = st.date_input(
                         "Payment Date",
                         value=payment_date_value,
                         key="payment_date",
                         on_change=update_student_data
                     )
-
-                    payment_method = st.selectbox("Payment Method", payment_amount_options, index=payment_amount_options.index(st.session_state['payment_method']) if st.session_state['payment_method'] else payment_amount_options.index(selected_student['Payment Amount']), key="payment_method", on_change=update_student_data)
-                    payment_type = st.selectbox("Payment Type", payment_type_options, index=payment_type_options.index(st.session_state['payment_type']) if st.session_state['payment_type'] else payment_type_options.index(selected_student['Payment Type']), key="payment_type", on_change=update_student_data)
-                    compte = st.selectbox("Compte", compte_options, index=compte_options.index(st.session_state['compte']) if st.session_state['compte'] else compte_options.index(selected_student['Compte']), key="compte", on_change=update_student_data)
-                    sevis_payment = st.selectbox("Sevis Payment", yes_no_options, index=yes_no_options.index(st.session_state['sevis_payment']) if st.session_state['sevis_payment'] else yes_no_options.index(selected_student['Sevis payment ?']), key="sevis_payment", on_change=update_student_data)
-                    application_payment = st.selectbox("Application Payment", yes_no_options, index=yes_no_options.index(st.session_state['application_payment']) if st.session_state['application_payment'] else yes_no_options.index(selected_student['Application payment ?']), key="application_payment", on_change=update_student_data)
+            
+                    # Use safe_selectbox to handle NaN values
+                    payment_method = safe_selectbox("Payment Method", payment_amount_options, selected_student['Payment Amount'], "payment_method", update_student_data)
+                    payment_type = safe_selectbox("Payment Type", payment_type_options, selected_student['Payment Type'], "payment_type", update_student_data)
+                    compte = safe_selectbox("Compte", compte_options, selected_student['Compte'], "compte", update_student_data)
+                    sevis_payment = safe_selectbox("Sevis Payment", yes_no_options, selected_student['Sevis payment ?'], "sevis_payment", update_student_data)
+                    application_payment = safe_selectbox("Application Payment", yes_no_options, selected_student['Application payment ?'], "application_payment", update_student_data)
                 else:
                     st.write(f"**Payment Date:** {format_date(selected_student['DATE'])}")
                     st.write(f"**Payment Method:** {selected_student['Payment Amount']}")
@@ -852,7 +861,7 @@ def main():
                     st.write(f"**Sevis Payment:** {selected_student['Sevis payment ?']}")
                     st.write(f"**Application Payment:** {selected_student['Application payment ?']}")
                 st.markdown('</div>', unsafe_allow_html=True)
-
+    
             with tab5:
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("🚩 Current Stage")
