@@ -853,7 +853,7 @@ def main():
                     payment_method = st.selectbox(
                         "Payment Method", 
                         payment_amount_options, 
-                        index=payment_amount_options.index(selected_student['Payment Amount']) if selected_student['Payment Amount'] in payment_amount_options else 0, 
+                        index=payment_amount_options.index(selected_student['Payment Amount']) , 
                         key="payment_method", 
                         on_change=update_student_data
                     )
