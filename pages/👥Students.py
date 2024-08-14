@@ -945,67 +945,68 @@ def main():
                         clear_cache_and_rerun()  # Clear cache and rerun the app
                     else:
                         st.error("An error occurred while uploading the document.")
+            if edit_mode:
 
-            if st.button("Save Changes", key="save_changes_button"):
-                try:
-                    # Prepare the updated student data
-                    updated_student = {
-                        'First Name': st.session_state.get('first_name', selected_student['First Name']),
-                        'Last Name': st.session_state.get('last_name', selected_student['Last Name']),
-                        'Phone N°': st.session_state.get('phone_number', selected_student['Phone N°']),
-                        'E-mail': st.session_state.get('email', selected_student['E-mail']),
-                        'Emergency contact N°': st.session_state.get('emergency_contact', selected_student['Emergency contact N°']),
-                        'Address': st.session_state.get('address', selected_student['Address']),
-                        'Attempts': st.session_state.get('attempts', selected_student['Attempts']),
-                        'Chosen School': st.session_state.get('chosen_school', selected_student['Chosen School']),
-                        'Specialite': st.session_state.get('specialite', selected_student['Specialite']),
-                        'Duration': st.session_state.get('duration', selected_student['Duration']),
-                        'School Entry Date': st.session_state.get('school_entry_date', selected_student['School Entry Date']),
-                        'Entry Date in the US': st.session_state.get('entry_date_in_us', selected_student['Entry Date in the US']),
-                        'ADDRESS in the U.S': st.session_state.get('address_us', selected_student['ADDRESS in the U.S']),
-                        'E-MAIL RDV': st.session_state.get('email_rdv', selected_student['E-MAIL RDV']),
-                        'PASSWORD RDV': st.session_state.get('password_rdv', selected_student['PASSWORD RDV']),
-                        'EMBASSY ITW. DATE': st.session_state.get('embassy_itw_date', selected_student['EMBASSY ITW. DATE']),
-                        'DS-160 maker': st.session_state.get('ds160_maker', selected_student['DS-160 maker']),
-                        'Password DS-160': st.session_state.get('password_ds160', selected_student['Password DS-160']),
-                        'Secret Q.': st.session_state.get('secret_q', selected_student['Secret Q.']),
-                        'Visa Result': st.session_state.get('Visa Result', selected_student['Visa Result']),
-                        'Stage': st.session_state.get('current_stage', selected_student['Stage']),
-                        'DATE': st.session_state.get('payment_date', selected_student['DATE']),
-                        'BANK': st.session_state.get('Bankstatment', selected_student['BANK']),
-                        'Gender': st.session_state.get('Gender', selected_student['Gender']),
-                        'Payment Amount': st.session_state.get('Payment Method', selected_student['Payment Amount']),
-                        'Payment Type': st.session_state.get('Payment Type', selected_student['Payment Type']),
-                        'Compte': st.session_state.get('Compte', selected_student['Compte']),
-                        'School Paid': st.session_state.get('School_Paid', selected_student['School Paid']),
-                        'Prep ITW': st.session_state.get('Prep_ITW', selected_student['Prep ITW']),
-                        'Age': st.session_state.get('Age', selected_student['Age']),
-                        'Sevis payment ?': st.session_state.get('Sevis Payment', selected_student['Sevis payment ?']),
-                        'Agent': st.session_state.get('Agent', selected_student['Agent']),
-                        'Application payment ?': st.session_state.get('Application payment ?', selected_student['Application payment ?']),
-                    }
-            
-                    original_data = st.session_state['data']
-            
-                    # Apply the changes to the original data
-                    for key, value in updated_student.items():
-                        original_data.loc[original_data['Student Name'] == student_name, key] = value
-            
-                    # Ensure the "Student Name" column is updated
-                    original_data['Student Name'] = original_data['First Name'] + " " + original_data['Last Name']
-            
-                    # Save the original data back to Google Sheets
-                    if save_data(original_data, spreadsheet_id, 'ALL'):
-                        st.success("Changes saved successfully!")
-                        st.session_state['reload_data'] = True
-                        st.cache_data.clear()
-                        with st.spinner("Refreshing data..."):
-                            time.sleep(2)
-                        st.rerun()
-                    else:
-                        st.error("Failed to save changes. Please try again.")
-                except Exception as e:
-                    st.error(f"An error occurred while saving: {str(e)}")
+                if st.button("Save Changes", key="save_changes_button"):
+                    try:
+                        # Prepare the updated student data
+                        updated_student = {
+                            'First Name': st.session_state.get('first_name', selected_student['First Name']),
+                            'Last Name': st.session_state.get('last_name', selected_student['Last Name']),
+                            'Phone N°': st.session_state.get('phone_number', selected_student['Phone N°']),
+                            'E-mail': st.session_state.get('email', selected_student['E-mail']),
+                            'Emergency contact N°': st.session_state.get('emergency_contact', selected_student['Emergency contact N°']),
+                            'Address': st.session_state.get('address', selected_student['Address']),
+                            'Attempts': st.session_state.get('attempts', selected_student['Attempts']),
+                            'Chosen School': st.session_state.get('chosen_school', selected_student['Chosen School']),
+                            'Specialite': st.session_state.get('specialite', selected_student['Specialite']),
+                            'Duration': st.session_state.get('duration', selected_student['Duration']),
+                            'School Entry Date': st.session_state.get('school_entry_date', selected_student['School Entry Date']),
+                            'Entry Date in the US': st.session_state.get('entry_date_in_us', selected_student['Entry Date in the US']),
+                            'ADDRESS in the U.S': st.session_state.get('address_us', selected_student['ADDRESS in the U.S']),
+                            'E-MAIL RDV': st.session_state.get('email_rdv', selected_student['E-MAIL RDV']),
+                            'PASSWORD RDV': st.session_state.get('password_rdv', selected_student['PASSWORD RDV']),
+                            'EMBASSY ITW. DATE': st.session_state.get('embassy_itw_date', selected_student['EMBASSY ITW. DATE']),
+                            'DS-160 maker': st.session_state.get('ds160_maker', selected_student['DS-160 maker']),
+                            'Password DS-160': st.session_state.get('password_ds160', selected_student['Password DS-160']),
+                            'Secret Q.': st.session_state.get('secret_q', selected_student['Secret Q.']),
+                            'Visa Result': st.session_state.get('Visa Result', selected_student['Visa Result']),
+                            'Stage': st.session_state.get('current_stage', selected_student['Stage']),
+                            'DATE': st.session_state.get('payment_date', selected_student['DATE']),
+                            'BANK': st.session_state.get('Bankstatment', selected_student['BANK']),
+                            'Gender': st.session_state.get('Gender', selected_student['Gender']),
+                            'Payment Amount': st.session_state.get('Payment Method', selected_student['Payment Amount']),
+                            'Payment Type': st.session_state.get('Payment Type', selected_student['Payment Type']),
+                            'Compte': st.session_state.get('Compte', selected_student['Compte']),
+                            'School Paid': st.session_state.get('School_Paid', selected_student['School Paid']),
+                            'Prep ITW': st.session_state.get('Prep_ITW', selected_student['Prep ITW']),
+                            'Age': st.session_state.get('Age', selected_student['Age']),
+                            'Sevis payment ?': st.session_state.get('Sevis Payment', selected_student['Sevis payment ?']),
+                            'Agent': st.session_state.get('Agent', selected_student['Agent']),
+                            'Application payment ?': st.session_state.get('Application payment ?', selected_student['Application payment ?']),
+                        }
+                
+                        original_data = st.session_state['data']
+                
+                        # Apply the changes to the original data
+                        for key, value in updated_student.items():
+                            original_data.loc[original_data['Student Name'] == student_name, key] = value
+                
+                        # Ensure the "Student Name" column is updated
+                        original_data['Student Name'] = original_data['First Name'] + " " + original_data['Last Name']
+                
+                        # Save the original data back to Google Sheets
+                        if save_data(original_data, spreadsheet_id, 'ALL'):
+                            st.success("Changes saved successfully!")
+                            st.session_state['reload_data'] = True
+                            st.cache_data.clear()
+                            with st.spinner("Refreshing data..."):
+                                time.sleep(2)
+                            st.rerun()
+                        else:
+                            st.error("Failed to save changes. Please try again.")
+                    except Exception as e:
+                        st.error(f"An error occurred while saving: {str(e)}")
                     
     else:
         st.error("No data available. Please check your Google Sheets connection and data.")
