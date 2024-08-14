@@ -802,8 +802,6 @@ def main():
                 if edit_mode:
                     # Handling Payment Date
                     payment_date = selected_student_dict.get('DATE', None)
-                    if payment_date:
-                        st.write(f"Payment Date: {payment_date}")  # Debugging: Display payment date
                     payment_date = st.date_input(
                         "Payment Date",
                         value=pd.to_datetime(payment_date) if pd.notna(payment_date) else None,
@@ -811,66 +809,57 @@ def main():
                         on_change=update_student_data
                     )
             
-                    # Handling Payment Method Select Box
-                    current_payment_method = selected_student_dict.get('Payment Amount', None)
-                    if current_payment_method:
-                        st.write(f"Current Payment Method: {current_payment_method}")  # Debugging: Display payment method
+                    # Convert the data to string before using it in selectboxes
+                    current_payment_method = str(selected_student_dict.get('Payment Amount', ''))
+                    st.write(f"Current Payment Method (after conversion): {current_payment_method}")  # Debugging: Display payment method
                     payment_method = st.selectbox(
                         "Payment Method",
-                        options=payment_amount_options,
+                        options=[str(option) for option in payment_amount_options],
                         index=payment_amount_options.index(current_payment_method) if current_payment_method in payment_amount_options else 0,
                         key="payment_method",
                         on_change=update_student_data
                     )
             
-                    # Handling Payment Type Select Box
-                    current_payment_type = selected_student_dict.get('Payment Type', None)
-                    if current_payment_type:
-                        st.write(f"Current Payment Type: {current_payment_type}")  # Debugging: Display payment type
+                    current_payment_type = str(selected_student_dict.get('Payment Type', ''))
+                    st.write(f"Current Payment Type (after conversion): {current_payment_type}")  # Debugging: Display payment type
                     payment_type = st.selectbox(
                         "Payment Type",
-                        options=payment_type_options,
+                        options=[str(option) for option in payment_type_options],
                         index=payment_type_options.index(current_payment_type) if current_payment_type in payment_type_options else 0,
                         key="payment_type",
                         on_change=update_student_data
                     )
             
-                    # Handling Compte Select Box
-                    current_compte = selected_student_dict.get('Compte', None)
-                    if current_compte:
-                        st.write(f"Current Compte: {current_compte}")  # Debugging: Display compte
+                    current_compte = str(selected_student_dict.get('Compte', ''))
+                    st.write(f"Current Compte (after conversion): {current_compte}")  # Debugging: Display compte
                     compte = st.selectbox(
                         "Compte",
-                        options=compte_options,
+                        options=[str(option) for option in compte_options],
                         index=compte_options.index(current_compte) if current_compte in compte_options else 0,
                         key="compte",
                         on_change=update_student_data
                     )
             
-                    # Handling Sevis Payment Select Box
-                    current_sevis_payment = selected_student_dict.get('Sevis payment ?', None)
-                    if current_sevis_payment:
-                        st.write(f"SEVIS Payment: {current_sevis_payment}")  # Debugging: Display SEVIS payment
+                    current_sevis_payment = str(selected_student_dict.get('Sevis payment ?', ''))
+                    st.write(f"SEVIS Payment (after conversion): {current_sevis_payment}")  # Debugging: Display SEVIS payment
                     sevis_payment = st.selectbox(
                         "Sevis Payment",
-                        options=yes_no_options,
+                        options=[str(option) for option in yes_no_options],
                         index=yes_no_options.index(current_sevis_payment) if current_sevis_payment in yes_no_options else 0,
                         key="sevis_payment",
                         on_change=update_student_data
                     )
             
-                    # Handling Application Payment Select Box
-                    current_application_payment = selected_student_dict.get('Application payment ?', None)
-                    if current_application_payment:
-                        st.write(f"Application Payment: {current_application_payment}")  # Debugging: Display application payment
+                    current_application_payment = str(selected_student_dict.get('Application payment ?', ''))
+                    st.write(f"Application Payment (after conversion): {current_application_payment}")  # Debugging: Display application payment
                     application_payment = st.selectbox(
                         "Application Payment",
-                        options=yes_no_options,
+                        options=[str(option) for option in yes_no_options],
                         index=yes_no_options.index(current_application_payment) if current_application_payment in yes_no_options else 0,
                         key="application_payment",
                         on_change=update_student_data
                     )
-
+            
     
                 else:
                     st.write(f"**Payment Date:** {format_date(selected_student_dict['DATE'])}")
