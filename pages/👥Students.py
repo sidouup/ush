@@ -809,62 +809,57 @@ def main():
                         on_change=update_student_data
                     )
                 
-                    # Convert the data to string before using it in selectboxes
-                    current_payment_method = str(selected_student_dict.get('Payment Amount', ''))
-                    st.write(f"Current Payment Method (after conversion): {current_payment_method}")
+                    # Strip and normalize case for current values
+                    current_payment_method = str(selected_student_dict.get('Payment Amount', '')).strip().lower()
                     payment_method = st.selectbox(
                         "Payment Method",
-                        options=[str(option) for option in payment_amount_options],
-                        index=None,  # Allow initialization without preselected value
+                        options=[str(option).strip().lower() for option in payment_amount_options],
+                        index=[str(option).strip().lower() for option in payment_amount_options].index(current_payment_method) if current_payment_method in [str(option).strip().lower() for option in payment_amount_options] else 0,
                         placeholder="Choose a payment method...",
                         key="payment_method",
                         on_change=update_student_data
                     )
                 
-                    current_payment_type = str(selected_student_dict.get('Payment Type', ''))
-                    st.write(f"Current Payment Type (after conversion): {current_payment_type}")
+                    current_payment_type = str(selected_student_dict.get('Payment Type', '')).strip().lower()
                     payment_type = st.selectbox(
                         "Payment Type",
-                        options=[str(option) for option in payment_type_options],
-                        index=None,  # Allow initialization without preselected value
+                        options=[str(option).strip().lower() for option in payment_type_options],
+                        index=[str(option).strip().lower() for option in payment_type_options].index(current_payment_type) if current_payment_type in [str(option).strip().lower() for option in payment_type_options] else 0,
                         placeholder="Choose a payment type...",
                         key="payment_type",
                         on_change=update_student_data
                     )
                 
-                    current_compte = str(selected_student_dict.get('Compte', ''))
-                    st.write(f"Current Compte (after conversion): {current_compte}")
+                    current_compte = str(selected_student_dict.get('Compte', '')).strip().lower()
                     compte = st.selectbox(
                         "Compte",
-                        options=[str(option) for option in compte_options],
-                        index=None,  # Allow initialization without preselected value
+                        options=[str(option).strip().lower() for option in compte_options],
+                        index=[str(option).strip().lower() for option in compte_options].index(current_compte) if current_compte in [str(option).strip().lower() for option in compte_options] else 0,
                         placeholder="Choose a compte...",
                         key="compte",
                         on_change=update_student_data
                     )
                 
-                    current_sevis_payment = str(selected_student_dict.get('Sevis payment ?', ''))
-                    st.write(f"SEVIS Payment (after conversion): {current_sevis_payment}")
+                    current_sevis_payment = str(selected_student_dict.get('Sevis payment ?', '')).strip().lower()
                     sevis_payment = st.selectbox(
                         "Sevis Payment",
-                        options=[str(option) for option in yes_no_options],
-                        index=None,  # Allow initialization without preselected value
+                        options=[str(option).strip().lower() for option in yes_no_options],
+                        index=[str(option).strip().lower() for option in yes_no_options].index(current_sevis_payment) if current_sevis_payment in [str(option).strip().lower() for option in yes_no_options] else 0,
                         placeholder="Choose a SEVIS payment option...",
                         key="sevis_payment",
                         on_change=update_student_data
                     )
                 
-                    current_application_payment = str(selected_student_dict.get('Application payment ?', ''))
-                    st.write(f"Application Payment (after conversion): {current_application_payment}")
+                    current_application_payment = str(selected_student_dict.get('Application payment ?', '')).strip().lower()
                     application_payment = st.selectbox(
                         "Application Payment",
-                        options=[str(option) for option in yes_no_options],
-                        index=None,  # Allow initialization without preselected value
+                        options=[str(option).strip().lower() for option in yes_no_options],
+                        index=[str(option).strip().lower() for option in yes_no_options].index(current_application_payment) if current_application_payment in [str(option).strip().lower() for option in yes_no_options] else 0,
                         placeholder="Choose an application payment option...",
                         key="application_payment",
                         on_change=update_student_data
                     )
-            
+                            
     
                 else:
                     st.write(f"**Payment Date:** {format_date(selected_student_dict['DATE'])}")
