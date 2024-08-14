@@ -695,6 +695,14 @@ def main():
                     key="Agent", 
                     on_change=update_student_data
                 )
+
+                    payment_method = st.text_input(
+                        "Payment Method",
+                        value=str(selected_student_dict.get('Payment Amount', '')).strip(),
+                        key="payment_method",
+                        on_change=update_student_data
+                    )
+            
                 else:
                     st.write(f"**First Name:** {selected_student['First Name']}")
                     st.write(f"**Last Name:** {selected_student['Last Name']}")
@@ -863,6 +871,14 @@ def main():
                         key="application_payment",
                         on_change=update_student_data
                     )
+                    School_Paid = st.selectbox(
+                            "School Paid",
+                            School_paid_opt,
+                            index=School_paid_opt.index(selected_student['School Paid']) if selected_student['School Paid'] in School_paid_opt else 0,
+                            key="School_Paid",
+                            on_change=update_student_data
+                        )
+
             
                 else:
                     st.write(f"**Payment Date:** {format_date(selected_student_dict['DATE'])}")
