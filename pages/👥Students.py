@@ -802,7 +802,7 @@ def main():
                         key="Prep_ITW",
                         on_change=update_student_data
                     )
-                    Visa Result = st.selectbox(
+                    Visa_Result = st.selectbox(
                         "Visa Result",
                         Visa_Result_opt,
                         index=Visa_Result_opt.index(selected_student['Visa Result']) if selected_student['Visa Result'] in Visa_Result_opt else 0,
