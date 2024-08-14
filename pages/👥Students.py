@@ -795,6 +795,17 @@ def main():
                 st.markdown('</div>', unsafe_allow_html=True)
 
             with tab4:
+                payment_amount_options = ["159.000 DZD", "152.000 DZD", "139.000 DZD", "132.000 DZD", "36.000 DZD", "20.000 DZD", "Giveaway", "No Paiement"]
+                School_paid_opt = ["YES", "NO"]
+                Prep_ITW_opt = ["YES", "NO"]
+    
+    
+                payment_type_options = ["Cash", "CCP", "Baridimob", "Bank"]
+                compte_options = ["Mohamed", "Sid Ali"]
+                yes_no_options = ["YES", "NO"]
+                attempts_options = ["1st Try", "2nd Try", "3rd Try"]
+                Gender_options = ["","Male", "Female"]
+
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("💰 Payment Information")
                 st.write("Selected Student Data:", selected_student_dict)  # Debugging: Display the data to verify it's loaded correctly
