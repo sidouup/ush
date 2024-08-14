@@ -861,7 +861,7 @@ def main():
                     payment_type = st.selectbox(
                         "Payment Type", 
                         payment_type_options, 
-                        index=payment_type_options.index(selected_student['Payment Type']) if selected_student['Payment Type'] in payment_type_options else 0, 
+                        index=payment_type_options.index(selected_student['Payment Type']) , 
                         key="payment_type", 
                         on_change=update_student_data
                     )
@@ -869,7 +869,7 @@ def main():
                     compte = st.selectbox(
                         "Compte", 
                         compte_options, 
-                        index=compte_options.index(selected_student['Compte']) if selected_student['Compte'] in compte_options else 0, 
+                        index=compte_options.index(selected_student['Compte']) , 
                         key="compte", 
                         on_change=update_student_data
                     )
@@ -877,7 +877,7 @@ def main():
                     sevis_payment = st.selectbox(
                         "Sevis Payment", 
                         yes_no_options, 
-                        index=yes_no_options.index(selected_student['Sevis payment ?']) if selected_student['Sevis payment ?'] in yes_no_options else 0, 
+                        index=yes_no_options.index(selected_student['Sevis payment ?']) , 
                         key="sevis_payment", 
                         on_change=update_student_data
                     )
@@ -885,7 +885,7 @@ def main():
                     application_payment = st.selectbox(
                         "Application Payment", 
                         yes_no_options, 
-                        index=yes_no_options.index(selected_student['Application payment ?']) if selected_student['Application payment ?'] in yes_no_options else 0, 
+                        index=yes_no_options.index(selected_student['Application payment ?']) , 
                         key="application_payment", 
                         on_change=update_student_data
                     )
