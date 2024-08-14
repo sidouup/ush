@@ -834,69 +834,64 @@ def main():
                         on_change=update_student_data
                     )
             
-                    # Handling Payment Method Dropdown
-                    if 'payment_method' not in st.session_state:
-                        st.session_state['payment_method'] = selected_student['Payment Amount']
-                    
-                    current_payment_method = st.session_state['payment_method']
-                    payment_method = st.selectbox(
-                        "Payment Method", 
-                        payment_amount_options, 
-                        index=payment_amount_options.index(current_payment_method) if current_payment_method in payment_amount_options else 0, 
-                        key="payment_method", 
-                        on_change=update_student_data
+                    # Handling Payment Method Radio
+                    st.write("Payment Method")
+                    current_payment_method = selected_student['Payment Amount'] if pd.notna(selected_student['Payment Amount']) else payment_amount_options[0]
+                    payment_method = st.radio(
+                        "Payment Method",
+                        payment_amount_options,
+                        index=payment_amount_options.index(current_payment_method) if current_payment_method in payment_amount_options else 0,
+                        key="payment_method",
+                        on_change=update_student_data,
+                        horizontal=True
                     )
             
-                    # Handling Payment Type Dropdown
-                    if 'payment_type' not in st.session_state:
-                        st.session_state['payment_type'] = selected_student['Payment Type']
-                    
-                    current_payment_type = st.session_state['payment_type']
-                    payment_type = st.selectbox(
-                        "Payment Type", 
-                        payment_type_options, 
-                        index=payment_type_options.index(current_payment_type) if current_payment_type in payment_type_options else 0, 
-                        key="payment_type", 
-                        on_change=update_student_data
+                    # Handling Payment Type Radio
+                    st.write("Payment Type")
+                    current_payment_type = selected_student['Payment Type'] if pd.notna(selected_student['Payment Type']) else payment_type_options[0]
+                    payment_type = st.radio(
+                        "Payment Type",
+                        payment_type_options,
+                        index=payment_type_options.index(current_payment_type) if current_payment_type in payment_type_options else 0,
+                        key="payment_type",
+                        on_change=update_student_data,
+                        horizontal=True
                     )
             
-                    # Handling Compte Dropdown
-                    if 'compte' not in st.session_state:
-                        st.session_state['compte'] = selected_student['Compte']
-                    
-                    current_compte = st.session_state['compte']
-                    compte = st.selectbox(
-                        "Compte", 
-                        compte_options, 
-                        index=compte_options.index(current_compte) if current_compte in compte_options else 0, 
-                        key="compte", 
-                        on_change=update_student_data
+                    # Handling Compte Radio
+                    st.write("Compte")
+                    current_compte = selected_student['Compte'] if pd.notna(selected_student['Compte']) else compte_options[0]
+                    compte = st.radio(
+                        "Compte",
+                        compte_options,
+                        index=compte_options.index(current_compte) if current_compte in compte_options else 0,
+                        key="compte",
+                        on_change=update_student_data,
+                        horizontal=True
                     )
             
-                    # Handling Sevis Payment Dropdown
-                    if 'sevis_payment' not in st.session_state:
-                        st.session_state['sevis_payment'] = selected_student['Sevis payment ?']
-                    
-                    current_sevis_payment = st.session_state['sevis_payment']
-                    sevis_payment = st.selectbox(
-                        "Sevis Payment", 
-                        yes_no_options, 
-                        index=yes_no_options.index(current_sevis_payment) if current_sevis_payment in yes_no_options else 0, 
-                        key="sevis_payment", 
-                        on_change=update_student_data
+                    # Handling Sevis Payment Radio
+                    st.write("Sevis Payment")
+                    current_sevis_payment = selected_student['Sevis payment ?'] if pd.notna(selected_student['Sevis payment ?']) else yes_no_options[0]
+                    sevis_payment = st.radio(
+                        "Sevis Payment",
+                        yes_no_options,
+                        index=yes_no_options.index(current_sevis_payment) if current_sevis_payment in yes_no_options else 0,
+                        key="sevis_payment",
+                        on_change=update_student_data,
+                        horizontal=True
                     )
             
-                    # Handling Application Payment Dropdown
-                    if 'application_payment' not in st.session_state:
-                        st.session_state['application_payment'] = selected_student['Application payment ?']
-                    
-                    current_application_payment = st.session_state['application_payment']
-                    application_payment = st.selectbox(
-                        "Application Payment", 
-                        yes_no_options, 
-                        index=yes_no_options.index(current_application_payment) if current_application_payment in yes_no_options else 0, 
-                        key="application_payment", 
-                        on_change=update_student_data
+                    # Handling Application Payment Radio
+                    st.write("Application Payment")
+                    current_application_payment = selected_student['Application payment ?'] if pd.notna(selected_student['Application payment ?']) else yes_no_options[0]
+                    application_payment = st.radio(
+                        "Application Payment",
+                        yes_no_options,
+                        index=yes_no_options.index(current_application_payment) if current_application_payment in yes_no_options else 0,
+                        key="application_payment",
+                        on_change=update_student_data,
+                        horizontal=True
                     )
             
                 else:
@@ -907,6 +902,7 @@ def main():
                     st.write(f"**Sevis Payment:** {selected_student['Sevis payment ?']}")
                     st.write(f"**Application Payment:** {selected_student['Application payment ?']}")
                 st.markdown('</div>', unsafe_allow_html=True)
+
     
             with tab5:
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
