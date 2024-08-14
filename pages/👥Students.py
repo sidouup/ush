@@ -969,7 +969,7 @@ def main():
                         'DS-160 maker': st.session_state.get('ds160_maker', selected_student['DS-160 maker']),
                         'Password DS-160': st.session_state.get('password_ds160', selected_student['Password DS-160']),
                         'Secret Q.': st.session_state.get('secret_q', selected_student['Secret Q.']),
-                        'Visa Result': st.session_state.get('visa_status', selected_student['Visa Result']),
+                        'Visa Result': st.session_state.get('Visa Result', selected_student['Visa Result']),
                         'Stage': st.session_state.get('current_stage', selected_student['Stage']),
                         'DATE': st.session_state.get('payment_date', selected_student['DATE']),
                         'BANK': st.session_state.get('Bankstatment', selected_student['BANK']),
