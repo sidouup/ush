@@ -654,6 +654,9 @@ def main():
 
             
             with tab1:
+                if 'payment_method' not in st.session_state:
+                    st.session_state['payment_method'] = selected_student_dict.get('Payment Amount', '').strip()
+
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("📋 Personal Information")
                 if edit_mode:
