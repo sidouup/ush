@@ -36,6 +36,13 @@ def reload_data(spreadsheet_id):
     data = load_data(spreadsheet_id)
     st.session_state['data'] = data
     return data
+def get_valid_value(column_value, valid_options):
+    """
+    Returns the column_value if it's in valid_options, otherwise returns the first valid option.
+    """
+    if pd.isna(column_value) or column_value not in valid_options:
+        return valid_options[0]  # or set to another default value
+    return column_value
 
 # Caching decorator
 def cache_with_timeout(timeout_minutes=60):
@@ -849,11 +856,11 @@ def main():
                         on_change=update_student_data
                     )
             
-                    # Handle dropdowns with retained values
+                    # Handle dropdowns with safe value fetching
                     payment_method = st.selectbox(
                         "Payment Method", 
                         payment_amount_options, 
-                        index=payment_amount_options.index(selected_student['Payment Amount']) , 
+                        index=payment_amount_options.index(get_valid_value(selected_student['Payment Amount'], payment_amount_options)),
                         key="payment_method", 
                         on_change=update_student_data
                     )
@@ -861,7 +868,7 @@ def main():
                     payment_type = st.selectbox(
                         "Payment Type", 
                         payment_type_options, 
-                        index=payment_type_options.index(selected_student['Payment Type']) , 
+                        index=payment_type_options.index(get_valid_value(selected_student['Payment Type'], payment_type_options)),
                         key="payment_type", 
                         on_change=update_student_data
                     )
@@ -869,7 +876,7 @@ def main():
                     compte = st.selectbox(
                         "Compte", 
                         compte_options, 
-                        index=compte_options.index(selected_student['Compte']) , 
+                        index=compte_options.index(get_valid_value(selected_student['Compte'], compte_options)),
                         key="compte", 
                         on_change=update_student_data
                     )
@@ -877,7 +884,7 @@ def main():
                     sevis_payment = st.selectbox(
                         "Sevis Payment", 
                         yes_no_options, 
-                        index=yes_no_options.index(selected_student['Sevis payment ?']) , 
+                        index=yes_no_options.index(get_valid_value(selected_student['Sevis payment ?'], yes_no_options)),
                         key="sevis_payment", 
                         on_change=update_student_data
                     )
@@ -885,7 +892,7 @@ def main():
                     application_payment = st.selectbox(
                         "Application Payment", 
                         yes_no_options, 
-                        index=yes_no_options.index(selected_student['Application payment ?']) , 
+                        index=yes_no_options.index(get_valid_value(selected_student['Application payment ?'], yes_no_options)),
                         key="application_payment", 
                         on_change=update_student_data
                     )
@@ -898,8 +905,8 @@ def main():
                     st.write(f"**Sevis Payment:** {selected_student['Sevis payment ?']}")
                     st.write(f"**Application Payment:** {selected_student['Application payment ?']}")
                 st.markdown('</div>', unsafe_allow_html=True)
-    
-            with tab5:
+                
+                        with tab5:
                 st.markdown('<div class="stCard">', unsafe_allow_html=True)
                 st.subheader("🚩 Current Stage")
 
