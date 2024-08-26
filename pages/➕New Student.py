@@ -21,7 +21,10 @@ def get_google_sheet_client():
 def add_student_to_sheet(student_data):
     client = get_google_sheet_client()
     sheet = client.open_by_key("1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI").worksheet('ALL')
-    
+
+    # Concatenate First Name and Last Name for Student Name
+    student_data["Student Name"] = f"{student_data['First Name']} {student_data['Last Name']}"
+
     # Add student data to a new row
     sheet.append_row(list(student_data.values()))
 
