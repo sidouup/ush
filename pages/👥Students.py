@@ -86,6 +86,23 @@ def upload_file_to_drive(file_path, mime_type, folder_id=None):
         return file_id
     return None
 
+
+import time
+from googleapiclient.errors import HttpError
+
+def retry_request(func, retries=3, delay=2):
+    for i in range(retries):
+        try:
+            return func()
+        except (HttpError, Exception) as e:
+            logger.error(f"Error occurred: {str(e)}. Retrying...")
+            if i < retries - 1:
+                time.sleep(delay * (2 ** i))
+                continue
+            else:
+                logger.error(f"Maximum retries reached. Error: {str(e)}")
+                raise e
+
 def load_data(spreadsheet_id):
     sheet_headers = {
         'ALL': [
@@ -121,6 +138,12 @@ def load_data(spreadsheet_id):
                     if col in df.columns:
                         df[col] = df[col].astype(str)
                 
+                # Parse dates with explicit error handling
+                date_columns = ['DATE', 'School Entry Date', 'Entry Date in the US', 'EMBASSY ITW. DATE']
+                for col in date_columns:
+                    if col in df.columns:
+                        df[col] = pd.to_datetime(df[col], errors='coerce', dayfirst=True)
+                
                 # Create Student Name column
                 if 'First Name' in df.columns and 'Last Name' in df.columns:
                     df['Student Name'] = df['First Name'] + " " + df['Last Name']
@@ -154,28 +177,17 @@ def load_data(spreadsheet_id):
 def save_data(df, spreadsheet_id, sheet_name):
     logger.info("Attempting to save changes")
 
-    # Handle duplicates by appending a number to duplicate names
-    df['Student Name'] = df['Student Name'].astype(str)
-    name_counts = df['Student Name'].value_counts()
-    for name, count in name_counts.items():
-        if count > 1:
-            indices = df[df['Student Name'] == name].index
-            for i, idx in enumerate(indices):
-                df.at[idx, 'Student Name'] = f"{name} {i+1}"
-    
+    # Ensure correct types before saving
+    date_columns = ['DATE', 'School Entry Date', 'Entry Date in the US', 'EMBASSY ITW. DATE']
+    for col in date_columns:
+        if col in df.columns:
+            df[col] = pd.to_datetime(df[col], dayfirst=True, errors='coerce').dt.strftime('%d/%m/%Y %H:%M:%S')
+
     try:
         client = get_google_sheet_client()
         spreadsheet = client.open_by_key(spreadsheet_id)
         sheet = spreadsheet.worksheet(sheet_name)
 
-        # Convert DATE column back to string for saving
-        date_columns = ['DATE', 'School Entry Date', 'Entry Date in the US', 'EMBASSY ITW. DATE']
-        for col in date_columns:
-            if col in df.columns:
-                df[col] = pd.to_datetime(df[col], dayfirst=True, errors='coerce')  # Ensure DATE is datetime
-                df[col] = df[col].dt.strftime('%d/%m/%Y %H:%M:%S')
-
-        # Replace problematic values with a placeholder
         df.replace([np.inf, -np.inf, np.nan], 'NaN', inplace=True)
 
         # Clear the existing sheet
@@ -236,7 +248,7 @@ def check_folder_exists(folder_name, parent_id=None):
         if parent_id:
             query += f" and '{parent_id}' in parents"
 
-        results = service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
+        results = retry_request(lambda: service.files().list(q=query, spaces='drive', fields='files(id, name)').execute())
         folders = results.get('files', [])
         if folders:
             return folders[0].get('id')
