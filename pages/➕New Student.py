@@ -23,6 +23,18 @@ def add_student_to_sheet(student_data):
     sheet = client.open_by_key("1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI").worksheet('ALL')
     sheet.append_row(list(student_data.values()))
 
+    # Add the month in '%B %Y' format to the 'Months' column
+    date_str = student_data['DATE']
+    date_obj = datetime.strptime(date_str, "%d/%m/%Y %H:%M:%S")
+    month_year = date_obj.strftime("%B %Y")
+
+    # Check if the 'Months' column exists and append the new month-year
+    months_col_index = sheet.row_values(1).index('Months') + 1
+    existing_months = sheet.col_values(months_col_index)
+    
+    if month_year not in existing_months:
+        sheet.update_cell(len(existing_months) + 1, months_col_index, month_year)
+
 # Function to load data from Google Sheets
 @st.cache_data(ttl=5)
 def load_data():
