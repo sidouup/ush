@@ -79,9 +79,17 @@ with col1:
     selected_agents = st.multiselect('Filter by Agent', options=agents)
 
 with col2:
+    # Ensure 'Months' column is of type string, handle missing or invalid dates
+    st.session_state.data['Months'] = st.session_state.data['Months'].astype(str)
+    st.session_state.data['Months'] = st.session_state.data['Months'].apply(
+        lambda x: x if x and pd.to_datetime(x, format='%B %Y', errors='coerce') else None
+    )
+
+    # Drop rows with None values in 'Months' for sorting
+    valid_months = st.session_state.data['Months'].dropna().unique()
+
     # Sort months chronologically
-    all_months = sorted(st.session_state.data['Months'].unique(), 
-                        key=lambda x: datetime.strptime(x, '%B %Y'))
+    all_months = sorted(valid_months, key=lambda x: datetime.strptime(x, '%B %Y'))
     months_years = ["All"] + list(all_months)
     selected_months = st.multiselect('Filter by Month', options=months_years, default=["All"])
 
