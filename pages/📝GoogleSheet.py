@@ -79,18 +79,24 @@ with col1:
     selected_agents = st.multiselect('Filter by Agent', options=agents)
 
 with col2:
-    # Ensure 'Months' column is of type string, handle missing or invalid dates
+    # Ensure 'Months' column is of type string
     st.session_state.data['Months'] = st.session_state.data['Months'].astype(str)
-    st.session_state.data['Months'] = st.session_state.data['Months'].apply(
-        lambda x: x if x and pd.to_datetime(x, format='%B %Y', errors='coerce') else None
-    )
-
-    # Drop rows with None values in 'Months' for sorting
-    valid_months = st.session_state.data['Months'].dropna().unique()
-
-    # Sort months chronologically
-    all_months = sorted(valid_months, key=lambda x: datetime.strptime(x, '%B %Y'))
-    months_years = ["All"] + list(all_months)
+    
+    # Apply parsing with error handling
+    def parse_month_year(date_str):
+        try:
+            # Try parsing the date string
+            return datetime.strptime(date_str, '%B %Y')
+        except (ValueError, TypeError):
+            # Return None if parsing fails
+            return None
+    
+    # Apply the parse_month_year function to filter valid dates
+    valid_months = st.session_state.data['Months'].apply(parse_month_year).dropna().unique()
+    
+    # Convert back to string format for display
+    all_months = sorted(valid_months, key=lambda x: x.strftime('%B %Y'))
+    months_years = ["All"] + [x.strftime('%B %Y') for x in all_months]
     selected_months = st.multiselect('Filter by Month', options=months_years, default=["All"])
 
 with col3:
