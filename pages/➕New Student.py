@@ -21,6 +21,8 @@ def get_google_sheet_client():
 def add_student_to_sheet(student_data):
     client = get_google_sheet_client()
     sheet = client.open_by_key("1os1G3ri4xMmJdQSNsVSNx6VJttyM8JsPNbmH0DCFUiI").worksheet('ALL')
+    
+    # Add student data to a new row
     sheet.append_row(list(student_data.values()))
 
     # Add the month in '%B %Y' format to the 'Months' column
@@ -28,12 +30,19 @@ def add_student_to_sheet(student_data):
     date_obj = datetime.strptime(date_str, "%d/%m/%Y %H:%M:%S")
     month_year = date_obj.strftime("%B %Y")
 
-    # Check if the 'Months' column exists and append the new month-year
-    months_col_index = sheet.row_values(1).index('Months') + 1
-    existing_months = sheet.col_values(months_col_index)
-    
-    if month_year not in existing_months:
-        sheet.update_cell(len(existing_months) + 1, months_col_index, month_year)
+    # Find the last row where the student was added
+    last_row = len(sheet.get_all_values())
+
+    # Ensure 'Months' column exists; if not, add it as a header in the first row
+    try:
+        months_col_index = sheet.row_values(1).index('Months') + 1
+    except ValueError:
+        # If 'Months' column header doesn't exist, add it at the end of the headers
+        sheet.update_cell(1, len(sheet.row_values(1)) + 1, 'Months')
+        months_col_index = len(sheet.row_values(1))  # New index for 'Months' column
+
+    # Update the 'Months' column with the month-year value in the row where the student was added
+    sheet.update_cell(last_row, months_col_index, month_year)
 
 # Function to load data from Google Sheets
 @st.cache_data(ttl=5)
@@ -188,6 +197,7 @@ def main():
                 "Stage": "PAYMENT & MAIL",
                 "BANK": "",
                 "Student Name": f"{first_name} {last_name}"
+                
             }
 
             # Add student to sheet
