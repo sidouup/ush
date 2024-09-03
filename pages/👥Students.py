@@ -181,13 +181,16 @@ def save_data(df, spreadsheet_id, sheet_name, student_name):
         google_sheet_row_index = student_row_index[0] + 2
 
         # Prepare the data for the specific row to be updated
-        student_data = df.loc[student_row_index[0]].tolist()
+        student_data = df.loc[student_row_index[0]].copy()
 
-        # Convert any datetime columns to string to prevent incorrect defaults
+        # Convert date columns to strings
         date_columns = ['DATE', 'School Entry Date', 'Entry Date in the US', 'EMBASSY ITW. DATE']
         for col in date_columns:
-            if col in df.columns:
-                df[col] = df[col].astype(str)
+            if col in student_data.index and pd.notnull(student_data[col]):
+                student_data[col] = student_data[col].strftime('%d/%m/%Y')  # Convert date to string in desired format
+
+        # Convert the row data to a list
+        student_data_list = student_data.tolist()
 
         # Number of columns in the Google Sheet
         num_cols = len(df.columns)
@@ -206,13 +209,14 @@ def save_data(df, spreadsheet_id, sheet_name, student_name):
         range_to_update = f'A{google_sheet_row_index}:{end_col_letter}{google_sheet_row_index}'
 
         # Update only the specific row
-        sheet.update(range_to_update, [student_data], value_input_option='USER_ENTERED')
+        sheet.update(range_to_update, [student_data_list], value_input_option='USER_ENTERED')
 
         logger.info(f"Changes saved successfully for student: {student_name}")
         return True
     except Exception as e:
         logger.error(f"Error saving changes for student {student_name}: {str(e)}")
         return False
+
 
 def format_date(date_string):
     if pd.isna(date_string) or date_string == 'NaT':
