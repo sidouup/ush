@@ -183,11 +183,19 @@ def save_data(df, spreadsheet_id, sheet_name, student_name):
         # Prepare the data for the specific row to be updated
         student_data = df.loc[student_row_index[0]].copy()
 
-        # Convert date columns to strings
+        # Convert date columns to the specific string format 'dd/mm/yyyy HH:MM:SS'
         date_columns = ['DATE', 'School Entry Date', 'Entry Date in the US', 'EMBASSY ITW. DATE']
         for col in date_columns:
             if col in student_data.index and pd.notnull(student_data[col]):
-                student_data[col] = student_data[col].strftime('%d/%m/%Y')  # Convert date to string in desired format
+                # Convert to datetime object if it's not already
+                if not isinstance(student_data[col], (datetime, pd.Timestamp)):
+                    student_data[col] = pd.to_datetime(student_data[col], errors='coerce', dayfirst=True)
+                
+                # Convert datetime to string in the desired format
+                if pd.notnull(student_data[col]):  # Check again in case conversion failed
+                    student_data[col] = student_data[col].strftime('%d/%m/%Y %H:%M:%S')
+                else:
+                    student_data[col] = ""  # Handle NaT values as empty strings
 
         # Convert the row data to a list
         student_data_list = student_data.tolist()
