@@ -190,12 +190,15 @@ def save_data(df, spreadsheet_id, sheet_name):
 
         df.replace([np.inf, -np.inf, np.nan], 'NaN', inplace=True)
 
-        # Clear the existing sheet
-        sheet.clear()
+        # Get the number of columns to use in range update
+        num_cols = len(df.columns)
+        num_rows = len(df) + 1  # Plus one to include the header row
 
-        # Update the sheet with new data, including the "Student Name" column
-        # Explicitly separate headers and data
-        sheet.update([df.columns.values.tolist()] + df.values.tolist())
+        # Define the range to update, skipping the header
+        range_to_update = f'A2:{chr(64+num_cols)}{num_rows}'
+
+        # Update only data rows (skip header row)
+        sheet.update(range_to_update, df.values.tolist(), value_input_option='USER_ENTERED')
 
         logger.info("Changes saved successfully")
         return True
