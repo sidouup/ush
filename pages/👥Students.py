@@ -106,15 +106,15 @@ def retry_request(func, retries=3, delay=2):
 def load_data(spreadsheet_id):
     sheet_headers = {
         'ALL': [
-            'DATE','First Name', 'Last Name','Age', 'Phone N°', 'Address', 'E-mail', 'Payment Type', 'Compte', 'Student Name', 'Months', 
-            'Emergency contact N°', 'Chosen School', 'Specialite', 'Duration', 
-            'Payment Amount', 'Sevis payment ?', 'Application payment ?', 'DS-160 maker', 
-            'Password DS-160', 'Secret Q.', 'School Entry Date', 'Entry Date in the US', 
-            'ADDRESS in the U.S', 'E-MAIL RDV', 'PASSWORD RDV', 'EMBASSY ITW. DATE', 
-            'Attempts', 'Visa Result', 'Agent', 'Note', 'Stage','Gender','BANK','Prep ITW','School Paid'
+            'DATE', 'First Name', 'Last Name', 'Age', 'Phone N°', 'Address', 'E-mail', 'Payment Type', 'Compte', 'Student Name', 'Months',
+            'Emergency contact N°', 'Chosen School', 'Specialite', 'Duration',
+            'Payment Amount', 'Sevis payment ?', 'Application payment ?', 'DS-160 maker',
+            'Password DS-160', 'Secret Q.', 'School Entry Date', 'Entry Date in the US',
+            'ADDRESS in the U.S', 'E-MAIL RDV', 'PASSWORD RDV', 'EMBASSY ITW. DATE',
+            'Attempts', 'Visa Result', 'Agent', 'Note', 'Stage', 'Gender', 'BANK', 'Prep ITW', 'School Paid'
         ]
     }
-    
+
     try:
         client = get_google_sheet_client()
         sheet = client.open_by_key(spreadsheet_id)
@@ -126,9 +126,9 @@ def load_data(spreadsheet_id):
             expected_headers = sheet_headers.get(title, None)
             
             if expected_headers:
-                data = worksheet.get_all_records(expected_headers=expected_headers, value_render_option='UNFORMATTED_VALUE')
+                data = worksheet.get_all_records(expected_headers=expected_headers, value_render_option='FORMATTED_VALUE')
             else:
-                data = worksheet.get_all_records(value_render_option='UNFORMATTED_VALUE')
+                data = worksheet.get_all_records(value_render_option='FORMATTED_VALUE')
             
             df = pd.DataFrame(data)
             if not df.empty:
@@ -138,21 +138,9 @@ def load_data(spreadsheet_id):
                     if col in df.columns:
                         df[col] = df[col].astype(str)
                 
-                # Parse dates with explicit error handling
-                date_columns = ['DATE', 'School Entry Date', 'Entry Date in the US', 'EMBASSY ITW. DATE']
-                for col in date_columns:
-                    if col in df.columns:
-                        df[col] = pd.to_datetime(df[col], errors='coerce', dayfirst=True)
-                
                 # Create Student Name column
                 if 'First Name' in df.columns and 'Last Name' in df.columns:
                     df['Student Name'] = df['First Name'] + " " + df['Last Name']
-                
-                # Parse dates
-                date_columns = ['DATE', 'School Entry Date', 'Entry Date in the US', 'EMBASSY ITW. DATE']
-                for col in date_columns:
-                    if col in df.columns:
-                        df[col] = pd.to_datetime(df[col], errors='coerce', dayfirst=True)
                 
                 df.dropna(subset=['Student Name'], inplace=True)
                 df.dropna(how='all', inplace=True)
