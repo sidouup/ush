@@ -183,6 +183,12 @@ def save_data(df, spreadsheet_id, sheet_name, student_name):
         # Prepare the data for the specific row to be updated
         student_data = df.loc[student_row_index[0]].tolist()
 
+        # Convert any datetime columns to string to prevent incorrect defaults
+        date_columns = ['DATE', 'School Entry Date', 'Entry Date in the US', 'EMBASSY ITW. DATE']
+        for col in date_columns:
+            if col in df.columns:
+                df[col] = df[col].astype(str)
+
         # Number of columns in the Google Sheet
         num_cols = len(df.columns)
 
