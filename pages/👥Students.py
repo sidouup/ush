@@ -194,6 +194,7 @@ def save_data(df, spreadsheet_id, sheet_name):
         sheet.clear()
 
         # Update the sheet with new data, including the "Student Name" column
+        # Explicitly separate headers and data
         sheet.update([df.columns.values.tolist()] + df.values.tolist())
 
         logger.info("Changes saved successfully")
