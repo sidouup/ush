@@ -190,12 +190,24 @@ def save_data(df, spreadsheet_id, sheet_name):
 
         df.replace([np.inf, -np.inf, np.nan], 'NaN', inplace=True)
 
-        # Get the number of columns to use in range update
+        # Number of rows and columns
+        num_rows = len(df) + 1  # Plus one for the header row
         num_cols = len(df.columns)
-        num_rows = len(df) + 1  # Plus one to include the header row
 
-        # Define the range to update, skipping the header
-        range_to_update = f'A2:{chr(64+num_cols)}{num_rows}'
+        # Function to get Excel-style column name (e.g., 'A', 'AA')
+        def get_column_letter(col_idx):
+            letters = string.ascii_uppercase
+            result = []
+            while col_idx:
+                col_idx, rem = divmod(col_idx - 1, 26)
+                result[:0] = letters[rem]
+            return ''.join(result)
+
+        # Calculate the end column (e.g., 'Z', 'AA')
+        end_col_letter = get_column_letter(num_cols)
+
+        # Define the range to update, starting from the second row
+        range_to_update = f'A2:{end_col_letter}{num_rows}'
 
         # Update only data rows (skip header row)
         sheet.update(range_to_update, df.values.tolist(), value_input_option='USER_ENTERED')
