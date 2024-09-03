@@ -1082,7 +1082,7 @@ def main():
                         original_data['Student Name'] = original_data['First Name'] + " " + original_data['Last Name']
                 
                         # Save the original data back to Google Sheets
-                        if save_data(original_data, spreadsheet_id, 'ALL'):
+                        if save_data(original_data, spreadsheet_id, 'ALL', student_name):
                             st.success("Changes saved successfully!")
                             st.session_state['reload_data'] = True
                             st.cache_data.clear()
