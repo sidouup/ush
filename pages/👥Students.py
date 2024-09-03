@@ -174,24 +174,28 @@ def load_data(spreadsheet_id):
         st.error(f"An error occurred: {str(e)}")
         return pd.DataFrame()
 
-def save_data(df, spreadsheet_id, sheet_name):
-    logger.info("Attempting to save changes")
-
-    # Ensure correct types before saving
-    date_columns = ['DATE', 'School Entry Date', 'Entry Date in the US', 'EMBASSY ITW. DATE']
-    for col in date_columns:
-        if col in df.columns:
-            df[col] = pd.to_datetime(df[col], dayfirst=True, errors='coerce').dt.strftime('%d/%m/%Y %H:%M:%S')
+def save_data(df, spreadsheet_id, sheet_name, student_name):
+    logger.info("Attempting to save changes for the specific student")
 
     try:
         client = get_google_sheet_client()
         spreadsheet = client.open_by_key(spreadsheet_id)
         sheet = spreadsheet.worksheet(sheet_name)
 
-        df.replace([np.inf, -np.inf, np.nan], 'NaN', inplace=True)
+        # Locate the specific row to update based on the student's name
+        student_row_index = df.index[df['Student Name'] == student_name].tolist()
+        
+        if not student_row_index:
+            logger.error(f"Student '{student_name}' not found in the data.")
+            return False
 
-        # Number of rows and columns
-        num_rows = len(df) + 1  # Plus one for the header row
+        # Assuming row indices in Google Sheets start from 1 and there's a header row, adjust by +2
+        google_sheet_row_index = student_row_index[0] + 2
+
+        # Prepare the data for the specific row to be updated
+        student_data = df.loc[student_row_index[0]].tolist()
+
+        # Number of columns in the Google Sheet
         num_cols = len(df.columns)
 
         # Function to get Excel-style column name (e.g., 'A', 'AA')
@@ -203,19 +207,17 @@ def save_data(df, spreadsheet_id, sheet_name):
                 result[:0] = letters[rem]
             return ''.join(result)
 
-        # Calculate the end column (e.g., 'Z', 'AA')
+        # Calculate the range for the specific row (e.g., 'A2:Z2')
         end_col_letter = get_column_letter(num_cols)
+        range_to_update = f'A{google_sheet_row_index}:{end_col_letter}{google_sheet_row_index}'
 
-        # Define the range to update, starting from the second row
-        range_to_update = f'A2:{end_col_letter}{num_rows}'
+        # Update only the specific row
+        sheet.update(range_to_update, [student_data], value_input_option='USER_ENTERED')
 
-        # Update only data rows (skip header row)
-        sheet.update(range_to_update, df.values.tolist(), value_input_option='USER_ENTERED')
-
-        logger.info("Changes saved successfully")
+        logger.info(f"Changes saved successfully for student: {student_name}")
         return True
     except Exception as e:
-        logger.error(f"Error saving changes: {str(e)}")
+        logger.error(f"Error saving changes for student {student_name}: {str(e)}")
         return False
 
 def format_date(date_string):
